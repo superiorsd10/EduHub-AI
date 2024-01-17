@@ -1,0 +1,51 @@
+{
+  "name": "edhub_ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-brands-svg-icons": "^6.5.1",
+    "@fortawesome/free-regular-svg-icons": "^6.5.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@mantine/carousel": "^7.4.1",
+    "@mantine/charts": "^7.4.1",
+    "@mantine/code-highlight": "^7.4.1",
+    "@mantine/core": "^7.4.1",
+    "@mantine/dates": "^7.4.1",
+    "@mantine/dropzone": "^7.4.1",
+    "@mantine/form": "^7.4.1",
+    "@mantine/hooks": "^7.4.1",
+    "@mantine/modals": "^7.4.1",
+    "@mantine/notifications": "^7.4.1",
+    "@mantine/nprogress": "^7.4.1",
+    "@mantine/spotlight": "^7.4.1",
+    "@mantine/tiptap": "^7.4.1",
+    "@tabler/icons-react": "^2.46.0",
+    "@tiptap/extension-link": "^2.1.16",
+    "@tiptap/react": "^2.1.16",
+    "@tiptap/starter-kit": "^2.1.16",
+    "dayjs": "^1.11.10",
+    "embla-carousel-react": "^7.1.0",
+    "geist": "^1.2.1",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "recharts": "^2.10.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "postcss": "^8.4.33",
+    "postcss-preset-mantine": "^1.12.3",
+    "postcss-simple-vars": "^7.0.1",
+    "typescript": "^5"
+  }
+}
