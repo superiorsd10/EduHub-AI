@@ -3,6 +3,13 @@ language: python
 python:
   - "3.9"
 
+env:
+  - TRAVIS_CI=true
+
+branches:
+  only:
+    - main
+
 install:
   - pip install -r server/requirements.txt
 
@@ -11,6 +18,20 @@ script:
 
 after_success:
   - coveralls
+
+if: |
+  type = push AND \
+  ( \
+    ( \
+      env(TRAVIS_CI) = true AND \
+      ( \
+        ( \
+          commit_message =~ ^server/ OR \
+          commit_message =~ ^\.travis\.yml \
+        ) \
+      ) \
+    ) \
+  )
 
 notifications:
   email: false
