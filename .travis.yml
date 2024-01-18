@@ -19,7 +19,7 @@ script:
 after_success:
   - coveralls
 
-if: (type = push) AND ((env(TRAVIS_CI) = true) OR (commit_message =~ '^server/' OR commit_message =~ '^\.travis\.yml'))
+if: (type = push) AND ((env(TRAVIS_CI) = true) OR (commit_files =~ '^server/' OR commit_files =~ '^\.travis\.yml'))
 
 notifications:
   email: false
