@@ -4,10 +4,10 @@ python:
   - "3.11.1"
 
 install:
-  - pip install -r requirements.txt 
+  - pip install -r server/requirements.txt
 
 script:
-  - pytest app/tests
+  - pytest server/app/tests
 
 after_success:
   - coveralls
