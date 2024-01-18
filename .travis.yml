@@ -13,13 +13,25 @@ branches:
 install:
   - pip install -r server/requirements.txt
 
-script:
-  - pytest server/app/tests
+jobs:
+  include:
+    - stage: test
+      script: pytest server/app/tests
+      name: "Server Tests"
+      if: type = push AND (env(TRAVIS_CI) = true AND commit_files !~ ^server/ AND commit_files !~ ^\.travis\.yml)
+
+    - stage: test
+      script: echo "Skipping tests for client changes"
+      name: "Skip Tests for Client"
+      if: type = push AND (env(TRAVIS_CI) = true AND commit_files =~ ^client/)
+
+    - stage: deploy
+      script: echo "Deploying"
+      name: "Deployment"
+      if: type = push AND branch = main
 
 after_success:
   - coveralls
-
-if: (type = push) AND ((env(TRAVIS_CI) = true) OR (commit_files =~ '^server/' OR commit_files =~ '^\.travis\.yml'))
 
 notifications:
   email: false
