@@ -25,11 +25,6 @@ jobs:
       name: "Skip Tests for Client"
       if: type = push AND (env(TRAVIS_CI) = true AND commit_files =~ ^client/)
 
-    - stage: deploy
-      script: echo "Deploying"
-      name: "Deployment"
-      if: type = push AND branch = main
-
 after_success:
   - coveralls
 
