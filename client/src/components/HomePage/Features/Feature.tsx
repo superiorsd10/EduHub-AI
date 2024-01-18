@@ -22,8 +22,8 @@ const Feature = ({ index, title, description, illustration }: Props) => {
       pl="5vw"
       pr="5vw"
     >
-      <Stack w="45vw" bg="white" justify="center">
-        <Title order={1}>{title}</Title>
+      <Stack w="45vw" bg="white" justify="center" >
+        <Title order={3} size="h3">{title}</Title>
         <Text>{description}</Text>
       </Stack>
       <Flex w="45vw" align="center" justify={index ? "left" : "right"}>

@@ -15,7 +15,7 @@ const Faq: React.FC<Props> = ({ question, answer }) => {
   return (
     <Stack w="90vw">
       <Group mb={5}>
-        <Title mr="auto">{question}</Title>
+        <Title mr="auto" size="h3">{question}</Title>
         <ActionIcon onClick={toggle} color="white" bg="white">
           <FontAwesomeIcon icon={faPlus} color="black" size="2x" />
         </ActionIcon>

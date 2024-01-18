@@ -5,6 +5,7 @@ import Banner from "@/components/HomePage/Banner";
 import Faqs from "@/components/HomePage/FAQs/Faqs";
 import Footer from "@/components/HomePage/Footer";
 import Features from "@/components/HomePage/Features/Features";
+// import { GeistSans } from "geist/font/sans";
 
 const index:NextPage = () => {
   return (
