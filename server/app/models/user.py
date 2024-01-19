@@ -27,7 +27,7 @@ class User(Document):
     name = StringField()
     email = EmailField()
     role = StringField()
-    classes = DictField(field=ListField(StringField))
+    classes = DictField(field=ListField(ObjectIdField()))
     assignments = ListField(EmbeddedDocumentField(Assignment))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
 
