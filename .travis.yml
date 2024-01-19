@@ -17,8 +17,8 @@ jobs:
   include:
     - stage: test
       script:
-        - pytest server/app/tests
-        - coverage run --source=server -m pytest server/app/tests
+        - pytest server/tests
+        - coverage run --source=server -m pytest server/tests
       name: "Server Tests"
       if: type = push AND env(TRAVIS_CI) = true AND TRAVIS_COMMIT_RANGE && (TRAVIS_COMMIT_RANGE !~ ^server/ AND TRAVIS_COMMIT_RANGE !~ ^\.travis\.yml)
 
