@@ -1,7 +1,8 @@
 import { Button, Flex, Group, Image, Stack, Text, Title } from "@mantine/core";
+import Link from "next/link";
 import React from "react";
 
-const Banner: React.FC = () => {
+const Banner:React.FC = () => {
   return (
     <Flex
       direction={{ sm: "column", md: "column-reverse", lg: "row" }}
@@ -20,9 +21,11 @@ const Banner: React.FC = () => {
           learning experience.
         </Text>
         <Group>
-          <Button bg="black" radius="md">
+        <Link href="signup">
+          <Button color="black" radius="md">
             Join Today
           </Button>
+        </Link>
           <Button variant="default">Learn More</Button>
         </Group>
       </Stack>

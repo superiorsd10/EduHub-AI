@@ -12,7 +12,7 @@ const Footer:React.FC = () => {
   return (
     <Stack
       bg="black"
-      h="80svh"
+      h="100svh"
       w="100vw"
       maw="100%"
       pl="5vw"
