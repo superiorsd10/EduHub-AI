@@ -9,6 +9,7 @@ const Features: React.FC = () => {
       <Title order={1}>Features</Title>
       {FeatureList.map((feature, index) => (
         <Feature
+          key={index}
           title={feature.title}
           description={feature.description}
           index={index % 2 ? true : false}

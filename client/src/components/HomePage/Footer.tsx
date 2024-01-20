@@ -19,6 +19,7 @@ const Footer:React.FC = () => {
       pr="5vw"
       pb="2vw"
       mt="30vh"
+      id='footer'
     >
       <Flex style={{ flex: 1 }} justify="center" align="center">
         <Text color="white" style={{ fontSize: "7em", fontWeight: "bold" }}>

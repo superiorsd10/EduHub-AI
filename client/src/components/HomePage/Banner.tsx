@@ -12,10 +12,11 @@ const Banner:React.FC = () => {
       pl="5vw"
       pr="5vw"
       mb='10vh'
+      id='features'
     >
       <Stack w="45vw" bg="white" justify="center">
         <Title order={1} size="h1">Unleashing Knowledge, Revolutionizing Learning</Title>
-        <Text>
+        <Text color='gray.7'>
           Empower your education journey with EduHub-AI, where students,
           teachers, and artificial intelligence converge for an unparalleled
           learning experience.
