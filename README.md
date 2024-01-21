@@ -26,12 +26,12 @@ Make sure you have the following software installed on your machine:
 git clone https://github.com/superiorsd10/EduHub-AI.git
 cd EduHub-AI
 ```
-### Install Dependencies
+#### Install Dependencies
 ```bash
 cd client
 npm i
 ```
-### Set up .env File
+#### Set up .env File
 1. Create a .env.local file in the root of the client folder.
 2. Visit firebase.google.com, create a new project, and copy the credentials.
 3. Paste the copied credentials into the .env.local file as follows:
@@ -45,10 +45,10 @@ NEXT_PUBLIC_FIREBASE_APP_ID="your_app_id"
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="your_measurement_id"
 
 ```
-### Firebase Configuration
+#### Firebase Configuration
 - Ensure that the SignInWithGoogle and SignInWithEmailAndPassword options are allowed in your Firebase project settings.
 
-### Run the frontend
+#### Run the frontend
 ```bash
 npm run dev
 ```
