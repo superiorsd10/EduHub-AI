@@ -4,3 +4,5 @@ __pycache__/
 *.pyo
 *.pyd
 venv/
+
+server/credentials/service_account_key.json
