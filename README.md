@@ -17,6 +17,42 @@ EduHub-AI is a platform designed to revolutionize education through the integrat
 
 ## How to Set Up
 
+### Client
+#### Prerequisites
+Make sure you have the following software installed on your machine:
+- NodeJS
+#### Clone the Repository
+```bash
+git clone https://github.com/superiorsd10/EduHub-AI.git
+cd EduHub-AI
+```
+### Install Dependencies
+```bash
+cd client
+npm i
+```
+### Set up .env File
+1. Create a .env.local file in the root of the client folder.
+2. Visit firebase.google.com, create a new project, and copy the credentials.
+3. Paste the copied credentials into the .env.local file as follows:
+```bash
+NEXT_PUBLIC_FIREBASE_API_KEY="your_api_key"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your_auth_domain"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="your_project_id"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="your_storage_bucket"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="your_messaging_sender_id"
+NEXT_PUBLIC_FIREBASE_APP_ID="your_app_id"
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="your_measurement_id"
+
+```
+### Firebase Configuration
+- Ensure that the SignInWithGoogle and SignInWithEmailAndPassword options are allowed in your Firebase project settings.
+
+### Run the frontend
+```bash
+npm run dev
+```
+
 ### Server
 
 #### Prerequisites
