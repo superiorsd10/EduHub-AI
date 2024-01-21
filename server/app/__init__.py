@@ -16,7 +16,13 @@ def create_app(config=None):
 
     mongo_config = app.config.get("MONGODB_SETTINGS")
 
-    cred = credentials.Certificate(os.environ.get("SERVICE_ACCOUNT_KEY"))
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    key_file_path = os.path.abspath(
+        os.path.join(current_dir, "../credentials/service_account_key.json")
+    )
+
+    cred = credentials.Certificate(key_file_path)
 
     firebase_app = initialize_app(cred)
 
