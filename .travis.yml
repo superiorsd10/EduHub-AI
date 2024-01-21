@@ -1,34 +1,33 @@
 language: python
-
 python:
-  - "3.9"
-
+- '3.9'
 env:
+  matrix:
   - TRAVIS_CI=true
-
+  global:
+    secure: APUTLISO9Gkr7/0BfoSugxHMEMNKXAN75PMioMxbQ997xU4TdJT8cEnzHf368FgzDH/kh5Kix0MKbMMj0rWBz6C5SfSvi4h7xXOSfEzFx+TCNkXp2N9N2OBGe5uE5Dtuq+UqwbWA2Boc5Ntqd3la7E+/8aPnV8HwOO/rBkwOzPbzoRMTB8kP7n+gULqRYC4gcLG7glMBBavYhymQ+QI1BQHobbOJY/JKYyp6Igt3jJkjyJxra+Slerc4PaG7yw1zYcY6kr93XXD0BJSEMnMzJwxuCXuSlG1SWKH/f1/HDolpdbExkJxJmQz9QFQcabcXE292U9Bbo090VnStt2r6FUa9sgw3LcHaylIW/+A/CoMGGoDNjGoc0LB+jK6AI50fReWG5ThLsa4CSRpPJSDoJBebXrCNUsRDZnwJQDB0HEbIX/B/PeVvzhbr/oZPl0vJNZCvApIwS8ZGc4I6h1GBZbFKeYHKCscVPrf/Ebf9e78nnfdDRjMyZYDefIatrFGvfO2QQ/15qlYbZpcEmBdckqLL1KBhB6jZaIjueag9NpjxG+jtann48fjpRVB+w9Pra6ak1irsqQyScsCDolX4SMrMT96WGacF+wsKqFW2bjvNyw+5BBTJ6CNPZY2m1407et7F5mJVOQ+B0dAu2OrsqJ578b8equsbOiJAMVjyhKI=
+before_install:
+  - openssl aes-256-cbc -k "$super_secret_password" -in server/credentials.json.enc -out server/credentials.json -d
 branches:
   only:
-    - main
-
+  - main
 install:
-  - pip install -r server/requirements.txt
-
+- pip install -r server/requirements.txt
 jobs:
   include:
-    - stage: test
-      script:
-        - pytest server/tests
-        - coverage run --source=server -m pytest server/tests
-      name: "Server Tests"
-      if: type = push AND env(TRAVIS_CI) = true AND TRAVIS_COMMIT_RANGE && (TRAVIS_COMMIT_RANGE !~ ^server/ AND TRAVIS_COMMIT_RANGE !~ ^\.travis\.yml)
-
-    - stage: test
-      script: echo "Skipping tests for client changes"
-      name: "Skip Tests for Client"
-      if: type = push AND env(TRAVIS_CI) = true AND TRAVIS_COMMIT_RANGE && TRAVIS_COMMIT_RANGE =~ ^client/
-
+  - stage: test
+    script:
+    - pytest server/tests
+    - coverage run --source=server -m pytest server/tests
+    name: Server Tests
+    if: type = push AND env(TRAVIS_CI) = true AND TRAVIS_COMMIT_RANGE && (TRAVIS_COMMIT_RANGE
+      !~ ^server/ AND TRAVIS_COMMIT_RANGE !~ ^\.travis\.yml)
+  - stage: test
+    script: echo "Skipping tests for client changes"
+    name: Skip Tests for Client
+    if: type = push AND env(TRAVIS_CI) = true AND TRAVIS_COMMIT_RANGE && TRAVIS_COMMIT_RANGE
+      =~ ^client/
 after_success:
-  - coveralls
-
+- coveralls
 notifications:
   email: false
