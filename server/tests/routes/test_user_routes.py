@@ -6,7 +6,7 @@ from app import create_test_app
 from unittest.mock import patch
 from config.config import TestConfig
 from dotenv import load_dotenv
-from mongoengine import connect
+from mongoengine import connect, disconnect
 
 load_dotenv()
 
@@ -26,24 +26,35 @@ app.config["MONGODB_SETTINGS"] = {
 
 mongo_config = app.config.get("MONGODB_SETTINGS")
 
-try:
-    connect(
-        db=mongo_config["db"],
-        host=mongo_config["host"],
-        username=mongo_config["username"],
-        password=mongo_config["password"],
-        alias=mongo_config["alias"],
-    )
-    print("Connected to MongoDB successfully!")
-except Exception as e:
-    print(f"Failed to connect to MongoDB: {e}")
-
 app.register_blueprint(user_blueprint)
 
 
 @pytest.fixture
 def client():
     return app.test_client()
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_teardown(request):
+    # Disconnect from any existing default connection
+    disconnect(alias='default')
+
+    try:
+        connect(
+            db=mongo_config["db"],
+            host=mongo_config["host"],
+            username=mongo_config["username"],
+            password=mongo_config["password"],
+            alias=mongo_config["alias"],
+        )
+        print("Connected to MongoDB successfully!")
+    except Exception as e:
+        print(f"Failed to connect to MongoDB: {e}")
+
+    # Teardown: Drop the test database after the test
+    def teardown():
+        disconnect(alias='default')
+
+    request.addfinalizer(teardown)
 
 
 def test_create_user_without_firebase_token_required(client):
@@ -70,6 +81,9 @@ def test_create_user_without_firebase_token_required(client):
 
     # Clean up: Delete the user from the database
     User.objects(email=user_data["email"]).delete()
+    
+    # Explicitly disconnect from the MongoDB connection
+    disconnect(alias='default')
 
 
 def test_create_user_invalid_data(client):
