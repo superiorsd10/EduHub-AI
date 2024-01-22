@@ -21,12 +21,15 @@ def sample_user_data():
 
 @pytest.fixture(scope="function")
 def setup_teardown(request):
-    # Connect to the test database
-    connect('mongoenginetest', host='mongodb://localhost', mongo_client_class=mongomock.MongoClient)
+    # Disconnect from any existing default connection
+    disconnect(alias='default')
+
+    # Connect to the test database with the default alias
+    connect('mongoenginetest', host='mongodb://localhost', alias='default', mongo_client_class=mongomock.MongoClient)
 
     # Teardown: Drop the test database after the test
     def teardown():
-        disconnect()
+        disconnect(alias='default')
 
     request.addfinalizer(teardown)
 
