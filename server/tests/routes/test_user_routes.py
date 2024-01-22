@@ -32,6 +32,7 @@ try:
         host=mongo_config["host"],
         username=mongo_config["username"],
         password=mongo_config["password"],
+        alias=mongo_config["alias"],
     )
     print("Connected to MongoDB successfully!")
 except Exception as e:
