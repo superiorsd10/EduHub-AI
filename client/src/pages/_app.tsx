@@ -34,6 +34,12 @@ const theme = createTheme({
       h3: {
         fontSize: rem(36),
       },
+      h4: {
+        fontSize: rem(30),
+      },
+      h5: {
+        fontSize: rem(24),
+      },
     },
   },
 });

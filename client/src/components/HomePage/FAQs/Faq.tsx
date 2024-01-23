@@ -1,5 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Collapse, Group, Stack, Text, Title, rem } from "@mantine/core";
+import {
+  ActionIcon,
+  Collapse,
+  Group,
+  Stack,
+  Text,
+  Title,
+  rem,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import React, { useEffect } from "react";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -28,8 +36,22 @@ const Faq: React.FC<Props> = ({
 
   return (
     <Stack w="90vw">
-      <Group mb={5}>
-        <Text mr="auto" size="xl" style={{fontSize:rem(32),fontWeight:900}}>
+      <Group mb={5} gap={0}>
+        <Text
+          mr="auto"
+          display={{ base: "none", sm: "none", md: "flex", lg: "flex" }}
+          size="xl"
+          style={{ fontSize: rem(32), fontWeight: 900 }}
+        >
+          {question}
+        </Text>
+        <Text
+          mr="auto"
+          display={{ base: "flex", sm: "flex", md: "none", lg: "none" }}
+          size="xl"
+          style={{ fontSize: rem(24), fontWeight: 900 }}
+          maw='75vw'
+        >
           {question}
         </Text>
         <ActionIcon

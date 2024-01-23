@@ -5,7 +5,7 @@ import React from "react";
 const Banner:React.FC = () => {
   return (
     <Flex
-      direction={{ sm: "column", md: "column-reverse", lg: "row" }}
+      direction={{ base:'column-reverse',sm: "column-reverse", md: "column-reverse", lg: "row" }}
       w="100vw"
       maw="100%"
       h="85vh"
@@ -13,9 +13,11 @@ const Banner:React.FC = () => {
       pr="5vw"
       mb='10vh'
       id='features'
+      justify='center'
     >
-      <Stack w="45vw" bg="white" justify="center">
-        <Title order={1} size="h1" >Unleashing Knowledge, Revolutionizing Learning</Title>
+      <Stack w={{base:'90vw',sm:'90vw',md:'45vw',lg:'45vw'}} bg="white" justify="center">
+        <Title size="h1" display={{base:'none',sm:'none',md:'flex',lg:'flex'}}>Unleashing Knowledge, Revolutionizing Learning</Title>
+        <Title size="h4" display={{base:'flex',sm:'flex',md:'none',lg:'none'}}>Unleashing Knowledge, Revolutionizing Learning</Title>
         <Text color='gray.7'>
           Empower your education journey with EduHub-AI, where students,
           teachers, and artificial intelligence converge for an unparalleled
@@ -30,8 +32,9 @@ const Banner:React.FC = () => {
           <Button variant="default">Learn More</Button>
         </Group>
       </Stack>
-      <Flex w="45vw">
+      <Flex maw={{base:'90vw',sm:'90vw',md:'45vw',lg:'45vw'}} h={{base:'40svh',sm:'40svh',md:'85svh',lg:'85svh'}}>
         <Image
+          style={{objectFit:'contain'}}
           src="/assets/HomeBanner.png"
           fallbackSrc="https://placehold.co/600x400?text=Placeholder"
         />

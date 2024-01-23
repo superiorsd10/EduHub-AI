@@ -8,7 +8,7 @@ import {
   faSquareInstagram,
 } from "@fortawesome/free-brands-svg-icons";
 
-const Footer:React.FC = () => {
+const Footer: React.FC = () => {
   return (
     <Stack
       bg="black"
@@ -18,11 +18,22 @@ const Footer:React.FC = () => {
       pl="5vw"
       pr="5vw"
       pb="2vw"
-      mt="30vh"
-      id='footer'
+      mt="10vh"
+      id="footer"
     >
       <Flex style={{ flex: 1 }} justify="center" align="center">
-        <Text color="white" style={{ fontSize: "7em", fontWeight: "bold" }}>
+        <Text
+          color="white"
+          display={{ base: "none", sm: "none", md: "flex", lg: "flex" }}
+          style={{ fontSize: "7em", fontWeight: "bold" }}
+        >
+          EduHub-AI
+        </Text>
+        <Text
+          color="white"
+          display={{ base: "flex", sm: "flex", md: "none", lg: "none" }}
+          style={{ fontSize: "4em", fontWeight: "bold" }}
+        >
           EduHub-AI
         </Text>
       </Flex>
@@ -39,26 +50,30 @@ const Footer:React.FC = () => {
           </ActionIcon>
         </Group>
         <Stack>
-          <Text color="white">eduhubai@gmail.com</Text>
-          <Text color="white" style={{ textAlign: "right" }}>
+          <Text color="white" style={{ textAlign: "right", lineHeight: 1 }}>
+            eduhubai@gmail.com
+          </Text>
+          <Text color="white" style={{ textAlign: "right", lineHeight: 1 }}>
             +91-0123456789
           </Text>
         </Stack>
       </Group>
-      <Group>
-        <Text mr="auto" color="white">
+      <Flex direction={{ base: "column-reverse" }} gap={{base:'sm',sm:'sm',md:0,lg:0}}>
+        <Text mr="auto" color="white" style={{ lineHeight: 1 }}>
           © 2024 EduHub-AI. All rights reserved
         </Text>
-        <Link href="#" style={{ color: "white", textDecoration: "none" }}>
-          Terms of Service
-        </Link>
-        <Link href="#" style={{ color: "white", textDecoration: "none" }}>
-          Privacy Policy
-        </Link>
-        <Link href="#" style={{ color: "white", textDecoration: "none" }}>
-          Cookies
-        </Link>
-      </Group>
+        <Group>
+          <Link href="#" style={{ color: "white", textDecoration: "none" }}>
+            Terms of Service
+          </Link>
+          <Link href="#" style={{ color: "white", textDecoration: "none" }}>
+            Privacy Policy
+          </Link>
+          <Link href="#" style={{ color: "white", textDecoration: "none" }}>
+            Cookies
+          </Link>
+        </Group>
+      </Flex>
     </Stack>
   );
 };

@@ -6,8 +6,8 @@ import Faq from "./Faq";
 const Faqs: React.FC = () => {
   const [openedIndex, setOpenedIndex] = useState<number>(-1);
   return (
-    <Stack gap={30} align="center" mt="30vh" id="faqs">
-      <Title order={1}>FAQ</Title>
+    <Stack gap={30} align="center" id="faqs">
+      <Title order={1}>FAQs</Title>
       {FaqList.map((faq, id) => (
         <Faq
           key={id}

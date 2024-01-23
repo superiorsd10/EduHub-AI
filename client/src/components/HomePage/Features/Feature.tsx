@@ -29,17 +29,24 @@ const Feature = ({ index, title, description, illustration }: Props) => {
   return (
     <Flex
       direction={{
-        sm: "column",
-        md: "column-reverse",
+        base: "column-reverse",
+        sm: "column-reverse",
+        md: index ? "row-reverse" : "row",
         lg: index ? "row-reverse" : "row",
       }}
       w="100vw"
       maw="100%"
-      h="60vh"
+      mah={{ base: "85svh", sm: "85svh", md: "60svh", lg: "60svh" }}
       pl="5vw"
       pr="5vw"
+      mb='10vh'
+      gap={{ base: "lg", sm: "lg", md:0, lg:0 }}
     >
-      <Stack w="45vw" bg="white" justify="center">
+      <Stack
+        w={{ base: "90vw", sm: "90vw", md: "45vw", lg: "45vw" }}
+        bg="white"
+        justify="center"
+      >
         <motion.div
           initial="offscreen"
           whileInView="onscreen"
@@ -53,9 +60,18 @@ const Feature = ({ index, title, description, illustration }: Props) => {
         </motion.div>
         <Text color="gray.8">{description}</Text>
       </Stack>
-      <Flex w="45vw" align="center" justify={index ? "left" : "right"}>
+      <Flex
+        w={{ base: "90vw", sm: "90vw", md: "45vw", lg: "45vw" }}
+        align="center"
+        justify={{
+          base: "center",
+          sm: "center",
+          md: index ? "left" : "right",
+          lg: index ? "left" : "right",
+        }}
+      >
         <Image
-          h="60vh"
+          mah={{base:'40svh',sm:'40svh',md:'60svh',lg:'60svh'}}
           src={`/assets/${illustration}.png`}
           fallbackSrc="https://placehold.co/600x400?text=Placeholder"
         />

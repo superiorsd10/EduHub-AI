@@ -9,6 +9,7 @@ import { useScrollIntoView } from "@mantine/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useSignOut } from "react-firebase-hooks/auth";
+import MenuDrawer from "./MenuDrawer";
 
 const NavBar: React.FC = () => {
   const router = useRouter();
@@ -17,15 +18,15 @@ const NavBar: React.FC = () => {
 
   console.log(authContext);
   return (
-    <Flex h="15vh" pl="5vw" pr="5vw" justify="center" maw="100%">
-      <Flex>
+    <Flex h="15vh" pl="5vw" pr="5vw" justify="center" align='center' maw="100%">
+      <Flex h={{base:'10vh',sm:'10vh',md:'15vh',lg:'15vh'}}>
         <Image
           src="/assets/logo.png"
-          style={{ cursor: "pointer" }}
+          style={{ cursor: "pointer", objectFit:'contain' }}
           onClick={() => router.push("/")}
         ></Image>
       </Flex>
-      <Group>
+      <Group visibleFrom="md">
         <Link style={{ textDecoration: "none", color: "black" }} href="#">
           Home
         </Link>
@@ -39,7 +40,7 @@ const NavBar: React.FC = () => {
           Contact
         </Link>
       </Group>
-      <Group ml="auto">
+      <Group ml="auto" visibleFrom="md">
         {authContext.email ? (
           <Menu shadow="md" position="bottom-end">
             <Menu.Target>
@@ -91,6 +92,7 @@ const NavBar: React.FC = () => {
           </Group>
         )}
       </Group>
+      <MenuDrawer/>
     </Flex>
   );
 };
