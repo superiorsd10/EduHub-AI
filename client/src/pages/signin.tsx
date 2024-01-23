@@ -43,14 +43,21 @@ const SignIn: NextPageWithLayout = () => {
     <Stack w="100vw" maw="100%" h="100vh" mb="10vh" pl="5vw" pr="5vw" gap={0}>
       <Navbar />
       <Flex
-        direction={{ sm: "column", md: "column-reverse", lg: "row" }}
+        direction={{ base: "column", sm: "column", md: "row", lg: "row" }}
         w="100vw"
         maw="100%"
         h="85vh"
+        justify='center'
+        align='center'
       >
         <Banner imageSrc="/assets/SignIn.png" />
-        <Stack w="45vw" bg="white" justify="center" align="center">
-          <Stack w="30vw">
+        <Stack
+          w={{ base: "90vw", sm: "90vw", md: "45vw", lg: "45vw" }}
+          bg="white"
+          justify="center"
+          align="center"
+        >
+          <Stack w={{ base: "80vw", sm: "60vw", md: "30vw", lg: "30vw" }}>
             <Title order={1} size="h1">
               Sign In
             </Title>
@@ -124,7 +131,7 @@ const SignIn: NextPageWithLayout = () => {
                 mt="lg"
                 size="md"
                 radius="md"
-                w="30vw"
+                w={{base:'80vw',sm:'60vw',md:"30vw",lg:'30vw'}}
               >
                 Sign In
               </Button>
@@ -134,7 +141,7 @@ const SignIn: NextPageWithLayout = () => {
               <Button
                 mb="xl"
                 variant="default"
-                w="30vw"
+                w={{base:'80vw',sm:'60vw',md:"30vw",lg:'30vw'}}
                 size="md"
                 radius="md"
                 onClick={handleSignInWithGoogle}
