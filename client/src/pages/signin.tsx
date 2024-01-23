@@ -2,22 +2,16 @@ import {
   Avatar,
   Button,
   Flex,
-  Group,
-  Image,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
-import React, { ReactElement, useEffect } from "react";
+import React from "react";
 import { useForm } from "@mantine/form";
-import { PasswordInput, Box, TextInput } from "@mantine/core";
+import { PasswordInput, TextInput } from "@mantine/core";
 import Link from "next/link";
-import { Divider, Anchor } from "@mantine/core";
-import { IconSearch } from "@tabler/icons-react";
+import { Divider } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-import { FiEye, FiEyeOff } from "react-icons/fi";
-import { useState } from "react";
 import {
   useSignInWithEmailAndPassword,
   useSignInWithGoogle,
@@ -26,25 +20,22 @@ import { auth } from "@/firebase/clientApp";
 import { useRouter } from "next/router";
 import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
 import { NextPageWithLayout } from "./_app";
-import Head from "next/head";
+import Layout from "@/components/Auth/Layout";
+import Navbar from "@/components/Auth/Navbar";
+import Banner from "@/components/Auth/Banner";
 
 const SignIn: NextPageWithLayout = () => {
   const router = useRouter();
   const [signInWithGoogle, guser, gloading, gerror] = useSignInWithGoogle(auth);
   const [signInWithEmailAndPassword, user, loading, error] =
     useSignInWithEmailAndPassword(auth);
+
   const form = useForm({
     initialValues: { email: "", password: "" },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
     },
   });
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleTogglePassword = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
 
   const handleOAuthSign = async () => {
     await signInWithGoogle();
@@ -53,27 +44,14 @@ const SignIn: NextPageWithLayout = () => {
 
   return (
     <Stack w="100vw" maw="100%" h="100vh" mb="10vh" pl="5vw" pr="5vw" gap={0}>
-      <Flex h="15vh" justify="left" w="100vw" maw="100%">
-        <Flex h="15vh">
-          <Image
-            src="/assets/logo.png"
-            style={{ cursor: "pointer" }}
-            onClick={() => router.push("/")}
-          ></Image>
-        </Flex>
-      </Flex>
+      <Navbar/>
       <Flex
         direction={{ sm: "column", md: "column-reverse", lg: "row" }}
         w="100vw"
         maw="100%"
         h="85vh"
       >
-        <Flex w="45vw">
-          <Image
-            src="/assets/SignIn.png"
-            fallbackSrc="https://placehold.co/600x400?text=Placeholder"
-          />
-        </Flex>
+        <Banner imageSrc='/assets/SignIn.png'/>
         <Stack w="45vw" bg="white" justify="center" align="center">
           <Stack w="30vw">
             <Title order={1} size="h1">
@@ -186,16 +164,6 @@ const SignIn: NextPageWithLayout = () => {
   );
 };
 
-SignIn.getLayout = function getLayout(page: ReactElement) {
-  const router = useRouter();
-  return (
-    <>
-      <Head>
-        <title>Sign In</title>
-      </Head>
-      {page}
-    </>
-  );
-};
+SignIn.getLayout = Layout
 
 export default SignIn;

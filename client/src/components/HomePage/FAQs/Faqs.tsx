@@ -4,7 +4,7 @@ import { Stack, Title } from "@mantine/core";
 import Faq from "./Faq";
 
 const Faqs: React.FC = () => {
-  const [openedIndex, setOpenedIndex] = useState<number>(0);
+  const [openedIndex, setOpenedIndex] = useState<number>(-1);
   return (
     <Stack gap={30} align="center" mt="30vh" id="faqs">
       <Title order={1}>FAQ</Title>

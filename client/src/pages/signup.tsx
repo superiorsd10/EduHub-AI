@@ -2,19 +2,16 @@ import {
   Avatar,
   Button,
   Flex,
-  Group,
-  Image,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
-import React, { ReactElement } from "react";
+import React from "react";
 import { useForm } from "@mantine/form";
-import { PasswordInput, Box, TextInput } from "@mantine/core";
+import { PasswordInput, TextInput } from "@mantine/core";
 import Link from "next/link";
 import { Divider } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { useState } from "react";
 import {
   useCreateUserWithEmailAndPassword,
@@ -22,14 +19,11 @@ import {
 } from "react-firebase-hooks/auth";
 import { auth } from "@/firebase/clientApp";
 import { useRouter } from "next/router";
-import {
-  faEnvelope,
-  faLock,
-  faSignature,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
-import Head from "next/head";
+import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { NextPageWithLayout } from "./_app";
+import Layout from "@/components/Auth/Layout";
+import Navbar from "@/components/Auth/Navbar";
+import Banner from "@/components/Auth/Banner";
 
 const SignUp: NextPageWithLayout = () => {
   const [signInWithGoogle, guser, gloading, gerror] = useSignInWithGoogle(auth);
@@ -59,27 +53,14 @@ const SignUp: NextPageWithLayout = () => {
 
   return (
     <Stack w="100vw" maw="100%" h="100vh" mb="10vh" pl="5vw" pr="5vw" gap={0}>
-      <Flex h="15vh" justify="left" w="100vw" maw="100%">
-        <Flex h="15vh">
-          <Image
-            src="/assets/logo.png"
-            style={{ cursor: "pointer" }}
-            onClick={() => router.push("/")}
-          ></Image>
-        </Flex>
-      </Flex>
+      <Navbar />
       <Flex
         direction={{ sm: "column", md: "column-reverse", lg: "row" }}
         w="100vw"
         maw="100%"
         h="85vh"
       >
-        <Flex w="45vw">
-          <Image
-            src="/assets/SignUp.png"
-            fallbackSrc="https://placehold.co/600x400?text=Placeholder"
-          />
-        </Flex>
+        <Banner imageSrc="/assets/SignUp.png" />
         <Stack w="45vw" bg="white" justify="center" align="center">
           <Stack w="30vw">
             <Title order={1} size="h1">
@@ -198,16 +179,6 @@ const SignUp: NextPageWithLayout = () => {
   );
 };
 
-SignUp.getLayout = function getLayout(page: ReactElement) {
-  const router = useRouter();
-  return (
-    <>
-      <Head>
-        <title>Sign In</title>
-      </Head>
-      {page}
-    </>
-  );
-};
+SignUp.getLayout = Layout;
 
 export default SignUp;
