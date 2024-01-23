@@ -32,8 +32,12 @@ const SignUp: NextPageWithLayout = () => {
   const router = useRouter();
 
   const handleOAuthSign = async () => {
-    await signInWithGoogle();
-    if (!gerror) router.push("/");
+    try {
+      await signInWithGoogle();
+      router.push("/");
+    } catch (error) {
+      console.error("Error during OAuth sign-in:", error);
+    }
   };
 
   const form = useForm({
@@ -42,14 +46,9 @@ const SignUp: NextPageWithLayout = () => {
       name: (value) =>
         value.length < 3 ? "Name must have at least 3 letters" : null,
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+      password: (value) => value.length < 6 ? "Password must be of atleast 6 length" : null
     },
   });
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleTogglePassword = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
 
   return (
     <Stack w="100vw" maw="100%" h="100vh" mb="10vh" pl="5vw" pr="5vw" gap={0}>
@@ -153,6 +152,7 @@ const SignUp: NextPageWithLayout = () => {
                 onClick={handleOAuthSign}
                 size="md"
                 radius="md"
+                name="Sign up with Google"
               >
                 <Avatar src="/assets/google.png"></Avatar>
                 {"\u00A0\u00A0"}Sign up with Google

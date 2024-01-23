@@ -1,11 +1,4 @@
-import {
-  Avatar,
-  Button,
-  Flex,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Avatar, Button, Flex, Stack, Text, Title } from "@mantine/core";
 import React from "react";
 import { useForm } from "@mantine/form";
 import { PasswordInput, TextInput } from "@mantine/core";
@@ -38,20 +31,24 @@ const SignIn: NextPageWithLayout = () => {
   });
 
   const handleOAuthSign = async () => {
-    await signInWithGoogle();
-    if (!gerror) router.push("/");
+    try {
+      await signInWithGoogle();
+      router.push("/");
+    } catch (error) {
+      console.error("Error during OAuth sign-in:", error);
+    }
   };
 
   return (
     <Stack w="100vw" maw="100%" h="100vh" mb="10vh" pl="5vw" pr="5vw" gap={0}>
-      <Navbar/>
+      <Navbar />
       <Flex
         direction={{ sm: "column", md: "column-reverse", lg: "row" }}
         w="100vw"
         maw="100%"
         h="85vh"
       >
-        <Banner imageSrc='/assets/SignIn.png'/>
+        <Banner imageSrc="/assets/SignIn.png" />
         <Stack w="45vw" bg="white" justify="center" align="center">
           <Stack w="30vw">
             <Title order={1} size="h1">
@@ -138,6 +135,7 @@ const SignIn: NextPageWithLayout = () => {
                 size="md"
                 radius="md"
                 onClick={handleOAuthSign}
+                name="Sign in with Google"
               >
                 <Avatar src="/assets/google.png"></Avatar>
                 {"\u00A0\u00A0"}Sign in with Google
@@ -164,6 +162,6 @@ const SignIn: NextPageWithLayout = () => {
   );
 };
 
-SignIn.getLayout = Layout
+SignIn.getLayout = Layout;
 
 export default SignIn;
