@@ -51,7 +51,7 @@ const Feature = ({ index, title, description, illustration }: Props) => {
             </Title>
           </motion.div>
         </motion.div>
-        <Text color="gray.7">{description}</Text>
+        <Text color="gray.8">{description}</Text>
       </Stack>
       <Flex w="45vw" align="center" justify={index ? "left" : "right"}>
         <Image

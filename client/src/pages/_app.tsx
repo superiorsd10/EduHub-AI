@@ -8,9 +8,12 @@ import "../firebase/clientApp";
 import { AuthProvider } from "@/components/Providers/AuthProvider";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
-const geist = localFont({
+const geistRegular = localFont({
   src: "../../public/font/Geist/Geist/Geist-Regular.woff2",
 });
+const geistBold = localFont({
+  src:"../../public/font/Geist/Geist/Geist-Bold.woff2",
+})
 
 const theme = createTheme({
   /** Put your mantine theme override here */
@@ -18,8 +21,9 @@ const theme = createTheme({
     Text: {},
     Title: {},
   },
-  fontFamily: geist.style.fontFamily,
+  fontFamily: geistRegular.style.fontFamily,
   headings: {
+    fontFamily: geistBold.style.fontFamily,
     sizes: {
       h1: {
         fontSize: rem(48),

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Collapse, Group, Stack, Text, Title } from "@mantine/core";
+import { ActionIcon, Collapse, Group, Stack, Text, Title, rem } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import React, { useEffect } from "react";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -29,9 +29,9 @@ const Faq: React.FC<Props> = ({
   return (
     <Stack w="90vw">
       <Group mb={5}>
-        <Title mr="auto" size="h3">
+        <Text mr="auto" size="xl" style={{fontSize:rem(32),fontWeight:900}}>
           {question}
-        </Title>
+        </Text>
         <ActionIcon
           onClick={() => {
             setOpenedIndex(index);
@@ -49,7 +49,7 @@ const Faq: React.FC<Props> = ({
       </Group>
 
       <Collapse in={opened}>
-        <Text color="gray.7">{answer}</Text>
+        <Text color="gray.8">{answer}</Text>
       </Collapse>
     </Stack>
   );

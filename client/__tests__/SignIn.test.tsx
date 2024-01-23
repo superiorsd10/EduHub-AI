@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "../testing-utils";
+import { act, fireEvent, render, screen, waitFor } from "../testing-utils";
 import SignIn from "@/pages/signin";
 
 // Mock Firebase auth
@@ -54,7 +54,7 @@ describe("Sign In Page", () => {
     };
   });
 
-  it("should wait for sign-in process to be completed before calling router.push('/')", async () => {
+  it("should wait for signInWithGoogle to be completed before redirecting", async () => {
     // Arrange: Mock the signInWithGoogle to simulate an in-progress sign-in
     mockSignInWithGoogle.mockImplementationOnce(async () => {
       user = { uid: "123" };
@@ -64,9 +64,10 @@ describe("Sign In Page", () => {
     // Act: Render the SignIn component and attempt to sign in with Google
     render(<SignIn />);
     const googleSignInButton = screen.getByRole("button", {
-      name: /Sign in with Google/i,
+      name: "Sign in with Google",
     });
-    googleSignInButton.click();
+
+    fireEvent.click(googleSignInButton);
 
     // Assert: Verify that router.push has not been called yet
     expect(mockPush).not.toHaveBeenCalled();
@@ -75,7 +76,7 @@ describe("Sign In Page", () => {
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/"));
   });
 
-  it("should not call router.push('/') before a successful Google OAuth sign-in", async () => {
+  it("should not redirect before a successful signInWithGoogle", async () => {
     // Arrange: Mock the signInWithGoogle to simulate an in-progress sign-in
     mockSignInWithGoogle.mockImplementationOnce(async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -84,9 +85,48 @@ describe("Sign In Page", () => {
     // Act: Render the SignIn component and attempt to sign in with Google
     render(<SignIn />);
     const googleSignInButton = screen.getByRole("button", {
-      name: /Sign in with Google/i,
+      name: "Sign in with Google",
     });
-    googleSignInButton.click();
+
+    fireEvent.click(googleSignInButton);
+
+    // Assert: Verify that router.push has not been called yet
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("should wait for signInWithEmailAndPassword process to be completed before redirecting", async () => {
+    // Arrange: Mock the signInWithEmailAndPassword to simulate an in-progress sign-in
+    mockSignInWithEmailAndPassword.mockImplementationOnce(async () => {
+      user = { uid: "123" };
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+
+    // Act: Render the SignUp component and attempt to sign in with Google
+    render(<SignIn />);
+    const customSignInButton = screen.getByRole("button", {
+      name: "Sign In",
+    });
+    fireEvent.click(customSignInButton);
+
+    // Assert: Verify that router.push has not been called yet
+    expect(mockPush).not.toHaveBeenCalled();
+
+    // Wait for the sign-in process to be completed
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/"));
+  });
+
+  it("should not redirect before a successful signInWithEmailAndPassword", async () => {
+    // Arrange: Mock the signInWithEmailAndPassword to simulate an in-progress sign-in
+    mockSignInWithEmailAndPassword.mockImplementationOnce(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+
+    // Act: Render the SignIn component and attempt to sign in with Google
+    render(<SignIn />);
+    const customSignInButton = screen.getByRole("button", {
+      name: "Sign In",
+    });
+    fireEvent.click(customSignInButton);
 
     // Assert: Verify that router.push has not been called yet
     expect(mockPush).not.toHaveBeenCalled();

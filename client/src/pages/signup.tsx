@@ -67,13 +67,19 @@ const SignUp: NextPageWithLayout = () => {
             </Title>
             <Text size="xl">Join EduHub-AI for Innovative Learning!</Text>
             <form
-              onSubmit={form.onSubmit(async (values) => {
-                const { email, password } = values;
-                await createUserWithEmailAndPassword(email, password);
-                if (!error) router.push("/");
+              onSubmit={form.onSubmit(async ({ email, password }) => {
+                try {
+                  await createUserWithEmailAndPassword(email, password);
+                  router.push("/");
+                } catch (error) {
+                  console.error("Error during Custom sign-in:", error);
+                }
               })}
             >
               <TextInput
+                role="textbox"
+                aria-label="name"
+                name="name"
                 placeholder="Name"
                 radius="md"
                 size="md"
@@ -92,6 +98,8 @@ const SignUp: NextPageWithLayout = () => {
               />
 
               <TextInput
+                role="email"
+                name="email"
                 placeholder="Your email"
                 {...form.getInputProps("email")}
                 mt="sm"
@@ -110,6 +118,8 @@ const SignUp: NextPageWithLayout = () => {
                 }}
               />
               <PasswordInput
+                role="password"
+                name="password"
                 mt="sm"
                 mb="md"
                 placeholder="Enter your password"
@@ -139,6 +149,7 @@ const SignUp: NextPageWithLayout = () => {
                 size="md"
                 radius="md"
                 w="30vw"
+                name="Sign Up"
               >
                 Sign Up
               </Button>

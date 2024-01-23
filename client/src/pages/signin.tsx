@@ -30,7 +30,7 @@ const SignIn: NextPageWithLayout = () => {
     },
   });
 
-  const handleOAuthSign = async () => {
+  const handleSignInWithGoogle = async () => {
     try {
       await signInWithGoogle();
       router.push("/");
@@ -56,10 +56,13 @@ const SignIn: NextPageWithLayout = () => {
             </Title>
             <Text size="xl">Welcome back! Continue with EduHub-AI.</Text>
             <form
-              onSubmit={form.onSubmit(async (values) => {
-                const { email, password } = values;
-                await signInWithEmailAndPassword(email, password);
-                if (!error) router.push("/");
+              onSubmit={form.onSubmit(async ({ email, password }) => {
+                try {
+                  await signInWithEmailAndPassword(email, password);
+                  router.push("/");
+                } catch (error) {
+                  console.error("Error during Custom sign-in:", error);
+                }
               })}
             >
               <TextInput
@@ -134,7 +137,7 @@ const SignIn: NextPageWithLayout = () => {
                 w="30vw"
                 size="md"
                 radius="md"
-                onClick={handleOAuthSign}
+                onClick={handleSignInWithGoogle}
                 name="Sign in with Google"
               >
                 <Avatar src="/assets/google.png"></Avatar>

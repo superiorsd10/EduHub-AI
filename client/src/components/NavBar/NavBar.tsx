@@ -43,14 +43,16 @@ const NavBar: React.FC = () => {
         {authContext.email ? (
           <Menu shadow="md" position="bottom-end">
             <Menu.Target>
-              <Avatar size='md' style={{cursor:'pointer'}}>{authContext.email[0].toUpperCase()}</Avatar>
+              <Avatar size="md" style={{ cursor: "pointer" }}>
+                {authContext.email[0].toUpperCase()}
+              </Avatar>
             </Menu.Target>
 
             <Menu.Dropdown>
               <Menu.Item
                 color="red"
                 leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}
-                onClick={()=>signOut()}
+                onClick={() => signOut()}
               >
                 Sign Out
               </Menu.Item>
@@ -67,7 +69,17 @@ const NavBar: React.FC = () => {
                 color: "#2E2E2E",
               }}
             >
-              <Button unstyled radius="md" component="a" color="gray.8">
+              <Button
+                variant="default"
+                radius="md"
+                component="a"
+                color="black"
+                style={{
+                  borderColor: "none",
+                  borderWidth: "0",
+                  bg:"white",
+                }}
+              >
                 Sign In
               </Button>
             </Link>
