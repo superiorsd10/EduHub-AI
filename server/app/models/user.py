@@ -24,13 +24,15 @@ class Quiz(EmbeddedDocument):
 
 
 class User(Document):
-    name = StringField()
-    email = EmailField()
-    role = StringField()
-    classes = DictField(field=ListField(ObjectIdField()))
+    name = StringField(required=True)
+    email = EmailField(required=True)
+    hubs = DictField(field=ListField(ObjectIdField()))
     assignments = ListField(EmbeddedDocumentField(Assignment))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
 
-    meta = {"collection": "users", "indexes": [{"fields": ["email"], "unique": True}]}
-
-
+    meta = {
+        "collection": "users",
+        "indexes": [
+            {"fields": ["email"], "unique": True},
+        ],
+    }

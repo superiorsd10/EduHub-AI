@@ -12,8 +12,7 @@ def sample_user_data():
     return {
         "name": "John Doe",
         "email": "john.doe@example.com",
-        "role": "student",
-        "classes": {"teacher": [ObjectId()], "student": [ObjectId()]},
+        "hubs": {"teacher": [ObjectId()], "student": [ObjectId()]},
         "assignments": [],
         "quizzes": [],
     }
@@ -22,14 +21,19 @@ def sample_user_data():
 @pytest.fixture(scope="function")
 def setup_teardown(request):
     # Disconnect from any existing default connection
-    disconnect(alias='default')
+    disconnect(alias="default")
 
     # Connect to the test database with the default alias
-    connect('mongoenginetest', host='mongodb://localhost', alias='default', mongo_client_class=mongomock.MongoClient)
+    connect(
+        "mongoenginetest",
+        host="mongodb://localhost",
+        alias="default",
+        mongo_client_class=mongomock.MongoClient,
+    )
 
     # Teardown: Drop the test database after the test
     def teardown():
-        disconnect(alias='default')
+        disconnect(alias="default")
 
     request.addfinalizer(teardown)
 
@@ -41,8 +45,7 @@ def test_create_user(sample_user_data, setup_teardown):
     assert user.id is not None
     assert user.name == sample_user_data["name"]
     assert user.email == sample_user_data["email"]
-    assert user.role == sample_user_data["role"]
-    assert user.classes == sample_user_data["classes"]
+    assert user.hubs == sample_user_data["hubs"]
     assert user.assignments == sample_user_data["assignments"]
     assert user.quizzes == sample_user_data["quizzes"]
 
@@ -53,7 +56,7 @@ def test_unique_email_constraint(sample_user_data, setup_teardown):
     user1.save()
 
     # Attempt to create another user with the same email
-    user2_data = sample_user_data.copy() 
+    user2_data = sample_user_data.copy()
     user2 = User(**user2_data)
 
     try:

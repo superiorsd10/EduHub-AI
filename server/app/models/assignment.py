@@ -4,12 +4,14 @@ from mongoengine import (
     DateTimeField,
     URLField,
     IntField,
+    ObjectIdField,
 )
 
 
 class Assignment(Document):
-    title = StringField()
-    difficulty = StringField(choices = ('Easy','Medium','Hard') , default = 'Medium')
+    hub_id = ObjectIdField(required=True)
+    title = StringField(required=True)
+    difficulty = StringField(choices=("easy", "medium", "hard"), default="medium")
     instructions = StringField()
     attachments_url = URLField()
     total_points = IntField()
@@ -17,3 +19,11 @@ class Assignment(Document):
     topic = StringField()
     scheduled_datetime = DateTimeField()
     created_at = DateTimeField()
+
+    meta = {
+        "collection": "assignments",
+        "indexes": [
+            {"fields": ["hub_id"]},
+            {"fields": ["topic"]},
+        ],
+    }
