@@ -12,7 +12,6 @@ const Banner:React.FC = () => {
       pl="5vw"
       pr="5vw"
       mb='10vh'
-      id='features'
       justify='center'
     >
       <Stack w={{base:'90vw',sm:'90vw',md:'45vw',lg:'45vw'}} bg="white" justify="center">

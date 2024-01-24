@@ -1,14 +1,21 @@
 import { ActionIcon, Flex, Group, Stack, Text } from "@mantine/core";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSquareXTwitter,
   faLinkedin,
   faSquareInstagram,
 } from "@fortawesome/free-brands-svg-icons";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
-const Footer: React.FC = () => {
+const Footer: React.FC<{ setIsFooterInView: (isFooterInView: boolean) => void }> = ({ setIsFooterInView }) => {
+  const footerRef = useRef(null);
+  const inView = useInView(footerRef);
+  useEffect(() => {
+    setIsFooterInView(inView);
+  }, [inView])
   return (
     <Stack
       bg="black"
@@ -20,6 +27,7 @@ const Footer: React.FC = () => {
       pb="2vw"
       mt="10vh"
       id="footer"
+      ref={footerRef}
     >
       <Flex style={{ flex: 1 }} justify="center" align="center">
         <Text
@@ -58,7 +66,7 @@ const Footer: React.FC = () => {
           </Text>
         </Stack>
       </Group>
-      <Flex direction={{ base: "column-reverse",sm:'column-reverse',md:'row',lg:'row' }} gap={{base:'sm',sm:'sm',md:0,lg:0}}>
+      <Flex direction={{ base: "column-reverse", sm: 'column-reverse', md: 'row', lg: 'row' }} gap={{ base: 'sm', sm: 'sm', md: 0, lg: 0 }}>
         <Text mr="auto" color="white" style={{ lineHeight: 1 }}>
           © 2024 EduHub-AI. All rights reserved
         </Text>

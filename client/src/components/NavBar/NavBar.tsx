@@ -27,16 +27,34 @@ const NavBar: React.FC = () => {
         ></Image>
       </Flex>
       <Group visibleFrom="md">
-        <Link style={{ textDecoration: "none", color: "black" }} href="#">
+        <Link style={{ textDecoration: "none", color: "black" }} href="/">
           Home
         </Link>
-        <Link style={{ textDecoration: "none", color: "black" }} href="#">
+        <Link href="/#features" onClick={(e) => {
+          e.preventDefault();
+          const featuresElement = document.getElementById("features");
+          if (featuresElement) {
+            featuresElement.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{ textDecoration: "none", color: "black", cursor: "pointer" }}>
           Features
         </Link>
-        <Link style={{ textDecoration: "none", color: "black" }} href="#">
+        <Link href="/#faqs" onClick={(e) => {
+          e.preventDefault();
+          const faqsElement = document.getElementById("faqs");
+          if (faqsElement) {
+            faqsElement.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{ textDecoration: "none", color: "black" }}>
           FAQ
         </Link>
-        <Link style={{ textDecoration: "none", color: "black" }} href="#">
+        <Link href="/#footer" onClick={(e) => {
+          e.preventDefault();
+          const footerElement = document.getElementById("footer");
+          if (footerElement) {
+            footerElement.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{ textDecoration: "none", color: "black" }}>
           Contact
         </Link>
       </Group>
