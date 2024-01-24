@@ -17,7 +17,7 @@ def create_user():
         new_user = User(
             name=data["name"],
             email=data["email"],
-            classes={},
+            hubs={},
             assignments=[],
             quizzes=[],
         )
