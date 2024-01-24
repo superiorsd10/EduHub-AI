@@ -58,7 +58,7 @@ const Footer: React.FC = () => {
           </Text>
         </Stack>
       </Group>
-      <Flex direction={{ base: "column-reverse" }} gap={{base:'sm',sm:'sm',md:0,lg:0}}>
+      <Flex direction={{ base: "column-reverse",sm:'column-reverse',md:'row',lg:'row' }} gap={{base:'sm',sm:'sm',md:0,lg:0}}>
         <Text mr="auto" color="white" style={{ lineHeight: 1 }}>
           © 2024 EduHub-AI. All rights reserved
         </Text>
