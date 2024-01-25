@@ -1,3 +1,7 @@
+"""
+This module defines the Flask application for the project.
+"""
+
 import os
 from flask import Flask
 from mongoengine import connect
@@ -7,6 +11,12 @@ from dotenv import load_dotenv
 
 
 def create_app(config=None):
+    """
+    Create and configure the Flask app.
+
+    :param config: Optional configuration object.
+    :return: The configured Flask app.
+    """
     app = Flask(__name__)
 
     load_dotenv()
@@ -26,6 +36,8 @@ def create_app(config=None):
 
     firebase_app = initialize_app(cred)
 
+    print(firebase_app.name)
+
     try:
         connect(
             db=mongo_config["db"],
@@ -34,13 +46,18 @@ def create_app(config=None):
             password=mongo_config["password"],
         )
         print("Connected to MongoDB successfully!")
-    except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}")
+    except Exception as exception:
+        print(f"Failed to connect to MongoDB: {exception}")
 
     return app
 
 
 def create_test_app():
+    """
+    Create a test instance of the Flask app.
+
+    :return: The test Flask app.
+    """
     app = Flask(__name__)
 
     return app

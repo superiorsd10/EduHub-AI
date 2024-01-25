@@ -1,3 +1,7 @@
+"""
+Unit tests for Firebase authentication decorator.
+"""
+
 import pytest
 
 from app import create_app
@@ -11,6 +15,10 @@ app.config["DEBUG"] = False
 
 
 def test_decorator_invalid_token():
+    """
+    Test the behavior of the firebase_token_required decorator with an invalid token.
+    """
+
     # Create a mock request object with an invalid token
     mock_request = type(
         "Request", (object,), {"headers": {"Authorization": "invalid_token"}}
@@ -31,6 +39,9 @@ def test_decorator_invalid_token():
 
 
 def test_decorator_missing_token():
+    """
+    Test the behavior of the firebase_token_required decorator with a missing token.
+    """
     # Create a mock request object without a token
     mock_request = type("Request", (object,), {"headers": {}})()
 

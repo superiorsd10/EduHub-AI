@@ -1,3 +1,7 @@
+"""
+User routes for the Flask application.
+"""
+
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.models.user import User
@@ -8,6 +12,17 @@ user_blueprint = Blueprint("user", __name__)
 @user_blueprint.route("/api/user", methods=["POST"])
 @firebase_token_required
 def create_user():
+    """
+    Create a new user.
+
+    This route expects a JSON payload with 'name' and 'email' fields.
+    If the payload is valid, it creates a new User and returns a success message.
+
+    Decorators:
+    - @firebase_token_required: Ensures that the request has a valid Firebase authentication token.
+
+    :return: JSON response with success or error message.
+    """
     try:
         data = request.get_json()
 
@@ -26,5 +41,5 @@ def create_user():
 
         return jsonify({"message": "User created successfully", "success": True}), 201
 
-    except Exception as e:
-        return jsonify({"error": str(e), "success": False}), 500
+    except Exception as error:
+        return jsonify({"error": str(error), "success": False}), 500

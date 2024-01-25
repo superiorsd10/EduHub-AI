@@ -1,13 +1,17 @@
+"""
+Main script to run the Flask application.
+"""
+
 from app import create_app
-from flask_jwt_extended import JWTManager
-from firebase_admin import *
 from config.config import Config
+from flask_jwt_extended import JWTManager
+from app.routes.user_routes import user_blueprint
+
 
 app = create_app(Config)
 
 jwt = JWTManager(app)
 
-from app.routes.user_routes import user_blueprint
 
 app.register_blueprint(user_blueprint)
 
