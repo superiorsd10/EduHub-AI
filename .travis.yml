@@ -13,6 +13,7 @@ branches:
   - main
 install:
 - pip install -r server/requirements.txt
+- cd client && npm install && cd ..
 jobs:
   include:
   - stage: test
