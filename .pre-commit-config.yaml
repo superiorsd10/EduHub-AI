@@ -1,0 +1,21 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+        exclude: ^client/
+    -   id: end-of-file-fixer
+        exclude: ^client/
+    -   id: trailing-whitespace
+        exclude: ^client/
+-   repo: https://github.com/psf/black
+    rev: ''
+    hooks:
+    -   id: black
+        exclude: ^client/
+-   repo: https://github.com/pre-commit/mirrors-pylint
+    rev: ''
+    hooks:
+    -   id: pylint
+        args: [--rcfile=.pylintrc]
+        exclude: ^client/
