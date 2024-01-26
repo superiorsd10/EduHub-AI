@@ -19,11 +19,12 @@ jobs:
   - stage: test
     script:
     - pytest server/tests
-    - coverage run --source=server -m pytest server/tests
     - cd client && npm run test
     name: Run Server and Client Tests
 after_success:
-- coverage run --source=server,client -m coverage combine
+- coverage run --source=server -m pytest server/tests
+- coverage run --source=client -m npm run test
+- coverage combine
 - coveralls
 notifications:
   email: false
