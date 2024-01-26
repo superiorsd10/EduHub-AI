@@ -1,14 +1,16 @@
 import { Button, Flex, Group, Image, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
-import React from "react";
+import React, { useContext } from "react";
+import { AuthContext } from "../Providers/AuthProvider";
 
 const Banner:React.FC = () => {
+  const {componentHeight} = useContext(AuthContext);
   return (
     <Flex
       direction={{ base:'column-reverse',sm: "column-reverse", md: "column-reverse", lg: "row" }}
       w="100vw"
       maw="100%"
-      h="85vh"
+      h={componentHeight}
       pl="5vw"
       pr="5vw"
       mb='10vh'
@@ -31,7 +33,7 @@ const Banner:React.FC = () => {
           <Button variant="default">Learn More</Button>
         </Group>
       </Stack>
-      <Flex maw={{base:'90vw',sm:'90vw',md:'45vw',lg:'45vw'}} h={{base:'40svh',sm:'40svh',md:'85svh',lg:'85svh'}}>
+      <Flex maw={{base:'90vw',sm:'90vw',md:'45vw',lg:'45vw'}} h={{base:'40svh',sm:'40svh',md:componentHeight,lg:componentHeight}}>
         <Image
           style={{objectFit:'contain'}}
           src="/assets/HomeBanner.png"
