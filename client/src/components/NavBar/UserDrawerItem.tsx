@@ -54,7 +54,8 @@ const UserDrawerItem: React.FC<Props> = ({
           )}
         </AnimatePresence>
       </Group>
-      <Collapse in={isDropDownVisible}>{children}</Collapse>
+      {isDrawerOpen && <Collapse in={isDropDownVisible}>{children}</Collapse>}
+      
     </Stack>
   );
 };
