@@ -16,7 +16,7 @@ const config = {
     "^@/styles/(.*)$": "<rootDir>/src/styles/$1",
     "^@/testing-utils/(.*)$": "<rootDir>/testing-utils/$1",
   },
-
+  coverageDirectory: 'coverage',
 }
 
 module.exports = createJestConfig(config)
