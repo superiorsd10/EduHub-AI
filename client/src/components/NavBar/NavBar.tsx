@@ -1,58 +1,62 @@
-import { Avatar, Box, Button, Flex, Group, Image, Menu, Space } from "@mantine/core";
+import React, { useContext } from "react";
 import Link from "next/link";
-import React from "react";
+import { useRouter } from "next/router";
+
+import { useSignOut } from "react-firebase-hooks/auth";
 import { auth } from "@/firebase/clientApp";
 import { AuthContext } from "../Providers/AuthProvider";
-import { useContext } from "react";
-import { useRouter } from "next/router";
-import { useScrollIntoView } from "@mantine/hooks";
+
+import { Avatar, Box, Button, Flex, Group, Image, Menu } from "@mantine/core";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaPlus } from "react-icons/fa6";
-import { useSignOut } from "react-firebase-hooks/auth";
-import MenuDrawer from "./MenuDrawer";
+
+import MobileDrawer from "./MobileDrawer";
 import UserDrawer from "./UserDrawer";
+import NextLink from "@/utils/NextLink";
 
 const NavBar: React.FC = () => {
   const router = useRouter();
-  const { email, isDrawerOpen, setIsDrawerOpen, navbarHeight} = useContext(AuthContext);
+  const { isLoggedIn, isDrawerOpen, setIsDrawerOpen, navbarHeight } =
+    useContext(AuthContext);
   const [signOut] = useSignOut(auth);
 
   return (
     <Flex
       h={navbarHeight}
-      pl={email ? "2vw" : "5vw"}
-      pr={email ? "2vw" : "5vw"}
+      pl={isLoggedIn ? "2vw" : "5vw"}
+      pr={isLoggedIn ? "2vw" : "5vw"}
       justify="center"
       align="center"
       maw="100%"
       w="100vw"
-      pos={email ? 'fixed' : 'static'}
+      pos={isLoggedIn ? "fixed" : "static"}
       style={{
-        borderBottom: email?"1px solid #DEE2E6":'',
+        borderBottom: isLoggedIn ? "1px solid #DEE2E6" : "",
       }}
-      gap='sm'
+      gap="sm"
     >
-      {email && (
+      {isLoggedIn && (
         <Box w="2vw" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
-        <RxHamburgerMenu size={20}/>
+          <RxHamburgerMenu size={20} />
         </Box>
       )}
-      {email && <UserDrawer />}
+      {isLoggedIn && <UserDrawer />}
 
-      <Flex h={email?'8vh':'12vh'}>
+      <Flex h={isLoggedIn ? "8vh" : "12vh"}>
         <Image
-          src={email ? "/assets/LandingPageLogo.png" : "/assets/logo.png"}
+          src={isLoggedIn ? "/assets/LandingPageLogo.png" : "/assets/logo.png"}
           style={{ cursor: "pointer", objectFit: "contain" }}
           onClick={() => router.push("/")}
         ></Image>
       </Flex>
-      {!email && (
+      {!isLoggedIn && (
         <Group visibleFrom="md">
-          <Link style={{ textDecoration: "none", color: "black" }} href="/">
+          <NextLink href="/">
             Home
-          </Link>
+          </NextLink>
           <Link
             href="/#features"
             onClick={(e) => {
@@ -99,30 +103,30 @@ const NavBar: React.FC = () => {
         </Group>
       )}
       <Group ml="auto" visibleFrom="md">
-        {email ? (
+        {isLoggedIn ? (
           <Group>
-             <Box w="2vw" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
-        <FaPlus size={20}/>
-        </Box>
-          <Menu shadow="md" position="bottom-end">
-            <Menu.Target>
-              <Avatar
-                size="md"
-                style={{ cursor: "pointer" }}
-                src={auth.currentUser?.photoURL}
-              ></Avatar>
-            </Menu.Target>
+            <Box w="2vw" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
+              <FaPlus size={20} />
+            </Box>
+            <Menu shadow="md" position="bottom-end">
+              <Menu.Target>
+                <Avatar
+                  size="md"
+                  style={{ cursor: "pointer" }}
+                  src={auth.currentUser?.photoURL}
+                ></Avatar>
+              </Menu.Target>
 
-            <Menu.Dropdown>
-              <Menu.Item
-                color="red"
-                leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}
-                onClick={() => signOut()}
-              >
-                Sign Out
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+              <Menu.Dropdown>
+                <Menu.Item
+                  color="red"
+                  leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}
+                  onClick={() => signOut()}
+                >
+                  Sign Out
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         ) : (
           <Group>
@@ -138,7 +142,7 @@ const NavBar: React.FC = () => {
               <Button
                 variant="default"
                 radius="md"
-                component="a"
+                // component="a"
                 color="black"
                 style={{
                   borderColor: "none",
@@ -157,7 +161,7 @@ const NavBar: React.FC = () => {
           </Group>
         )}
       </Group>
-      <MenuDrawer />
+      <MobileDrawer />
     </Flex>
   );
 };

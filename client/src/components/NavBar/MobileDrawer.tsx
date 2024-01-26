@@ -1,7 +1,10 @@
+import React, { useContext } from "react";
+import { useSignOut } from "react-firebase-hooks/auth";
+import { auth } from "@/firebase/clientApp";
+
 import { useDisclosure } from "@mantine/hooks";
 import {
   Drawer,
-  Button,
   Box,
   Avatar,
   Stack,
@@ -9,26 +12,22 @@ import {
   Text,
   Divider,
 } from "@mantine/core";
-import React, { useContext } from "react";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAddressBook,
   faBars,
   faBolt,
-  faClose,
   faList,
   faRightToBracket,
 } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { AuthContext } from "../Providers/AuthProvider";
-import { useSignOut } from "react-firebase-hooks/auth";
-import { auth } from "@/firebase/clientApp";
 
-const MenuDrawer = () => {
+import { AuthContext } from "../Providers/AuthProvider";
+import NextLink from "@/utils/NextLink";
+
+const MobileDrawer = () => {
   const [opened, { open, close }] = useDisclosure(false);
-  const router = useRouter();
-  const authContext = useContext(AuthContext);
+  const { isLoggedIn } = useContext(AuthContext);
   const [signOut] = useSignOut(auth);
 
   return (
@@ -38,44 +37,37 @@ const MenuDrawer = () => {
     >
       <Drawer opened={opened} onClose={close} title="EduHub-AI">
         <Stack>
-          <Link href="#" style={{ textDecoration: "none", color: "black" }}>
+          <NextLink href="#">
             <Group>
               <FontAwesomeIcon icon={faBolt} size="xl" />
               <Text size="xl">Features</Text>
             </Group>
-          </Link>
-          <Link href="#" style={{ textDecoration: "none", color: "black" }}>
+          </NextLink>
+          <NextLink href="#">
             <Group>
               <FontAwesomeIcon icon={faList} size="xl" />
               <Text size="xl">FAQs</Text>
             </Group>
-          </Link>
-          <Link href="#" style={{ textDecoration: "none", color: "black" }}>
+          </NextLink>
+          <NextLink href="#">
             <Group>
               <FontAwesomeIcon icon={faAddressBook} size="xl" />
               <Text size="xl">Contact</Text>
             </Group>
-          </Link>
+          </NextLink>
           <Divider />
-          {!authContext.email ? (
+          {!isLoggedIn ? (
             <Stack>
-              <Link
-                href="signin"
-                style={{ textDecoration: "none", color: "black" }}
-              >
+              <NextLink href="signin">
                 <Group>
                   <Text size="xl">Sign In</Text>
                 </Group>
-              </Link>
-              <Link
-                href="#"
-                style={{ textDecoration: "none", color: "black" }}
-                
-              >
+              </NextLink>
+              <NextLink href="#">
                 <Group>
                   <Text size="xl">Sign Up</Text>
                 </Group>
-              </Link>
+              </NextLink>
             </Stack>
           ) : (
             <Group onClick={() => signOut()}>
@@ -87,8 +79,6 @@ const MenuDrawer = () => {
           )}
         </Stack>
       </Drawer>
-
-      {/* <Button onClick={open}>Open Drawer</Button> */}
       <Avatar onClick={open}>
         <FontAwesomeIcon icon={faBars} />
       </Avatar>
@@ -96,4 +86,4 @@ const MenuDrawer = () => {
   );
 };
 
-export default MenuDrawer;
+export default MobileDrawer;

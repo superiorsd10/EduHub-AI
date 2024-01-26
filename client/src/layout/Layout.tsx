@@ -5,14 +5,12 @@ import { Space } from "@mantine/core";
 import { AuthContext } from "@/components/Providers/AuthProvider";
 
 const Layout = ({ children }: React.PropsWithChildren) => {
-  const { email } =
-    useContext(AuthContext);
+  const { isLoggedIn } = useContext(AuthContext);
   return (
     <>
       <Head>Nikhil's Portfolio</Head>
       <NavBar />
-      {email && <Space h="15vh" />}
-
+      {isLoggedIn && <Space h="15vh" />}
       {children}
     </>
   );

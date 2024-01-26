@@ -1,9 +1,6 @@
-import {
-  Avatar,
-  Box,
-  Timeline,
-} from "@mantine/core";
 import React from "react";
+
+import { Avatar, Box, Timeline } from "@mantine/core";
 
 type DropDownElement = {
   text: string;
@@ -11,7 +8,7 @@ type DropDownElement = {
 };
 
 const googleClassroomPalette = [
-  "#1E88E5", // Vivid blue
+  "#1E88E5", 
   "#D32F2F", // Bright red
   "#388E3C", // Dark green
   "#FFB300", // Vivid yellow
@@ -21,14 +18,13 @@ const googleClassroomPalette = [
   "#6D4C41", // Brown
 ];
 
-
 const UserDrawerDropdown = ({
   DropDownElements,
 }: {
   DropDownElements: DropDownElement[];
 }) => {
   return (
-    <Box maw="12vw" mt="-2vh" style={{ zIndex: -1 }} mb='2vh'>
+    <Box maw="12vw" mt="-2vh" style={{ zIndex: -1 }} mb="2vh">
       <Timeline pos="relative" active={0} lineWidth={2} bulletSize={24}>
         <Timeline.Item
           title="&#8203;"

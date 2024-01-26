@@ -5,7 +5,6 @@ import { auth } from "@/firebase/clientApp";
 interface AuthProviderProps {
   children: React.ReactNode;
 }
-
 interface AuthContextProps {
   email: string | null;
   loading: boolean;
@@ -13,6 +12,7 @@ interface AuthContextProps {
   setIsDrawerOpen: (isDrawerOpen: boolean) => void;
   navbarHeight: string;
   componentHeight: string;
+  isLoggedIn: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -22,6 +22,7 @@ const AuthContext = createContext<AuthContextProps>({
   setIsDrawerOpen: () => {},
   navbarHeight: "15vh",
   componentHeight: "85svh",
+  isLoggedIn:false
 });
 
 const AuthProvider: React.FC<AuthProviderProps> = ({
@@ -46,6 +47,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
         setIsDrawerOpen,
         navbarHeight: user ? "10vh" : "15vh",
         componentHeight: user ? "85svh" : "85svh",
+        isLoggedIn: user ? true: false
       }}
     >
       {children}

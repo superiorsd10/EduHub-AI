@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import FaqList from "./FaqList";
 import { Stack, Title } from "@mantine/core";
 import Faq from "./Faq";
+import FaqList from "./FaqList";
 
 const Faqs: React.FC = () => {
   const [openedIndex, setOpenedIndex] = useState<number>(-1);

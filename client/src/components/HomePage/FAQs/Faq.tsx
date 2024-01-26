@@ -1,4 +1,6 @@
+import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useDisclosure } from "@mantine/hooks";
 import {
   ActionIcon,
   Collapse,
@@ -8,8 +10,6 @@ import {
   Title,
   rem,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import React, { useEffect } from "react";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 type Props = {

@@ -1,16 +1,17 @@
-import NextLink from "@/utils/NextLink";
-import { Box, Collapse, Group, Stack } from "@mantine/core";
-import { motion, AnimatePresence } from "framer-motion";
 import React, { ReactNode, useContext, useState } from "react";
-import { MdOutlineHub } from "react-icons/md";
+import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../Providers/AuthProvider";
 import { IoMdArrowDropright, IoMdArrowDropdown } from "react-icons/io";
+
+import { Box, Collapse, Group, Stack } from "@mantine/core";
+import NextLink from "@/utils/NextLink";
 
 type Props = {
   iconType: React.ElementType;
   name: string;
   href?: string;
   children?: ReactNode;
+  isDrawerTemporarilyOpen: boolean;
 };
 
 const UserDrawerItem: React.FC<Props> = ({
@@ -18,22 +19,26 @@ const UserDrawerItem: React.FC<Props> = ({
   name,
   href = "#",
   children,
+  isDrawerTemporarilyOpen,
 }) => {
+
   const { isDrawerOpen } = useContext(AuthContext);
   const [isDropDownVisible, setIsDropDownVisible] = useState<boolean>(false);
   return (
     <Stack gap="0">
-      <Group gap="sm" justify="center" align="center">
-        <Box style={{zIndex:100}} w="2vw">{React.createElement(iconType, { size: 20 })}</Box>
+      <Group gap="sm" justify="center" align="center" >
+        <Box style={{ zIndex: 100 }} w="2vw">
+          {React.createElement(iconType, { size: 20 })}
+        </Box>
         <AnimatePresence>
-          {isDrawerOpen && (
+          {(isDrawerOpen || isDrawerTemporarilyOpen) && (
             <motion.div
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "10vw" }}
               exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.4 }}
             >
-              <Group style={{ overflow: "hidden" }} gap="xs">
+              <Group gap="xs">
                 <NextLink href={href}>{name}</NextLink>
                 {children && (
                   <Box
@@ -54,8 +59,7 @@ const UserDrawerItem: React.FC<Props> = ({
           )}
         </AnimatePresence>
       </Group>
-      {isDrawerOpen && <Collapse in={isDropDownVisible}>{children}</Collapse>}
-      
+      {(isDrawerOpen || isDrawerTemporarilyOpen) && <Collapse in={isDropDownVisible}>{children}</Collapse>}
     </Stack>
   );
 };

@@ -1,5 +1,5 @@
-import { Flex, Image } from "@mantine/core";
 import React from "react";
+import { Flex, Image } from "@mantine/core";
 
 const Banner:React.FC<{imageSrc:string}> = ({imageSrc}) => {
   return (

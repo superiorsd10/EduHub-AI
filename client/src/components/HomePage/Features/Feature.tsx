@@ -1,6 +1,6 @@
-import { Flex, Image, Stack, Text, Title } from "@mantine/core";
 import React, { useContext } from "react";
 import { motion, Variants } from "framer-motion";
+import { Flex, Image, Stack, Text, Title } from "@mantine/core";
 import { AuthContext } from "@/components/Providers/AuthProvider";
 
 type Props = {

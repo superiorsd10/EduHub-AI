@@ -1,21 +1,14 @@
 import { ActionIcon, Flex, Group, Stack, Text } from "@mantine/core";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSquareXTwitter,
   faLinkedin,
   faSquareInstagram,
 } from "@fortawesome/free-brands-svg-icons";
-import { useInView } from "framer-motion";
-import { useRef } from "react";
 
-const Footer: React.FC<{ setIsFooterInView: (isFooterInView: boolean) => void }> = ({ setIsFooterInView }) => {
-  const footerRef = useRef(null);
-  const inView = useInView(footerRef);
-  useEffect(() => {
-    setIsFooterInView(inView);
-  }, [inView])
+const Footer: React.FC = () => {
   return (
     <Stack
       bg="black"
@@ -27,7 +20,6 @@ const Footer: React.FC<{ setIsFooterInView: (isFooterInView: boolean) => void }>
       pb="2vw"
       mt="10vh"
       id="footer"
-      ref={footerRef}
     >
       <Flex style={{ flex: 1 }} justify="center" align="center">
         <Text

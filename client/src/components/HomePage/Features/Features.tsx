@@ -1,7 +1,7 @@
 import React from "react";
+import { Title } from "@mantine/core";
 import FeatureList from "./FeatureList";
 import Feature from "./Feature";
-import { Box, Stack, Title } from "@mantine/core";
 
 const Features: React.FC = () => {
   return (
