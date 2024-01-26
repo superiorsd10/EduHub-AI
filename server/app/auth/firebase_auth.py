@@ -1,9 +1,24 @@
+"""
+Authentication utilities for Firebase in the Flask app.
+"""
+
 from functools import wraps
 from flask import request, jsonify, has_request_context
 from firebase_admin import auth
 
 
 def firebase_token_required(func):
+    """
+    Decorator function to require Firebase authentication.
+
+    This decorator checks the Authorization header for a valid Firebase
+    ID token. If present and valid, the decoded token is stored in the
+    current_user attribute of the request object.
+
+    :param func: The function to be decorated.
+    :return: The decorated function.
+    """
+
     @wraps(func)
     def decorated_function(*args, **kwargs):
         request_obj = kwargs.get("request", None)

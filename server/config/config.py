@@ -1,7 +1,22 @@
+"""
+Configuration settings for the Flask application.
+"""
+
 import os
 
 
 class Config:
+    """
+    Base configuration class for the application.
+
+    Attributes:
+    - DEBUG: bool
+    - TESTING: bool
+    - MONGODB_SETTINGS: dict
+    - JWT_SECRET_KEY: str
+    - FIREBASE_CREDENTIALS: str
+    """
+
     DEBUG = True
     TESTING = True
     MONGODB_SETTINGS = {
@@ -16,6 +31,17 @@ class Config:
 
 
 class TestConfig:
+    """
+    Configuration class for testing purposes.
+
+    Attributes:
+    - DEBUG: bool
+    - TESTING: bool
+    - MONGODB_SETTINGS: dict
+    - JWT_SECRET_KEY: str
+    - FIREBASE_CREDENTIALS: str
+    """
+
     DEBUG = True
     TESTING = True
     MONGODB_SETTINGS = {

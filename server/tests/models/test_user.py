@@ -1,14 +1,21 @@
+"""
+Unit tests for the User model.
+"""
+
+from datetime import datetime
 from bson import ObjectId
 import pytest
 from mongoengine import connect, disconnect
 from app.models.user import User, Assignment, Quiz
-from datetime import datetime
 import mongomock
 from mongoengine.errors import NotUniqueError
 
 
 @pytest.fixture(scope="function")
 def sample_user_data():
+    """
+    Fixture providing sample data for a user.
+    """
     return {
         "name": "John Doe",
         "email": "john.doe@example.com",
@@ -20,6 +27,9 @@ def sample_user_data():
 
 @pytest.fixture(scope="function")
 def setup_teardown(request):
+    """
+    Fixture to set up and tear down the test environment.
+    """
     # Disconnect from any existing default connection
     disconnect(alias="default")
 
@@ -39,6 +49,9 @@ def setup_teardown(request):
 
 
 def test_create_user(sample_user_data, setup_teardown):
+    """
+    Test creating a user with the User model.
+    """
     user = User(**sample_user_data)
     user.save()
 
@@ -51,6 +64,9 @@ def test_create_user(sample_user_data, setup_teardown):
 
 
 def test_unique_email_constraint(sample_user_data, setup_teardown):
+    """
+    Test the unique email constraint in the User model.
+    """
     # Create a user with a unique email
     user1 = User(**sample_user_data)
     user1.save()
@@ -61,15 +77,18 @@ def test_unique_email_constraint(sample_user_data, setup_teardown):
 
     try:
         user2.save()
-    except NotUniqueError as e:
-        print(f"Caught exception: {e}")
-        assert "keys" in str(e)
+    except NotUniqueError as error:
+        print(f"Caught exception: {error}")
+        assert "keys" in str(error)
     else:
         # Raise AssertionError only if no exception was raised
         raise AssertionError("Expected NotUniqueError, but no exception was raised.")
 
 
 def test_create_assignment_and_quiz(sample_user_data, setup_teardown):
+    """
+    Test creating an assignment and a quiz for a user.
+    """
     # Create a user
     user = User(**sample_user_data)
     user.save()
