@@ -106,14 +106,14 @@ python run.py
 
 We use [pre-commit](https://pre-commit.com/) to manage and run various hooks to ensure code consistency and quality. Follow these steps to activate the pre-commit hooks in your local environment:
 
-1. **Install pre-commit**
+1. **Install pre-commit:**
     Ensure you have pre-commit installed. You can install it using:
 
     ```bash
     pip install pre-commit
     ```
 
-2. **Set Up Pre-Commit**
+2. **Set Up Pre-Commit:**
     Run the following command to set up pre-commit:
 
     ```bash
