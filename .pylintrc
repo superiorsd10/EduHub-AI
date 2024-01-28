@@ -434,6 +434,7 @@ disable=raw-checker-failed,
         ungrouped-imports,
         unused-argument,
         redefined-outer-name,
+        protected-access,
       ;   use-implicit-booleaness-not-comparison-to-string,
       ;   use-implicit-booleaness-not-comparison-to-zero,
 
