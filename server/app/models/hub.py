@@ -132,6 +132,8 @@ class Hub(Document):
 
     Attributes:
     - name: StringField, required
+    - section: StringField
+    - description: StringField
     - creator_id: ObjectIdField, required
     - theme_color: StringField
     - photo_url: URLField
@@ -149,6 +151,8 @@ class Hub(Document):
     """
 
     name = StringField(required=True)
+    section = StringField()
+    description = StringField()
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
