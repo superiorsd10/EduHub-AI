@@ -19,7 +19,7 @@ jobs:
   - stage: test
     script:
     - pytest server/tests
-    - cd client && npm run test
+    - cd client && npm run test && cd ..
     name: Run Server and Client Tests
 after_success:
 - coverage run --source=server -m pytest server/tests
