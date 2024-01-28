@@ -25,7 +25,7 @@ class Recording(EmbeddedDocument):
     - summary: StringField
     """
 
-    url = URLField()
+    url = URLField(required=True)
     summary = StringField()
 
 
@@ -98,7 +98,7 @@ class Post(EmbeddedDocument):
     topic = StringField()
     created_at = DateTimeField()
     poll_options = ListField(StringField())
-    emoji_reactions = DictField(field=StringField())
+    emoji_reactions = DictField(field=IntField())
 
     meta = {
         "collection": "posts",
@@ -123,7 +123,7 @@ class Message(EmbeddedDocument):
     sender_id = ObjectIdField(required=True)
     content = StringField(required=True)
     timestamp = DateTimeField(required=True)
-    emoji_reactions = DictField(field=StringField())
+    emoji_reactions = DictField(field=IntField())
 
 
 class Hub(Document):
@@ -131,9 +131,9 @@ class Hub(Document):
     Represents a Hub in the application.
 
     Attributes:
-    - name: StringField, required
+    - name: StringField, required, max_length=100, min_length=1
     - section: StringField
-    - description: StringField
+    - description: StringField, max_length=280
     - creator_id: ObjectIdField, required
     - theme_color: StringField
     - photo_url: URLField
@@ -150,9 +150,9 @@ class Hub(Document):
     - messages: ListField(EmbeddedDocumentField(Message))
     """
 
-    name = StringField(required=True)
+    name = StringField(required=True, max_length=100, min_length=1)
     section = StringField()
-    description = StringField()
+    description = StringField(max_length=280)
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
