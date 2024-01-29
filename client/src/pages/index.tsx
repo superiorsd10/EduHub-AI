@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { NextPage } from "next";
-import { Avatar, Button, Flex, Group, Image, Stack } from "@mantine/core";
+import { Avatar, Button, Flex, Group, Image, Stack, Textarea } from "@mantine/core";
 import Banner from "@/components/HomePage/Banner";
 import Faqs from "@/components/HomePage/FAQs/Faqs";
 import Footer from "@/components/HomePage/Footer";
@@ -10,6 +10,9 @@ import { AuthContext } from "@/components/Providers/AuthProvider";
 import Link from "next/link";
 import { IoMdArrowDropup } from "react-icons/io";
 import NextLink from "@/utils/NextLink";
+import { useDisclosure } from '@mantine/hooks';
+import { Modal } from '@mantine/core';
+import { Input } from '@mantine/core';
 
 const ScrollToTopContainerVariants: Variants = {
   hide: { opacity: 0, y: 100 },
@@ -20,6 +23,7 @@ const index: NextPage = () => {
   const { componentHeight } = useContext(AuthContext);
   const controls = useAnimationControls();
   const { isLoggedIn, isDrawerOpen } = useContext(AuthContext);
+  const [opened, { open, close }] = useDisclosure(false);
 
   return (
     <Flex
@@ -63,9 +67,37 @@ const index: NextPage = () => {
                 src="/assets/LandingPageIllustration.png"
                 style={{ objectFit: "contain" }}
               />
+              <Modal opened={opened} onClose={close} title="Create Hub" centered radius='md'>
+                <Input placeholder="Hub Name" radius='md' />
+                <Input placeholder="Section" mt='sm' radius='md' />
+                <Textarea placeholder="Description" mt='sm' mb='sm' radius='md' autosize
+                  minRows={4}
+                  maxRows={4} />
+                <Group mt='sm' justify="flex-end">
+                  <NextLink href="#">
+                    <Button
+                      onClick={close}
+                      variant="default"
+                      radius="md"
+                      color="black"
+                      style={{
+                        borderColor: "none",
+                        borderWidth: "0",
+                        bg: "white",
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </NextLink>
+                  <NextLink href="#">
+                    <Button color="black" radius='md' >Create</Button>
+                  </NextLink>
+                </Group>
+              </Modal>
               <Group>
                 <NextLink href="#">
                   <Button
+                    onClick={open}
                     variant="default"
                     radius="md"
                     color="black"
