@@ -3,6 +3,9 @@ Configuration settings for the Flask application.
 """
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Config:
@@ -28,6 +31,8 @@ class Config:
     }
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
+    REDIS_URL = os.environ.get("REDIS_URL")
+    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 
 
 class TestConfig:
@@ -53,3 +58,5 @@ class TestConfig:
     }
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
+    REDIS_URL = os.environ.get("REDIS_URL")
+    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
