@@ -54,7 +54,7 @@ def create_app(config=None):
         storage_uri=app.config["REDIS_URL"],
     )
 
-    print(limiter.current_limit)
+    print(limiter)
 
     try:
         connect(
