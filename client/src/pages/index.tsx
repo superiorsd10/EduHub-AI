@@ -4,6 +4,7 @@ import { Avatar, Button, Flex, Group, Image, Stack, Textarea } from "@mantine/co
 import Banner from "@/components/HomePage/Banner";
 import Faqs from "@/components/HomePage/FAQs/Faqs";
 import Footer from "@/components/HomePage/Footer";
+import CreateHubModal from "@/components/HomePage/CreateHubModal";
 import Features from "@/components/HomePage/Features/Features";
 import { Variants, motion, useAnimationControls } from "framer-motion";
 import { AuthContext } from "@/components/Providers/AuthProvider";
@@ -67,33 +68,7 @@ const index: NextPage = () => {
                 src="/assets/LandingPageIllustration.png"
                 style={{ objectFit: "contain" }}
               />
-              <Modal opened={opened} onClose={close} title="Create Hub" centered radius='md'>
-                <Input placeholder="Hub Name" radius='md' />
-                <Input placeholder="Section" mt='sm' radius='md' />
-                <Textarea placeholder="Description" mt='sm' mb='sm' radius='md' autosize
-                  minRows={4}
-                  maxRows={4} />
-                <Group mt='sm' justify="flex-end">
-                  <NextLink href="#">
-                    <Button
-                      onClick={close}
-                      variant="default"
-                      radius="md"
-                      color="black"
-                      style={{
-                        borderColor: "none",
-                        borderWidth: "0",
-                        bg: "white",
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </NextLink>
-                  <NextLink href="#">
-                    <Button color="black" radius='md' >Create</Button>
-                  </NextLink>
-                </Group>
-              </Modal>
+              <CreateHubModal opened={opened} close={close}/>
               <Group>
                 <NextLink href="#">
                   <Button

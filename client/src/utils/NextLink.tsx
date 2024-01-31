@@ -4,11 +4,12 @@ import React, { ReactNode } from 'react';
 type NextLinkProps = {
   href: string;
   children: ReactNode;
+  color?: string;
 }
 
-const NextLink: React.FC<NextLinkProps> = ({ href, children }) => {
+const NextLink: React.FC<NextLinkProps> = ({ href, children, color='black' }) => {
   return (
-    <Link href={href} style={{color:'black',textDecoration:'none'}}>
+    <Link href={href} style={{color:color,textDecoration:'none'}}>
       {children}
     </Link>
   );
