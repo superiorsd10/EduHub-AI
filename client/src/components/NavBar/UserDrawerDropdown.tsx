@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 
-import { Avatar, Box, Timeline } from "@mantine/core";
+import { Avatar, Box, Text, Timeline } from "@mantine/core";
 
 type DropDownElement = {
   text: string;
@@ -8,7 +8,7 @@ type DropDownElement = {
 };
 
 const googleClassroomPalette = [
-  "#1E88E5", 
+  "#1E88E5",
   "#D32F2F", // Bright red
   "#388E3C", // Dark green
   "#FFB300", // Vivid yellow
@@ -37,29 +37,34 @@ const UserDrawerDropdown = ({
             borderColor: "white",
           }}
         ></Timeline.Item>
-        {DropDownElements.map((element, index) => (
-          <Timeline.Item
-            key={index}
-            bullet={
-              <Avatar
-                size={24}
-                radius="lg"
-                bg={
-                  googleClassroomPalette[
-                    Math.floor(Math.random() * googleClassroomPalette.length)
-                  ]
-                }
-                color="white"
-              >
-                {element.text[0].toUpperCase()}
-              </Avatar>
-            }
-            title={element.text}
-            style={{
-              fontSize: "14px",
-            }}
-          ></Timeline.Item>
-        ))}
+        {DropDownElements.map((element, index) => {
+          const memoizedColor = useMemo(() => {
+            const randomColor =
+              googleClassroomPalette[
+                Math.floor(Math.random() * googleClassroomPalette.length)
+              ];
+            return randomColor;
+          }, [googleClassroomPalette]);
+          return (
+            <Timeline.Item
+              key={index}
+              bullet={
+                <Avatar size={24} radius="lg" bg={memoizedColor} color="white">
+                  {element.text[0].toUpperCase()}
+                </Avatar>
+              }
+              title={
+                <Text
+                  style={{
+                    fontSize: "14px",
+                  }}
+                >
+                  {element.text}
+                </Text>
+              }
+            ></Timeline.Item>
+          );
+        })}
       </Timeline>
     </Box>
   );

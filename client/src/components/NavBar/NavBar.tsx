@@ -36,10 +36,20 @@ const NavBar: React.FC = () => {
       style={{
         borderBottom: isLoggedIn ? "1px solid #DEE2E6" : "",
       }}
-      gap="sm"
+      gap="md"
     >
       {isLoggedIn && (
-        <Box w="2vw" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            width: "2vw",
+            height: "2vw",
+          }}
+          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+        >
           <RxHamburgerMenu size={20} />
         </Box>
       )}
@@ -53,10 +63,8 @@ const NavBar: React.FC = () => {
         ></Image>
       </Flex>
       {!isLoggedIn && (
-        <Group visibleFrom="md">
-          <NextLink href="/">
-            Home
-          </NextLink>
+        <Group visibleFrom="md" gap="md">
+          <NextLink href="/">Home</NextLink>
           <Link
             href="/#features"
             onClick={(e) => {
@@ -102,9 +110,9 @@ const NavBar: React.FC = () => {
           </Link>
         </Group>
       )}
-      <Group ml="auto" visibleFrom="md">
+      <Group ml="auto" visibleFrom="md" gap="md">
         {isLoggedIn ? (
-          <Group>
+          <Group gap="md">
             <Box w="2vw" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
               <FaPlus size={20} />
             </Box>
@@ -129,7 +137,7 @@ const NavBar: React.FC = () => {
             </Menu>
           </Group>
         ) : (
-          <Group>
+          <Group gap="md">
             <Link
               href="/signin"
               passHref
@@ -154,7 +162,12 @@ const NavBar: React.FC = () => {
               </Button>
             </Link>
             <Link href="/signup" passHref>
-              <Button variant="default" color="black" radius="md">
+              <Button
+                variant="default"
+                color="black"
+                radius="md"
+                style={{ borderColor: "black" }}
+              >
                 Join Today
               </Button>
             </Link>

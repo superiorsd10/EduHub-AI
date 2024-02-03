@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useState } from "react";
+import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../Providers/AuthProvider";
 import { IoMdArrowDropright, IoMdArrowDropdown } from "react-icons/io";
@@ -21,13 +21,24 @@ const UserDrawerItem: React.FC<Props> = ({
   children,
   isDrawerTemporarilyOpen,
 }) => {
-
   const { isDrawerOpen } = useContext(AuthContext);
+  useEffect(() => {
+    if (!isDrawerOpen && !isDrawerTemporarilyOpen) setIsDropDownVisible(false);
+  }, [isDrawerOpen, isDrawerTemporarilyOpen]);
   const [isDropDownVisible, setIsDropDownVisible] = useState<boolean>(false);
   return (
     <Stack gap="0">
-      <Group gap="sm" justify="center" align="center" >
-        <Box style={{ zIndex: 100 }} w="2vw">
+      <Group gap="sm" justify="center" align="center" h='2vw'>
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            width: "2vw",
+            height:'2vw'
+          }}
+        >
           {React.createElement(iconType, { size: 20 })}
         </Box>
         <AnimatePresence>
@@ -38,13 +49,18 @@ const UserDrawerItem: React.FC<Props> = ({
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <Group gap="xs">
+              <Group gap="xs" justify="space-between" align="center">
                 <NextLink href={href}>{name}</NextLink>
                 {children && (
                   <Box
                     w="2vw"
-                    ml="auto"
-                    style={{ alignItems: "flex-end", justifyContent: "center" }}
+                    h='100%'
+                    style={{
+                      display:'flex',
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
                     onClick={() => setIsDropDownVisible(!isDropDownVisible)}
                   >
                     {isDropDownVisible ? (
@@ -59,7 +75,9 @@ const UserDrawerItem: React.FC<Props> = ({
           )}
         </AnimatePresence>
       </Group>
-      {(isDrawerOpen || isDrawerTemporarilyOpen) && <Collapse in={isDropDownVisible}>{children}</Collapse>}
+      {(isDrawerOpen || isDrawerTemporarilyOpen) && (
+        <Collapse in={isDropDownVisible}>{children}</Collapse>
+      )}
     </Stack>
   );
 };

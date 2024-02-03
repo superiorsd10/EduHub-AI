@@ -46,7 +46,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
         isDrawerOpen,
         setIsDrawerOpen,
         navbarHeight: user ? "10vh" : "15vh",
-        componentHeight: user ? "85svh" : "85svh",
+        componentHeight: user ? "90svh" : "85svh",
         isLoggedIn: user ? true: false
       }}
     >

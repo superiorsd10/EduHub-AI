@@ -30,7 +30,7 @@ const Banner:React.FC = () => {
             Join Today
           </Button>
         </Link>
-          <Button variant="default">Learn More</Button>
+          <Button variant="default" radius="md">Learn More</Button>
         </Group>
       </Stack>
       <Flex maw={{base:'90vw',sm:'90vw',md:'45vw',lg:'45vw'}} h={{base:'40svh',sm:'40svh',md:componentHeight,lg:componentHeight}}>

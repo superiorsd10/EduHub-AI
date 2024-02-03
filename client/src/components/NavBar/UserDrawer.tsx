@@ -18,6 +18,7 @@ type DropDownElement = {
 };
 
 const UserDrawer = () => {
+  
   const { isDrawerOpen } = useContext(AuthContext);
   const { hovered, ref } = useHover();
   const [isDrawerTemporarilyOpen, setIsDrawerTemporarilyOpen] =

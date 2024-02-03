@@ -10,7 +10,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     <>
       <Head>Nikhil's Portfolio</Head>
       <NavBar />
-      {isLoggedIn && <Space h="15vh" />}
+      {isLoggedIn && <Space h="10vh" />}
       {children}
     </>
   );

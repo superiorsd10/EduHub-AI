@@ -46,7 +46,7 @@ const index: NextPage = () => {
               bottom: "20px",
               zIndex: 100,
             }}
-            radius="lg"
+            radius="xl"
             size="lg"
             p="0"
             bg="black"
@@ -82,11 +82,11 @@ const index: NextPage = () => {
                       bg: "white",
                     }}
                   >
-                    Add Hub
+                    Create Hub
                   </Button>
                 </NextLink>
                 <NextLink href="#">
-                  <Button color="black">Join Hub</Button>
+                  <Button color="black" radius='md'>Join Hub</Button>
                 </NextLink>
               </Group>
             </Stack>
