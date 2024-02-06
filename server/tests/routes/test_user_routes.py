@@ -76,7 +76,7 @@ def test_create_user_without_firebase_token_required(client):
             json=user_data,
         ):
             response = client.post(
-                "/api/user",
+                "/api/sign-up",
                 json=user_data,
                 headers={"Bypass-Firebase": "true"},
             )
@@ -101,7 +101,7 @@ def test_create_user_invalid_data(client):
     user_data = {"email": "john@example.com"}
 
     response = client.post(
-        "/api/user",
+        "/api/sign-up",
         json=user_data,
         headers={"Bypass-Firebase": "true"},
     )
@@ -121,7 +121,7 @@ def test_create_user_exception(client):
         mock_save.side_effect = Exception("Mocked exception")
 
         response = client.post(
-            "/api/user",
+            "/api/sign-up",
             json=user_data,
             headers={"Bypass-Firebase": "true"},
         )

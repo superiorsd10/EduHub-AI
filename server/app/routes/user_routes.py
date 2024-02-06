@@ -2,15 +2,17 @@
 User routes for the Flask application.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from app.models.user import User
+from app import redis
 
 user_blueprint = Blueprint("user", __name__)
 
 
-@user_blueprint.route("/api/user", methods=["POST"])
+@user_blueprint.route("/api/sign-up", methods=["POST"])
+@current_app.limiter.limit("5 per minute")
 @firebase_token_required
 def create_user():
     """
@@ -25,6 +27,8 @@ def create_user():
     :return: JSON response with success or error message.
     """
     try:
+        user_id = request.current_user["user_id"]
+
         data = request.get_json()
 
         if "name" not in data or "email" not in data:
@@ -42,6 +46,16 @@ def create_user():
         )
 
         new_user.save()
+
+        user_cache_key = f"user:{user_id}"
+
+        user_object_id = new_user.id
+
+        cache_data = {
+            "user_id": str(user_object_id),
+        }
+
+        redis.hmset(user_cache_key, cache_data)
 
         return (
             jsonify({"message": "User created successfully", "success": True}),
