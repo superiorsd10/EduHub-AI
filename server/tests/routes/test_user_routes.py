@@ -5,6 +5,7 @@ Module for testing user routes in the app.
 import os
 from unittest.mock import patch
 import pytest
+from app.enums import ErrorCode
 from app.routes.user_routes import user_blueprint
 from app.models.user import User
 from app import create_test_app
@@ -82,7 +83,7 @@ def test_create_user_without_firebase_token_required(client):
 
             print(response.get_json())
 
-    assert response.status_code == 201
+    assert response.status_code == ErrorCode.CREATED.value
     assert response.get_json() == {
         "message": "User created successfully",
         "success": True,
@@ -105,7 +106,7 @@ def test_create_user_invalid_data(client):
         headers={"Bypass-Firebase": "true"},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == ErrorCode.BAD_REQUEST.value
     assert response.get_json() == {"error": "Invalid data provided", "success": False}
 
 
@@ -127,7 +128,7 @@ def test_create_user_exception(client):
 
     print(response.get_json())
 
-    assert response.status_code == 500
+    assert response.status_code == ErrorCode.INTERNAL_SERVER_ERROR.value
     assert response.get_json() == {"error": "Mocked exception", "success": False}
 
 

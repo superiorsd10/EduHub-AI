@@ -6,6 +6,7 @@ import pytest
 
 from app import create_app
 from app.auth.firebase_auth import firebase_token_required
+from app.enums import ErrorCode
 from flask import jsonify
 from config.config import Config
 
@@ -28,14 +29,14 @@ def test_decorator_invalid_token():
         # Define a simple function decorated with the firebase_token_required decorator
         @firebase_token_required
         def protected_route(request=None):
-            return jsonify({"message": "You have access!"}), 200
+            return jsonify({"message": "You have access!"}), ErrorCode.SUCCESS.value
 
         # Call the decorated function with the mock request object
         response, status_code = protected_route(request=mock_request)
 
         # Assert the behavior or result of the decorator
         assert response.get_json() == {"error": "Invalid authorization token"}
-        assert status_code == 401
+        assert status_code == ErrorCode.UNAUTHORIZED.value
 
 
 def test_decorator_missing_token():
@@ -49,14 +50,14 @@ def test_decorator_missing_token():
         # Define a simple function decorated with the firebase_token_required decorator
         @firebase_token_required
         def protected_route(request=None):
-            return jsonify({"message": "You have access!"}), 200
+            return jsonify({"message": "You have access!"}), ErrorCode.SUCCESS.value
 
         # Call the decorated function with the mock request object
         response, status_code = protected_route(request=mock_request)
 
         # Assert the behavior or result of the decorator
         assert response.get_json() == {"error": "Authorization token is missing"}
-        assert status_code == 401
+        assert status_code == ErrorCode.UNAUTHORIZED.value
 
 
 if __name__ == "__main__":

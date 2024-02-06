@@ -4,6 +4,7 @@ User routes for the Flask application.
 
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
+from app.enums import ErrorCode
 from app.models.user import User
 
 user_blueprint = Blueprint("user", __name__)
@@ -27,7 +28,10 @@ def create_user():
         data = request.get_json()
 
         if "name" not in data or "email" not in data:
-            return jsonify({"error": "Invalid data provided", "success": False}), 400
+            return (
+                jsonify({"error": "Invalid data provided", "success": False}),
+                ErrorCode.BAD_REQUEST.value,
+            )
 
         new_user = User(
             name=data["name"],
@@ -39,7 +43,13 @@ def create_user():
 
         new_user.save()
 
-        return jsonify({"message": "User created successfully", "success": True}), 201
+        return (
+            jsonify({"message": "User created successfully", "success": True}),
+            ErrorCode.CREATED.value,
+        )
 
     except Exception as error:
-        return jsonify({"error": str(error), "success": False}), 500
+        return (
+            jsonify({"error": str(error), "success": False}),
+            ErrorCode.INTERNAL_SERVER_ERROR.value,
+        )
