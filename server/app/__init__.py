@@ -12,6 +12,8 @@ from flask_redis import FlaskRedis
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+redis = FlaskRedis()
+
 
 def create_app(config=None):
     """
@@ -43,9 +45,7 @@ def create_app(config=None):
 
     print(firebase_app.name)
 
-    redis = FlaskRedis(app)
-
-    print(redis.config_prefix)
+    redis.init_app(app)
 
     limiter = Limiter(
         key_func=get_remote_address,
@@ -54,7 +54,7 @@ def create_app(config=None):
         storage_uri=app.config["REDIS_URL"],
     )
 
-    print(limiter)
+    limiter.init_app(app)
 
     try:
         connect(
