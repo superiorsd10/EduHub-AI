@@ -33,6 +33,7 @@ class Config:
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
     REDIS_URL = os.environ.get("REDIS_URL")
     REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+    REDIS_PORT = os.environ.get("REDIS_PORT")
 
 
 class TestConfig:
@@ -60,3 +61,4 @@ class TestConfig:
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
     REDIS_URL = os.environ.get("REDIS_URL")
     REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+    REDIS_PORT = os.environ.get("REDIS_PORT")
