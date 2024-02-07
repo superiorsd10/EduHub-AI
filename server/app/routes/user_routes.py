@@ -27,8 +27,6 @@ def create_user():
     :return: JSON response with success or error message.
     """
     try:
-        user_id = request.headers.get("user_id")
-
         data = request.get_json()
 
         if "name" not in data or "email" not in data:
@@ -47,12 +45,12 @@ def create_user():
 
         new_user.save()
 
-        user_cache_key = f"user:{user_id}"
+        user_cache_key = f"user:{data['email']}"
 
         user_object_id = new_user.id
 
         cache_data = {
-            "user_id": str(user_object_id),
+            "user_object_id": str(user_object_id),
         }
 
         redis.hmset(user_cache_key, cache_data)
