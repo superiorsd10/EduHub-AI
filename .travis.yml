@@ -6,6 +6,10 @@ env:
   - TRAVIS_CI=true
   global:
     secure: APUTLISO9Gkr7/0BfoSugxHMEMNKXAN75PMioMxbQ997xU4TdJT8cEnzHf368FgzDH/kh5Kix0MKbMMj0rWBz6C5SfSvi4h7xXOSfEzFx+TCNkXp2N9N2OBGe5uE5Dtuq+UqwbWA2Boc5Ntqd3la7E+/8aPnV8HwOO/rBkwOzPbzoRMTB8kP7n+gULqRYC4gcLG7glMBBavYhymQ+QI1BQHobbOJY/JKYyp6Igt3jJkjyJxra+Slerc4PaG7yw1zYcY6kr93XXD0BJSEMnMzJwxuCXuSlG1SWKH/f1/HDolpdbExkJxJmQz9QFQcabcXE292U9Bbo090VnStt2r6FUa9sgw3LcHaylIW/+A/CoMGGoDNjGoc0LB+jK6AI50fReWG5ThLsa4CSRpPJSDoJBebXrCNUsRDZnwJQDB0HEbIX/B/PeVvzhbr/oZPl0vJNZCvApIwS8ZGc4I6h1GBZbFKeYHKCscVPrf/Ebf9e78nnfdDRjMyZYDefIatrFGvfO2QQ/15qlYbZpcEmBdckqLL1KBhB6jZaIjueag9NpjxG+jtann48fjpRVB+w9Pra6ak1irsqQyScsCDolX4SMrMT96WGacF+wsKqFW2bjvNyw+5BBTJ6CNPZY2m1407et7F5mJVOQ+B0dAu2OrsqJ578b8equsbOiJAMVjyhKI=
+services:
+  - redis-server
+before_script:
+  - redis-cli -h redis-11499.c301.ap-south-1-1.ec2.cloud.redislabs.com -p 11499 -a $REDIS_PASSWORD ping
 before_install:
   - echo $super_secret_password | gpg --passphrase-fd 0 server/credentials/service_account_key.json.gpg
 branches:
