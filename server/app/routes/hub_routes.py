@@ -2,17 +2,18 @@
 Hub routes for the Flask application.
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from app import redis
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from app.models.hub import Hub
+from app.core import limiter
 
 hub_blueprint = Blueprint("hub", __name__)
 
 
 @hub_blueprint.route("/api/create-hub", methods=["POST"])
-@current_app.limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 @firebase_token_required
 def create_hub():
     """
