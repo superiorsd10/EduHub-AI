@@ -53,7 +53,10 @@ def create_user():
             "user_object_id": str(user_object_id),
         }
 
-        redis_client.hmset(user_cache_key, cache_data)
+        bypass_firebase = request.headers.get("Bypass-Firebase")
+
+        if bypass_firebase is None:
+            redis_client.hmset(user_cache_key, cache_data)
 
         return (
             jsonify({"message": "User created successfully", "success": True}),
