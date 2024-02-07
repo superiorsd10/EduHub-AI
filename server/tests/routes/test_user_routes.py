@@ -3,7 +3,7 @@ Module for testing user routes in the app.
 """
 
 import os
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import pytest
 from app.enums import ErrorCode
 from app.routes.user_routes import user_blueprint
@@ -12,7 +12,6 @@ from app import create_test_app
 from config.config import TestConfig
 from dotenv import load_dotenv
 from mongoengine import connect, disconnect
-import fakeredis
 
 load_dotenv()
 
@@ -83,7 +82,7 @@ def test_create_user(
 ):
     """Test creating a user with valid data."""
     with app.test_request_context():
-        request_mock = mocker.MagicMock()
+        request_mock = MagicMock()
         request_mock.headers.get.return_value = user_id
         request_mock.get_json.return_value = payload
 
@@ -100,7 +99,8 @@ def test_create_user(
 
         mocker.patch("app.routes.user_routes.User.save")
 
-        redis_mock = fakeredis.FakeRedis()
+        redis_mock = MagicMock()
+        redis_mock.hmset.return_value = None  # Adjust as needed
 
         mocker.patch("app.routes.user_routes.redis_client", redis_mock)
 
