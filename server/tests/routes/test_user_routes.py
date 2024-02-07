@@ -95,14 +95,14 @@ def test_create_user(
             firebase_token_required_mock,
         )
 
-        mocker.patch("app.routes.user_routes.limiter")
+        mocker.patch("app.core.limiter")
 
         mocker.patch("app.routes.user_routes.User.save")
 
         redis_mock = MagicMock()
-        redis_mock.hmset.return_value = None  # Adjust as needed
+        redis_mock.hmset.return_value = None
 
-        mocker.patch("app.routes.user_routes.redis_client", redis_mock)
+        mocker.patch("app.core.redis_client", redis_mock)
 
         response = client.post(
             "/api/sign-up",
