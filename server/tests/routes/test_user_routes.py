@@ -12,6 +12,7 @@ from app import create_test_app
 from config.config import TestConfig
 from dotenv import load_dotenv
 from mongoengine import connect, disconnect
+import fakeredis
 
 load_dotenv()
 
@@ -66,9 +67,61 @@ def setup_teardown(request):
     request.addfinalizer(teardown)
 
 
-def test_create_user_without_firebase_token_required(client):
-    """Test creating a user without a Firebase token (happy path)."""
-    user_data = {"name": "John Doe", "email": "john@example.com"}
+@pytest.mark.parametrize(
+    "user_id, payload, expected_status, expected_response",
+    [
+        (
+            "user_id_1",
+            {"name": "John Doe", "email": "john2@example.com"},
+            ErrorCode.CREATED.value,
+            {"message": "User created successfully", "success": True},
+        ),
+    ],
+)
+def test_create_user(
+    client, mocker, user_id, payload, expected_status, expected_response
+):
+    """Test creating a user with valid data."""
+    with app.test_request_context():
+        request_mock = mocker.MagicMock()
+        request_mock.headers.get.return_value = user_id
+        request_mock.get_json.return_value = payload
+
+        def firebase_token_required_mock(func):
+            return func
+
+        mocker.patch("app.routes.user_routes.request", request_mock)
+        mocker.patch(
+            "app.routes.user_routes.firebase_token_required",
+            firebase_token_required_mock,
+        )
+
+        mocker.patch("app.routes.user_routes.limiter")
+
+        mocker.patch("app.routes.user_routes.User.save")
+
+        redis_mock = fakeredis.FakeRedis()
+
+        mocker.patch("app.routes.user_routes.redis", redis_mock)
+
+        response = client.post(
+            "/api/sign-up",
+            json=payload,
+            headers={"user_id": user_id, "Bypass-Firebase": "true"},
+        )
+
+        print(response.get_json())
+
+        assert response.status_code == expected_status
+        assert response.json == expected_response
+
+        User.objects(email=payload["email"]).delete()
+        disconnect(alias="default")
+
+
+def test_create_user_invalid_data(client):
+    """Test creating a user with invalid data."""
+    user_data = {"email": "john@example.com"}
 
     with app.app_context():
         with app.test_request_context(
@@ -80,31 +133,6 @@ def test_create_user_without_firebase_token_required(client):
                 json=user_data,
                 headers={"Bypass-Firebase": "true"},
             )
-
-            print(response.get_json())
-
-    assert response.status_code == ErrorCode.CREATED.value
-    assert response.get_json() == {
-        "message": "User created successfully",
-        "success": True,
-    }
-
-    # Clean up: Delete the user from the database
-    User.objects(email=user_data["email"]).delete()
-
-    # Explicitly disconnect from the MongoDB connection
-    disconnect(alias="default")
-
-
-def test_create_user_invalid_data(client):
-    """Test creating a user with invalid data."""
-    user_data = {"email": "john@example.com"}
-
-    response = client.post(
-        "/api/sign-up",
-        json=user_data,
-        headers={"Bypass-Firebase": "true"},
-    )
 
     assert response.status_code == ErrorCode.BAD_REQUEST.value
     assert response.get_json() == {"error": "Invalid data provided", "success": False}
