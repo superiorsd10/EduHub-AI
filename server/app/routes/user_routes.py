@@ -6,7 +6,7 @@ from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from app.models.user import User
-from app.core import redis, limiter
+from app.core import redis_client, limiter
 
 user_blueprint = Blueprint("user", __name__)
 
@@ -53,7 +53,7 @@ def create_user():
             "user_object_id": str(user_object_id),
         }
 
-        redis.hmset(user_cache_key, cache_data)
+        redis_client.hmset(user_cache_key, cache_data)
 
         return (
             jsonify({"message": "User created successfully", "success": True}),

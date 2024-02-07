@@ -8,7 +8,7 @@ from mongoengine import connect
 from config.config import Config
 from firebase_admin import credentials, initialize_app
 from dotenv import load_dotenv
-from app.core import redis, limiter
+from app.core import redis_client, limiter
 
 
 def create_app(config=None):
@@ -41,7 +41,7 @@ def create_app(config=None):
 
     print(firebase_app.name)
 
-    redis.init_app(app)
+    app.redis_client = redis_client
 
     limiter.init_app(app)
 

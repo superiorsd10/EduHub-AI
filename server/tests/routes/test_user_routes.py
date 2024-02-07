@@ -102,7 +102,7 @@ def test_create_user(
 
         redis_mock = fakeredis.FakeRedis()
 
-        mocker.patch("app.routes.user_routes.redis", redis_mock)
+        mocker.patch("app.routes.user_routes.redis_client", redis_mock)
 
         response = client.post(
             "/api/sign-up",

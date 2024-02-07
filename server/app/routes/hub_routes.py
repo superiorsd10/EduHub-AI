@@ -3,11 +3,10 @@ Hub routes for the Flask application.
 """
 
 from flask import Blueprint, request, jsonify
-from app import redis
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from app.models.hub import Hub
-from app.core import limiter
+from app.core import limiter, redis_client
 
 hub_blueprint = Blueprint("hub", __name__)
 
@@ -45,7 +44,7 @@ def create_hub():
 
         user_cache_key = f"user:{user_id}"
 
-        user_object_id = redis.hget(user_cache_key, "user_id")
+        user_object_id = redis_client.hget(user_cache_key, "user_id")
 
         new_hub = Hub(
             name=hub_name,

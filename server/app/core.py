@@ -13,11 +13,15 @@ Usage:
 """
 
 import os
-from flask_redis import FlaskRedis
+import redis
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-redis = FlaskRedis()
+redis_client = redis.Redis(
+    host=os.environ.get("REDIS_HOST"),
+    port=os.environ.get("REDIS_PORT"),
+    password=os.environ.get("REDIS_PASSWORD"),
+)
 
 limiter = Limiter(
     key_func=get_remote_address,
