@@ -2,7 +2,7 @@
 Main script to run the Flask application.
 """
 
-from app import create_app
+from app.app import create_app
 from config.config import Config
 from flask_jwt_extended import JWTManager
 from app.routes.user_routes import user_blueprint
