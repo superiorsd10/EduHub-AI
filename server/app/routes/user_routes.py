@@ -44,17 +44,18 @@ def create_user():
             quizzes=[],
         )
 
-        new_user.save()
+        redis_client = Config.redis_client
 
         user_cache_key = f"user:{data['email']}"
+
+        if not redis_client.exists(user_cache_key):
+            new_user.save()
 
         user_object_id = new_user.id
 
         cache_data = {
             "user_object_id": str(user_object_id),
         }
-
-        redis_client = Config.redis_client
 
         redis_client.hmset(user_cache_key, cache_data)
 
