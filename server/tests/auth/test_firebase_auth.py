@@ -4,7 +4,7 @@ Unit tests for Firebase authentication decorator.
 
 import pytest
 
-from app import create_app
+from app.app import create_app
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from flask import jsonify
