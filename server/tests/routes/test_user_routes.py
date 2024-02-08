@@ -3,12 +3,12 @@ Module for testing user routes in the app.
 """
 
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import pytest
 from app.enums import ErrorCode
 from app.routes.user_routes import user_blueprint
 from app.models.user import User
-from app import create_test_app
+from app.app import create_test_app
 from config.config import TestConfig
 from dotenv import load_dotenv
 from mongoengine import connect, disconnect
@@ -71,7 +71,7 @@ def setup_teardown(request):
     [
         (
             "user_id_1",
-            {"name": "John Doe", "email": "john2@example.com"},
+            {"name": "John Doe", "email": "john7@example.com"},
             ErrorCode.CREATED.value,
             {"message": "User created successfully", "success": True},
         ),
@@ -82,28 +82,6 @@ def test_create_user(
 ):
     """Test creating a user with valid data."""
     with app.test_request_context():
-        request_mock = MagicMock()
-        request_mock.headers.get.return_value = user_id
-        request_mock.get_json.return_value = payload
-
-        def firebase_token_required_mock(func):
-            return func
-
-        mocker.patch("app.routes.user_routes.request", request_mock)
-        mocker.patch(
-            "app.routes.user_routes.firebase_token_required",
-            firebase_token_required_mock,
-        )
-
-        mocker.patch("app.core.limiter")
-
-        mocker.patch("app.routes.user_routes.User.save")
-
-        redis_mock = MagicMock()
-        redis_mock.hmset.return_value = None
-
-        mocker.patch("app.core.redis_client", redis_mock)
-
         response = client.post(
             "/api/sign-up",
             json=payload,
@@ -119,23 +97,34 @@ def test_create_user(
         disconnect(alias="default")
 
 
-def test_create_user_invalid_data(client):
+@pytest.mark.parametrize(
+    "user_id, payload, expected_status, expected_response",
+    [
+        (
+            "user_id_1",
+            {"email": "john@example.com"},
+            ErrorCode.BAD_REQUEST.value,
+            {"error": "Invalid data provided", "success": False},
+        ),
+    ],
+)
+def test_create_user_invalid_data(
+    client, mocker, user_id, payload, expected_status, expected_response
+):
     """Test creating a user with invalid data."""
-    user_data = {"email": "john@example.com"}
 
-    with app.app_context():
-        with app.test_request_context(
+    with app.test_request_context(
+        headers={"Bypass-Firebase": "true"},
+        json=payload,
+    ):
+        response = client.post(
+            "/api/sign-up",
+            json=payload,
             headers={"Bypass-Firebase": "true"},
-            json=user_data,
-        ):
-            response = client.post(
-                "/api/sign-up",
-                json=user_data,
-                headers={"Bypass-Firebase": "true"},
-            )
+        )
 
-    assert response.status_code == ErrorCode.BAD_REQUEST.value
-    assert response.get_json() == {"error": "Invalid data provided", "success": False}
+    assert response.status_code == expected_status
+    assert response.get_json() == expected_response
 
 
 def test_create_user_exception(client):

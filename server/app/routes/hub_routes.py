@@ -6,7 +6,8 @@ from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from app.models.hub import Hub
-from app.core import limiter, redis_client
+from app.core import limiter
+from config.config import Config
 
 hub_blueprint = Blueprint("hub", __name__)
 
@@ -43,6 +44,8 @@ def create_hub():
             )
 
         user_cache_key = f"user:{user_id}"
+
+        redis_client = Config.redis_client
 
         user_object_id = redis_client.hget(user_cache_key, "user_id")
 

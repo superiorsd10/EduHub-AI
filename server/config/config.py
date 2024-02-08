@@ -3,6 +3,7 @@ Configuration settings for the Flask application.
 """
 
 import os
+import redis
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,6 +35,8 @@ class Config:
     REDIS_URL = os.environ.get("REDIS_URL")
     REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
     REDIS_PORT = os.environ.get("REDIS_PORT")
+    REDIS_HOST = os.environ.get("REDIS_HOST")
+    redis_client = redis.from_url(REDIS_URL)
 
 
 class TestConfig:
