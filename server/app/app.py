@@ -9,6 +9,7 @@ from config.config import Config, TestConfig
 from firebase_admin import credentials, initialize_app
 from dotenv import load_dotenv
 from app.core import limiter
+from flask_cors import CORS
 
 
 def create_app(config=None):
@@ -19,6 +20,8 @@ def create_app(config=None):
     :return: The configured Flask app.
     """
     app = Flask(__name__)
+
+    CORS(app)
 
     load_dotenv()
 
