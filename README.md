@@ -94,11 +94,61 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+#### Setting Up Environment Variables
+
+```bash
+cp .env.example .env
+```
+
 #### Run the Server
 
 ```bash
 python run.py
 ```
+
+<p align="center">OR</p>
+
+#### Install Docker
+
+Make sure you have Docker installed on your machine. You can download and install Docker from the [official Docker website](https://www.docker.com/).
+
+#### Navigate to Project Directory (Server)
+
+Open your terminal or command prompt and navigate to the server directory of your project.
+
+```bash
+cd server
+```
+
+#### Setting Up Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+#### Build Docker Image
+
+Run the following command to build the Docker image for your application:
+
+```bash
+docker build -t my-flask-app .
+```
+
+Replace `my-flask-app` with the desired name for your Docker image.
+
+#### Run Docker Container
+
+Once the Docker image is built, you can run a Docker container using the following command:
+
+```bash
+docker run --env-file .env -p 5000:5000 my-flask-app
+```
+
+This command maps port 5000 of the Docker container to port 5000 of your host machine. Replace `my-flask-app` with the name of your Docker image.
+
+#### Access the Server
+
+After running the Docker container, you can access the server by navigating to `http://localhost:5000` in your web browser/Postman/Thunder Client.
 
 ---
 
