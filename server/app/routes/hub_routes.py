@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
 from app.models.hub import Hub
+from app.models.user import User
 from app.core import limiter
 from config.config import Config
 
@@ -30,20 +31,19 @@ def create_hub():
     :return: JSON response with success or error message.
     """
     try:
-        user_id = request.current_user["user_id"]
-
         data = request.get_json()
         hub_name = data["hub_name"]
         section = data["section"]
         description = data["description"]
+        email = data["email"]
 
-        if not hub_name:
+        if "hub_name" not in data or "email" not in data:
             return (
-                jsonify({"error": "Hub name is required", "success": False}),
+                jsonify({"error": "Invalid data provided", "success": False}),
                 ErrorCode.BAD_REQUEST.value,
             )
 
-        user_cache_key = f"user:{user_id}"
+        user_cache_key = f"user:${email}"
 
         redis_client = Config.redis_client
 
@@ -57,6 +57,23 @@ def create_hub():
         )
 
         new_hub.save()
+
+        new_hub_id = new_hub.id
+
+        updated_count = User.objects(email=email).update_one(
+            push__hubs__teacher=new_hub_id
+        )
+
+        if updated_count == 0:
+            return (
+                jsonify(
+                    {
+                        "error": "User not found or specified key does not exist",
+                        "success": False,
+                    }
+                ),
+                ErrorCode.NOT_FOUND.value,
+            )
 
         return (
             jsonify({"message": "Hub created successfully", "success": True}),
