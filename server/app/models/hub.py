@@ -148,6 +148,7 @@ class Hub(Document):
     - assignments: ListField(EmbeddedDocumentField(Assignment))
     - posts: ListField(EmbeddedDocumentField(Post))
     - messages: ListField(EmbeddedDocumentField(Message))
+    - created_at: DateTimeField(), required
     """
 
     name = StringField(required=True, max_length=100, min_length=1)
@@ -168,6 +169,7 @@ class Hub(Document):
     assignments = ListField(EmbeddedDocumentField(Assignment))
     posts = ListField(EmbeddedDocumentField(Post))
     messages = ListField(EmbeddedDocumentField(Message))
+    created_at = DateTimeField(required=True)
 
     meta = {
         "collection": "hubs",

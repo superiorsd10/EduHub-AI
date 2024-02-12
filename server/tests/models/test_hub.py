@@ -39,6 +39,7 @@ def test_create_hub(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
     }
 
     # Create a Hub instance
@@ -53,6 +54,7 @@ def test_create_hub(setup_teardown):
     assert retrieved_hub.creator_id == hub_data["creator_id"]
     assert retrieved_hub.members_id == hub_data["members_id"]
     assert retrieved_hub.auth_option == hub_data["auth_option"]
+    assert retrieved_hub.created_at == hub_data["created_at"]
 
 
 def test_hub_with_recordings_quizzes_assignments(setup_teardown):
@@ -67,6 +69,7 @@ def test_hub_with_recordings_quizzes_assignments(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "recordings": [
             Recording(url="https://example.com/recording1", summary="Summary 1"),
             Recording(url="https://example.com/recording2", summary="Summary 2"),
@@ -110,6 +113,7 @@ def test_hub_with_recordings_quizzes_assignments(setup_teardown):
     assert retrieved_hub.creator_id == hub_data["creator_id"]
     assert retrieved_hub.members_id == hub_data["members_id"]
     assert retrieved_hub.auth_option == hub_data["auth_option"]
+    assert retrieved_hub.created_at == hub_data["created_at"]
 
     # Verify recordings
     assert len(retrieved_hub.recordings) == 2
@@ -138,6 +142,7 @@ def test_hub_with_posts_messages(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "posts": [
             Post(
                 type="announcement",
@@ -187,6 +192,7 @@ def test_hub_with_posts_messages(setup_teardown):
     assert retrieved_hub.creator_id == hub_data["creator_id"]
     assert retrieved_hub.members_id == hub_data["members_id"]
     assert retrieved_hub.auth_option == hub_data["auth_option"]
+    assert retrieved_hub.created_at == hub_data["created_at"]
 
     # Verify posts
     assert len(retrieved_hub.posts) == 2
@@ -213,6 +219,7 @@ def test_hub_with_duplicate_streaming_url(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "streaming_url": "https://example.com/streaming1",
     }
 
@@ -221,6 +228,7 @@ def test_hub_with_duplicate_streaming_url(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "streaming_url": "https://example.com/streaming1",  # Same streaming URL as hub_data1
     }
 
@@ -246,6 +254,7 @@ def test_hub_theme_color_and_photo_url(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "theme_color": "#336699",
         "photo_url": "https://example.com/hub_photo.jpg",
     }
@@ -262,6 +271,7 @@ def test_hub_theme_color_and_photo_url(setup_teardown):
     assert retrieved_hub.creator_id == hub_data["creator_id"]
     assert retrieved_hub.members_id == hub_data["members_id"]
     assert retrieved_hub.auth_option == hub_data["auth_option"]
+    assert retrieved_hub.created_at == hub_data["created_at"]
     assert retrieved_hub.theme_color == hub_data["theme_color"]
     assert retrieved_hub.photo_url == hub_data["photo_url"]
 
@@ -278,6 +288,7 @@ def test_hub_with_invalid_recordings(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId(), ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "recordings": [
             Recording(
                 url="https://example.com/recording1"
@@ -304,6 +315,7 @@ def test_hub_with_messages_and_reactions(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId(), ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "messages": [
             Message(
                 sender_id=ObjectId(),
@@ -332,6 +344,7 @@ def test_hub_with_messages_and_reactions(setup_teardown):
     assert retrieved_hub.creator_id == hub_data["creator_id"]
     assert retrieved_hub.members_id == hub_data["members_id"]
     assert retrieved_hub.auth_option == hub_data["auth_option"]
+    assert retrieved_hub.created_at == hub_data["created_at"]
 
     # Verify messages
     assert len(retrieved_hub.messages) == 2
@@ -351,6 +364,7 @@ def test_hub_with_duplicate_institute_id(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "institute_id": "institute123",
     }
 
@@ -359,6 +373,7 @@ def test_hub_with_duplicate_institute_id(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "institute_id": "institute123",  # Duplicate institute_id
     }
 
@@ -384,6 +399,7 @@ def test_hub_with_empty_name(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId(), ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
     }
 
     # Attempt to create and save the Hub with an empty name
@@ -404,6 +420,7 @@ def test_hub_with_invalid_auth_option(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId(), ObjectId()]},
         "auth_option": "invalid_option",  # Invalid auth_option
+        "created_at": datetime.now().replace(microsecond=0),
     }
 
     # Attempt to create and save the Hub with an invalid auth_option
@@ -424,6 +441,7 @@ def test_hub_with_invalid_url_formats(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "streaming_url": "invalid_url",  # Invalid streaming URL format
         "photo_url": "ftp://invalid_url",  # Invalid photo URL format
     }
@@ -466,6 +484,7 @@ def test_hub_with_large_data(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         **large_data,
     }
 
@@ -512,6 +531,7 @@ def test_hub_with_invalid_quiz_data(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         **invalid_quiz_data,
     }
 
@@ -535,6 +555,7 @@ def test_hub_with_expired_quiz_or_assignment(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "quizzes": [
             Quiz(title="Expired Quiz", due_datetime=expired_due_datetime),
         ],
@@ -565,6 +586,7 @@ def test_hub_with_long_strings(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
     }
 
     # Attempt to create and save the Hub with very long strings
@@ -587,6 +609,7 @@ def test_hub_with_specific_theme_color(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "theme_color": theme_color,
     }
 
@@ -615,6 +638,7 @@ def test_hub_with_specific_streaming_url(setup_teardown):
         "creator_id": ObjectId(),
         "members_id": {"admins": [ObjectId()], "members": [ObjectId()]},
         "auth_option": "open_to_anyone",
+        "created_at": datetime.now().replace(microsecond=0),
         "streaming_url": streaming_url,
     }
 
