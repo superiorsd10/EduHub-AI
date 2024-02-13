@@ -2,7 +2,9 @@
 Hub routes for the Flask application.
 """
 
+import json
 from datetime import datetime
+import mongoengine
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
@@ -11,6 +13,7 @@ from app.models.user import User
 from app.core import limiter
 from config.config import Config
 from marshmallow import Schema, fields, ValidationError
+from bson.objectid import ObjectId
 
 hub_blueprint = Blueprint("hub", __name__)
 
@@ -65,17 +68,18 @@ def create_hub():
         description = data["description"]
         email = data["email"]
 
-        if "hub_name" not in data or "email" not in data:
+        user_cache_key = f"user:{email}"
+        redis_client = Config.redis_client
+        user_object_id = redis_client.hget(user_cache_key, "user_object_id")
+        user_object_id = ObjectId(user_object_id.decode("utf-8"))
+
+        user = User.objects(id=user_object_id).first()
+
+        if not user:
             return (
-                jsonify({"error": "Invalid data provided", "success": False}),
+                jsonify({"error": "User not found", "success": False}),
                 ErrorCode.BAD_REQUEST.value,
             )
-
-        user_cache_key = f"user:${email}"
-
-        redis_client = Config.redis_client
-
-        user_object_id = redis_client.hget(user_cache_key, "user_id")
 
         default_member_id = {
             "teacher": [user_object_id],
@@ -96,20 +100,13 @@ def create_hub():
 
         new_hub_id = new_hub.id
 
-        updated_count = User.objects(email=email).update_one(
-            push__hubs__teacher=new_hub_id
-        )
+        if "teacher" not in user.hubs:
+            user.hubs["teacher"] = []
 
-        if updated_count == 0:
-            return (
-                jsonify(
-                    {
-                        "error": "User not found or specified key does not exist",
-                        "success": False,
-                    }
-                ),
-                ErrorCode.NOT_FOUND.value,
-            )
+        user.hubs["teacher"].append(new_hub_id)
+        user.save()
+
+        redis_client.hset(user_cache_key, "hubs", json.dumps([], default=str))
 
         return (
             jsonify({"message": "Hub created successfully", "success": True}),
@@ -119,6 +116,18 @@ def create_hub():
     except ValidationError as error:
         return (
             jsonify({"error": error.messages, "success": False}),
+            ErrorCode.BAD_REQUEST.value,
+        )
+
+    except mongoengine.errors.NotUniqueError:
+        return (
+            jsonify({"error": "Hub name already exists", "success": False}),
+            ErrorCode.CONFLICT.value,
+        )
+
+    except mongoengine.errors.ValidationError as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
             ErrorCode.BAD_REQUEST.value,
         )
 
