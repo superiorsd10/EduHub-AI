@@ -2,6 +2,7 @@
 Hub routes for the Flask application.
 """
 
+from datetime import datetime
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import ErrorCode
@@ -49,11 +50,19 @@ def create_hub():
 
         user_object_id = redis_client.hget(user_cache_key, "user_id")
 
+        default_member_id = {
+            "teacher": [user_object_id],
+            "teaching_assistant": [],
+            "student": [],
+        }
+
         new_hub = Hub(
             name=hub_name,
             section=section,
             description=description,
             creator_id=user_object_id,
+            members_id=default_member_id,
+            created_at=datetime.now().replace(microsecond=0),
         )
 
         new_hub.save()
