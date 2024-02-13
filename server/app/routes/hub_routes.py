@@ -10,8 +10,33 @@ from app.models.hub import Hub
 from app.models.user import User
 from app.core import limiter
 from config.config import Config
+from marshmallow import Schema, fields, ValidationError
 
 hub_blueprint = Blueprint("hub", __name__)
+
+
+class CreateHubSchema(Schema):
+    """
+    Marshmallow schema for validating and sanitizing data for creating a new hub.
+
+    This schema defines the following fields:
+
+    - `hub_name`: Required string representing the name of the hub.
+    - `section`: Optional string representing the section the hub belongs to.
+    - `description`: Optional string describing the hub.
+    - `email`: Required email address of the user creating the hub.
+
+    Raises:
+        ValidationError: If any field fails validation.
+
+    Returns:
+        dict: Validated and sanitized data dictionary.
+    """
+
+    hub_name = fields.String(required=True)
+    section = fields.String()
+    description = fields.String()
+    email = fields.Email(required=True)
 
 
 @hub_blueprint.route("/api/create-hub", methods=["POST"])
@@ -32,7 +57,9 @@ def create_hub():
     :return: JSON response with success or error message.
     """
     try:
-        data = request.get_json()
+        schema = CreateHubSchema()
+        data = schema.load(request.get_json())
+
         hub_name = data["hub_name"]
         section = data["section"]
         description = data["description"]
@@ -87,6 +114,12 @@ def create_hub():
         return (
             jsonify({"message": "Hub created successfully", "success": True}),
             ErrorCode.CREATED.value,
+        )
+
+    except ValidationError as error:
+        return (
+            jsonify({"error": error.messages, "success": False}),
+            ErrorCode.BAD_REQUEST.value,
         )
 
     except Exception as error:
