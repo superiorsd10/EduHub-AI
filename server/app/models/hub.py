@@ -173,4 +173,7 @@ class Hub(Document):
 
     meta = {
         "collection": "hubs",
+        "indexes": [
+            {"fields": ["creator_id"]},
+        ],
     }
