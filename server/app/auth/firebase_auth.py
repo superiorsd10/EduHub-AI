@@ -3,7 +3,7 @@ Authentication utilities for Firebase in the Flask app.
 """
 
 from functools import wraps
-from app.enums import ErrorCode
+from app.enums import StatusCode
 from flask import request, jsonify, has_request_context
 from firebase_admin import auth
 
@@ -43,7 +43,7 @@ def firebase_token_required(func):
         if not id_token:
             return (
                 jsonify({"error": "Authorization token is missing"}),
-                ErrorCode.UNAUTHORIZED.value,
+                StatusCode.UNAUTHORIZED.value,
             )
 
         try:
@@ -53,7 +53,7 @@ def firebase_token_required(func):
         except auth.InvalidIdTokenError:
             return (
                 jsonify({"error": "Invalid authorization token"}),
-                ErrorCode.UNAUTHORIZED.value,
+                StatusCode.UNAUTHORIZED.value,
             )
 
         return func(*args, **kwargs)

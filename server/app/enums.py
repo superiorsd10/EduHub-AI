@@ -5,7 +5,7 @@ Module containing error codes Enum.
 from enum import IntEnum
 
 
-class ErrorCode(IntEnum):
+class StatusCode(IntEnum):
     """
     Enumeration of error codes.
     """

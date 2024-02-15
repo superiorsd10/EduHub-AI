@@ -9,7 +9,7 @@ from datetime import datetime
 import mongoengine
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
-from app.enums import ErrorCode
+from app.enums import StatusCode
 from app.models.hub import Hub
 from app.models.user import User
 from app.core import limiter
@@ -143,7 +143,7 @@ def create_hub():
         if not user:
             return (
                 jsonify({"error": "User not found", "success": False}),
-                ErrorCode.BAD_REQUEST.value,
+                StatusCode.BAD_REQUEST.value,
             )
 
         default_member_id = {
@@ -177,31 +177,31 @@ def create_hub():
 
         return (
             jsonify({"message": "Hub created successfully", "success": True}),
-            ErrorCode.CREATED.value,
+            StatusCode.CREATED.value,
         )
 
     except ValidationError as error:
         return (
             jsonify({"error": error.messages, "success": False}),
-            ErrorCode.BAD_REQUEST.value,
+            StatusCode.BAD_REQUEST.value,
         )
 
     except mongoengine.errors.NotUniqueError as error:
         return (
             jsonify({"error": str(error), "success": False}),
-            ErrorCode.CONFLICT.value,
+            StatusCode.CONFLICT.value,
         )
 
     except mongoengine.errors.ValidationError as error:
         return (
             jsonify({"error": str(error), "success": False}),
-            ErrorCode.BAD_REQUEST.value,
+            StatusCode.BAD_REQUEST.value,
         )
 
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
-            ErrorCode.INTERNAL_SERVER_ERROR.value,
+            StatusCode.INTERNAL_SERVER_ERROR.value,
         )
 
 
@@ -259,14 +259,14 @@ def get_hubs():
         if cached_hubs_data:
             return (
                 jsonify({"data": json.loads(cached_hubs_data), "success": True}),
-                ErrorCode.SUCCESS.value,
+                StatusCode.SUCCESS.value,
             )
 
         user_object_id = redis_client.hget(user_cache_key, "user_object_id")
         if not user_object_id:
             return (
                 jsonify({"error": "User not found in cache", "success": False}),
-                ErrorCode.BAD_REQUEST.value,
+                StatusCode.BAD_REQUEST.value,
             )
 
         try:
@@ -276,7 +276,7 @@ def get_hubs():
                 jsonify(
                     {"error": f"Invalid user object ID: {error}", "success": False}
                 ),
-                ErrorCode.BAD_REQUEST.value,
+                StatusCode.BAD_REQUEST.value,
             )
 
         user = User.objects(id=user_object_id).first()
@@ -284,7 +284,7 @@ def get_hubs():
         if not user:
             return (
                 jsonify({"error": "User not found", "success": False}),
-                ErrorCode.BAD_REQUEST.value,
+                StatusCode.BAD_REQUEST.value,
             )
 
         pipeline = [
@@ -362,24 +362,24 @@ def get_hubs():
                 jsonify(
                     {"error": f"Error fetching user or hubs: {error}", "success": False}
                 ),
-                ErrorCode.INTERNAL_SERVER_ERROR.value,
+                StatusCode.INTERNAL_SERVER_ERROR.value,
             )
 
         redis_client.hset(user_cache_key, "hubs", json.dumps(results, default=str))
 
         return (
             jsonify({"data": results, "success": True}),
-            ErrorCode.SUCCESS.value,
+            StatusCode.SUCCESS.value,
         )
 
     except ValidationError as error:
         return (
             jsonify({"error": error.messages, "success": False}),
-            ErrorCode.BAD_REQUEST.value,
+            StatusCode.BAD_REQUEST.value,
         )
 
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
-            ErrorCode.INTERNAL_SERVER_ERROR.value,
+            StatusCode.INTERNAL_SERVER_ERROR.value,
         )
