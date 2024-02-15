@@ -173,7 +173,7 @@ def create_hub():
         user.hubs["teacher"].append(new_hub_id)
         user.save()
 
-        redis_client.hset(user_cache_key, "hubs", json.dumps([], default=str))
+        redis_client.hset(user_cache_key, "hubs", json.dumps(["empty"], default=str))
 
         return (
             jsonify({"message": "Hub created successfully", "success": True}),
@@ -256,7 +256,7 @@ def get_hubs():
         user_cache_key = f"user:{email}"
         cached_hubs_data = redis_client.hget(user_cache_key, "hubs")
 
-        if cached_hubs_data:
+        if cached_hubs_data and cached_hubs_data != b'["empty"]':
             return (
                 jsonify({"data": json.loads(cached_hubs_data), "success": True}),
                 StatusCode.SUCCESS.value,
