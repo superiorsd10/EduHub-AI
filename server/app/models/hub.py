@@ -27,6 +27,7 @@ class Recording(EmbeddedDocument):
 
     url = URLField(required=True)
     summary = StringField()
+    created_at = DateTimeField()
 
 
 class Quiz(EmbeddedDocument):
@@ -46,6 +47,7 @@ class Quiz(EmbeddedDocument):
     total_points = IntField()
     topic = StringField()
     due_datetime = DateTimeField()
+    created_at = DateTimeField()
 
 
 class Assignment(EmbeddedDocument):
@@ -65,6 +67,7 @@ class Assignment(EmbeddedDocument):
     total_points = IntField()
     topic = StringField()
     due_datetime = DateTimeField()
+    created_at = DateTimeField()
 
 
 class Post(EmbeddedDocument):
