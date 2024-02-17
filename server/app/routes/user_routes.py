@@ -2,7 +2,7 @@
 User routes for the Flask application.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.user import User
@@ -51,17 +51,24 @@ def create_user():
         if not redis_client.exists(user_cache_key):
             new_user.save()
 
-        user_object_id = new_user.id
+            session["email"] = new_user.email
 
-        cache_data = {
-            "user_object_id": str(user_object_id),
-        }
+            user_object_id = new_user.id
 
-        redis_client.hmset(user_cache_key, cache_data)
+            cache_data = {
+                "user_object_id": str(user_object_id),
+            }
+
+            redis_client.hmset(user_cache_key, cache_data)
+
+            return (
+                jsonify({"message": "User created successfully", "success": True}),
+                StatusCode.CREATED.value,
+            )
 
         return (
-            jsonify({"message": "User created successfully", "success": True}),
-            StatusCode.CREATED.value,
+            jsonify({"error": "User already exists", "success": False}),
+            StatusCode.BAD_REQUEST.value,
         )
 
     except Exception as error:
