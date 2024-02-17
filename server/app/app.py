@@ -10,6 +10,7 @@ from firebase_admin import credentials, initialize_app
 from dotenv import load_dotenv
 from app.core import limiter
 from flask_cors import CORS
+from flask_session import Session
 
 
 def create_app(config=None):
@@ -45,6 +46,11 @@ def create_app(config=None):
     print(firebase_app.name)
 
     limiter.init_app(app)
+
+    app.config["SESSION_TYPE"] = "redis"
+    app.config["SESSION_REDIS"] = Config.redis_client
+
+    Session(app)
 
     try:
         connect(
