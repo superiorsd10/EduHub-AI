@@ -329,6 +329,7 @@ def get_hubs():
                             "input": "$teacher_hubs",
                             "as": "teacher_hub",
                             "in": {
+                                "hub_id": "$$teacher_hub._id",
                                 "name": "$$teacher_hub.name",
                                 "theme_color": "$$teacher_hub.theme_color",
                                 "creator_name": {
@@ -342,6 +343,7 @@ def get_hubs():
                             "input": "$student_hubs",
                             "as": "student_hub",
                             "in": {
+                                "hub_id": "$$student_hub._id",
                                 "name": "$$student_hub.name",
                                 "theme_color": "$$student_hub.theme_color",
                                 "creator_name": {
