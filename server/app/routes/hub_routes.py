@@ -7,7 +7,7 @@ import string
 import secrets
 from datetime import datetime
 import mongoengine
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.hub import Hub
@@ -16,6 +16,8 @@ from app.core import limiter
 from config.config import Config
 from marshmallow import Schema, fields, ValidationError
 from bson.objectid import ObjectId
+from app.encryption import CryptoUtils
+from redis import RedisError
 
 hub_blueprint = Blueprint("hub", __name__)
 
@@ -41,24 +43,6 @@ class CreateHubSchema(Schema):
     hub_name = fields.String(required=True)
     section = fields.String()
     description = fields.String()
-    email = fields.Email(required=True)
-
-
-class GetHubsSchema(Schema):
-    """
-    Marshmallow schema for validating and sanitizing data for creating a new hub.
-
-    This schema defines the following fields:
-
-    - `email`: Required email address of the user creating the hub.
-
-    Raises:
-        ValidationError: If any field fails validation.
-
-    Returns:
-        dict: Validated and sanitized data dictionary.
-    """
-
     email = fields.Email(required=True)
 
 
@@ -223,17 +207,16 @@ def get_hubs():
 
     - **Method:** GET
     - **URL:** /api/get-hubs
-    - **Body:** JSON data with a single key: `email` (string)
 
     **Response:**
 
-    - **Success:**
+    - Success:
         - JSON response with the following structure:
             - `data`: List of dictionaries containing hub information (name,
             photo_url, creator_name)
             - `success`: True
         - Status code: 200 OK
-    - **Error:**
+    - Error:
         - JSON response with the following structure:
             - `error`: Error message string
             - `success`: False
@@ -247,10 +230,7 @@ def get_hubs():
     - Uses Redis caching for performance optimization.
     """
     try:
-        schema = GetHubsSchema()
-        data = schema.load(request.get_json())
-
-        email = data["email"]
+        email = session.get("email")
 
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"
@@ -378,6 +358,223 @@ def get_hubs():
         return (
             jsonify({"error": error.messages, "success": False}),
             StatusCode.BAD_REQUEST.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@hub_blueprint.route("/api/hub/<hub_id>", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_hub(hub_id):
+    """
+    Retrieves hub data including introductory information and paginated content.
+
+    This endpoint retrieves data for a specific hub based on the provided hub ID.
+
+    It first attempts to decrypt the encrypted hub ID using CryptoUtils.
+    If decryption fails, it returns a BadRequest error.
+    Then, it checks the validity of the hub ID. If the ID is invalid, it returns a BadRequest error.
+
+    The function supports pagination and retrieves paginated content for
+    the hub based on the specified page number.
+
+    Cached data is first checked in Redis, and if found,
+    it is returned directly to the client.
+    If cached data is not available, the function constructs a MongoDB
+    aggregation pipeline to fetch paginated content from the database.
+    The paginated content is then stored in Redis for caching.
+
+    If the page number is 1, additional introductory data for
+    the hub is fetched from the database and also stored in
+    Redis for caching.
+    The response includes both introductory and paginated data
+    if the page number is 1, otherwise only paginated data is returned.
+
+    The function is rate-limited to 5 requests per minute per user and
+    requires a valid Firebase authentication token for access.
+
+    It handles various error scenarios including decryption errors,
+    invalid hub ID, database errors, and Redis errors,
+    and returns appropriate error responses with relevant error messages.
+
+    **Request:**
+    - Method: GET
+    - URL: /api/hub/<hub_id>
+
+    **Response:**
+    - Success:
+        - JSON response with the following structure:
+            - data: Dictionary containing introductory and paginated data
+            - success: True
+        - Status code: 200 OK
+    - Error:
+        - JSON response with the following structure:
+            - error: Error message string
+            - success: False
+        - Status code depends on the error type (e.g., 400 for bad request,
+        500 for internal server error)
+
+    **Additional notes:**
+    - Requires a valid Firebase authentication token.
+    - Rate-limited to 5 requests per minute per user.
+    - Uses Redis caching for performance optimization.
+    """
+
+    try:
+        try:
+            crypto_utils = CryptoUtils()
+            hub_id = crypto_utils.decrypt_object_id(hub_id)
+        except (RuntimeError, ValueError) as error:
+            return (
+                jsonify(
+                    {"error": "Failed to decrypt hub ID" + str(error), "success": False}
+                ),
+                StatusCode.BAD_REQUEST,
+            )
+
+        if not ObjectId.is_valid(hub_id):
+            return (
+                jsonify({"error": "Invalid hub ID", "success": False}),
+                StatusCode.BAD_REQUEST,
+            )
+
+        page = request.args.get("page", 1, type=int)
+
+        redis_client = Config.redis_client
+
+        cache_paginated_key = f"hub_{hub_id}_paginated_page_{page}"
+        cached_paginated_data = redis_client.get(cache_paginated_key)
+
+        cache_introductory_key = f"hub_{hub_id}_introductory"
+        cached_introductory_data = redis_client.get(cache_introductory_key)
+
+        if cached_introductory_data and cached_paginated_data:
+            return (
+                jsonify(
+                    {
+                        "data": {
+                            "introductory": cached_introductory_data,
+                            "paginated": cached_paginated_data,
+                        },
+                        "success": True,
+                    }
+                ),
+                StatusCode.SUCCESS.value,
+            )
+
+        if cached_paginated_data:
+            return (
+                jsonify(
+                    {
+                        "data": {
+                            "paginated": cached_paginated_data,
+                        },
+                        "success": True,
+                    }
+                ),
+                StatusCode.SUCCESS.value,
+            )
+
+        page_size = 10
+
+        pipeline = [
+            {"$match": {"_id": hub_id}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "items": {
+                        "$concatArrays": [
+                            "$recordings",
+                            "$quizzes",
+                            "$assignments",
+                            "$posts",
+                        ]
+                    },
+                }
+            },
+            {"$unwind": "$items"},
+            {"$sort": {"items.created_at": -1}},
+            {"$skip": (page - 1) * page_size},
+            {"$limit": page_size},
+        ]
+
+        result = list(Hub.objects.aggregate(pipeline))
+
+        paginated_data = [item["items"].to_json() for item in result]
+
+        redis_client.set(cache_paginated_key, jsonify(paginated_data))
+
+        if page == 1:
+            introductory_data = {}
+
+            if cached_introductory_data:
+                introductory_data = cached_introductory_data
+            else:
+                introductory_data = (
+                    Hub.objects(id=hub_id)
+                    .only(
+                        "name",
+                        "section",
+                        "description",
+                        "theme_color",
+                        "photo_url",
+                        "invite_code",
+                        "streaming_url",
+                    )
+                    .first()
+                    .to_mongo()
+                    .to_dict()
+                )
+
+                redis_client.set(
+                    cache_introductory_key,
+                    jsonify(cache_introductory_key),
+                )
+
+            return (
+                jsonify(
+                    {
+                        "data": {
+                            "introductory": introductory_data,
+                            "paginated": paginated_data,
+                        },
+                        "success": True,
+                    }
+                ),
+                StatusCode.SUCCESS.value,
+            )
+
+        return (
+            jsonify(
+                {
+                    "data": {
+                        "paginated": paginated_data,
+                    },
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
+
+    except ValidationError as error:
+        return (
+            jsonify({"error": error.messages, "success": False}),
+            StatusCode.BAD_REQUEST,
+        )
+    except mongoengine.errors.DoesNotExist as error:
+        return (
+            jsonify({"error": "Hub not found", "success": False}),
+            StatusCode.NOT_FOUND,
+        )
+    except RedisError as error:
+        return (
+            jsonify({"error": "Redis error: " + str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR,
         )
 
     except Exception as error:
