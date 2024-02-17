@@ -37,6 +37,7 @@ class Config:
     REDIS_PORT = os.environ.get("REDIS_PORT")
     REDIS_HOST = os.environ.get("REDIS_HOST")
     redis_client = redis.from_url(REDIS_URL)
+    CRYPTO_SECRET_KEY = os.getenv("CRYPTO_SECRET_KEY")
 
 
 class TestConfig:
