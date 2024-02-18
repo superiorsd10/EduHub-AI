@@ -448,10 +448,12 @@ def get_hub(hub_id):
         redis_client = Config.redis_client
 
         cache_paginated_key = f"hub_{hub_id}_paginated_page_{page}"
-        cached_paginated_data = redis_client.get(cache_paginated_key)
-
         cache_introductory_key = f"hub_{hub_id}_introductory"
-        cached_introductory_data = redis_client.get(cache_introductory_key)
+
+        cached_data = redis_client.mget(cache_paginated_key, cache_introductory_key)
+
+        cached_paginated_data = cached_data[0]
+        cached_introductory_data = cached_data[1]
 
         if cached_introductory_data and cached_paginated_data:
             return (
