@@ -2,7 +2,7 @@
 
 EduHub-AI is a platform designed to revolutionize education through the integration of artificial intelligence. It provides innovative features for both teachers and students, creating a seamless learning experience.
 
-[![Build Status](https://app.travis-ci.com/superiorsd10/EduHub-AI.svg?token=MYziQR1XZ8drKKC8d3rb&branch=main)](https://app.travis-ci.com/superiorsd10/EduHub-AI)
+![Build Status](https://github.com/superiorsd10/EduHub-AI/actions/workflows/ci.yml/badge.svg)
 
 [![Coverage Status](https://coveralls.io/repos/github/superiorsd10/EduSmart/badge.svg?branch=main)](https://coveralls.io/github/superiorsd10/EduSmart?branch=main)
 
