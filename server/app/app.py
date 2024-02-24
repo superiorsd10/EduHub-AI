@@ -2,11 +2,12 @@
 This module defines the Flask application for the project.
 """
 
-import os
+# import os
 from flask import Flask
 from mongoengine import connect
 from config.config import Config, TestConfig
-from firebase_admin import credentials, initialize_app
+
+# from firebase_admin import credentials, initialize_app
 from dotenv import load_dotenv
 from app.core import limiter
 from flask_cors import CORS
@@ -33,17 +34,17 @@ def create_app(config=None):
 
     mongo_config = app.config.get("MONGODB_SETTINGS")
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # current_dir = os.path.dirname(os.path.abspath(__file__))
 
-    key_file_path = os.path.abspath(
-        os.path.join(current_dir, "../credentials/service_account_key.json")
-    )
+    # key_file_path = os.path.abspath(
+    #     os.path.join(current_dir, "../credentials/service_account_key.json")
+    # )
 
-    cred = credentials.Certificate(key_file_path)
+    # cred = credentials.Certificate(key_file_path)
 
-    firebase_app = initialize_app(cred)
+    # firebase_app = initialize_app(cred)
 
-    print(firebase_app.name)
+    # print(firebase_app.name)
 
     limiter.init_app(app)
 
