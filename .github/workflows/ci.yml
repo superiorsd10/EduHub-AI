@@ -26,12 +26,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Decrypt .env file
-      run: echo "${{ secrets.ENV_FILE_CONTENT }}" > server/.env
+      run: echo ${{ secrets.ENV_FILE_CONTENT }} > server/.env
       env:
         ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
 
     - name: Decrypt service_account_key.json file
-      run: echo "${{ secrets.SERVICE_ACCOUNT_KEY_CONTENT }}" > server/credentials/service_account_key.json
+      run: echo ${{ secrets.SERVICE_ACCOUNT_KEY_CONTENT }} > server/credentials/service_account_key.json
       env:
         SERVICE_ACCOUNT_KEY_CONTENT: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 
@@ -48,7 +48,6 @@ jobs:
 
     - name: Run Server and Client Tests
       run: |
-        echo ${{secrets.ENV_FILE}} | sed 's/./& /g'
         coverage run --source=server -m pytest server/tests
         cd client && npm run test && cd ..
 
