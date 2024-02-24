@@ -48,7 +48,7 @@ jobs:
 
     - name: Run Server and Client Tests
       run: |
-        pytest --cov=server --cov-report=xml server/tests
+        coverage run --source=server -m pytest server/tests
         cd client && npm run test && cd ..
 
     - name: Send Coverage to Coveralls
