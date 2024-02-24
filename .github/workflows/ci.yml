@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Server and Client Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Decrypt .env file
+      run: echo "${{ secrets.ENV_FILE_CONTENT }}" > server/.env
+      env:
+        ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
+
+    - name: Decrypt service_account_key.json file
+      run: echo "${{ secrets.SERVICE_ACCOUNT_KEY_CONTENT }}" > server/credentials/service_account_key.json
+      env:
+        SERVICE_ACCOUNT_KEY_CONTENT: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+
+    - name: Install Python Dependencies
+      run: pip install -r server/requirements.txt
+
+    - name: Install Node.js and NPM
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+
+    - name: Install Client Dependencies
+      run: cd client && npm install && cd ..
+
+    - name: Run Server and Client Tests
+      run: |
+        pytest --cov=server --cov-report=xml server/tests
+        cd client && npm run test && cd ..
+
+    - name: Send Coverage to Coveralls
+      run: coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
