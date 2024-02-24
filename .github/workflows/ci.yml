@@ -31,7 +31,8 @@ jobs:
         ENV_FILE: ${{ secrets.ENV_FILE }}
 
     - name: Decrypt service_account_key.json file
-      run: echo "${{ secrets.SERVICE_ACCOUNT_KEY }}" > server/credentials/service_account_key.json
+      run: |
+        echo "${{ secrets.SERVICE_ACCOUNT_KEY }}" | base64 -d > server/credentials/service_account_key.json
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 
