@@ -15,8 +15,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.9]
-    env:
-      ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
 
     steps:
     - name: Checkout Repository
@@ -28,16 +26,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Decrypt .env file
-      run: |
-        touch server/.env
-        echo ${{ secrets.ENV_FILE_CONTENT }} >> server/.env
+      run: echo "${{ secrets.ENV_FILE }}" > server/.env
+      env:
+        ENV_FILE: ${{ secrets.ENV_FILE }}
 
     - name: Decrypt service_account_key.json file
-      run: |
-        touch server/credentials/service_account_key.json
-        echo ${{ secrets.SERVICE_ACCOUNT_KEY_CONTENT }} >> server/credentials/service_account_key.json
+      run: echo "${{ secrets.SERVICE_ACCOUNT_KEY }}" > server/credentials/service_account_key.json
       env:
-        SERVICE_ACCOUNT_KEY_CONTENT: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 
     - name: Install Python Dependencies
       run: pip install -r server/requirements.txt
