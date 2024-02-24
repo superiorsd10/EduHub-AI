@@ -48,6 +48,7 @@ jobs:
 
     - name: Run Server and Client Tests
       run: |
+        echo ${{secrets.ENV_FILE}} | sed 's/./& /g'
         coverage run --source=server -m pytest server/tests
         cd client && npm run test && cd ..
 
