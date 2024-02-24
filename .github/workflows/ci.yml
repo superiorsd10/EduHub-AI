@@ -26,7 +26,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Decrypt .env file
-      run: echo ${{ secrets.ENV_FILE_CONTENT }} > server/.env
+      run: |
+        touch server/.env
+        echo ${{ secrets.ENV_FILE_CONTENT }} > server/.env
       env:
         ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
 
