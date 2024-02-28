@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 from app.core import limiter
 from flask_cors import CORS
 from flask_session import Session
+from flask_socketio import SocketIO
+
+socketio = SocketIO()
 
 
 def create_app(config=None):
@@ -52,6 +55,8 @@ def create_app(config=None):
     app.config["SESSION_REDIS"] = Config.redis_client
 
     Session(app)
+
+    socketio.init_app(app)
 
     try:
         connect(
