@@ -700,7 +700,7 @@ def join_hub(invite_code):
         join_room(room_id)
         socketio.emit(
             "join_request_notification",
-            {"user_id": user_object_id, "hub_id": hub_id},
+            {"user_id": user_object_id, "hub_id": hub_id, "room_id": room_id},
             room=room_id,
         )
 
