@@ -46,6 +46,26 @@ class CreateHubSchema(Schema):
     email = fields.Email(required=True)
 
 
+class JoinHubSchema(Schema):
+    """
+    Marshmallow schema for validating and sanitizing data for joining a hub.
+
+    This schema defines a single field:
+
+    - `email` (required, str): The email address of the user joining the hub.
+
+    Raises:
+
+    - ValidationError: if the email address is invalid.
+
+    Returns:
+
+    - dict: A validated and sanitized dictionary containing the user's email.
+    """
+
+    email = fields.Email(required=True)
+
+
 def generate_invite_code():
     """
     Generates a random, 7-character alphanumeric invite code.
