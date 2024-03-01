@@ -13,6 +13,7 @@ from app.core import limiter
 from flask_cors import CORS
 from flask_session import Session
 from flask_socketio import SocketIO
+import boto3
 
 socketio = SocketIO()
 
@@ -57,6 +58,13 @@ def create_app(config=None):
     Session(app)
 
     socketio.init_app(app)
+
+    app.config["S3_CLIENT"] = boto3.client(
+        "s3",
+        region_name="ap-south-1",
+        aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
+    )
 
     try:
         connect(
