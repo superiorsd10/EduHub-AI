@@ -96,7 +96,7 @@ class Post(EmbeddedDocument):
     type = StringField(choices=("announcement", "material"), required=True)
     title = StringField(required=True)
     description = StringField()
-    attachments_url = URLField()
+    attachments_url = ListField(URLField())
     attachments_type = ListField(StringField())
     topic = StringField()
     created_at = DateTimeField()
