@@ -8,9 +8,12 @@ import { LuPencilLine } from "react-icons/lu";
 import { TfiBlackboard } from "react-icons/tfi";
 import { SlSettings } from "react-icons/sl";
 import { IoCalendar } from "react-icons/io5";
+import { GiStarSwirl } from "react-icons/gi";
+
 
 import UserDrawerItem from "./UserDrawerItem";
 import UserDrawerDropdown from "./UserDrawerDropdown";
+import UpgradePlan from "../UpgradePlan";
 
 type DropDownElement = {
   text: string;
@@ -35,6 +38,8 @@ const UserDrawer = () => {
     { text: "What not to do in life?", href: "#" },
   ];
 
+  const [isUpgradePlanModalOpen, setIsUpgradePlanModalOpen]= useState<boolean>(false);
+
   return (
     <AppShell
       header={{ height: "10vh" }}
@@ -45,8 +50,8 @@ const UserDrawer = () => {
       }}
       zIndex={100}
     >
-      <AppShell.Navbar ref={ref}>
-        <Stack gap="lg" pl="2vw" pr="2vw" pt="2vw">
+      <AppShell.Navbar ref={ref} >
+        <Stack gap="lg" p='2vw' h='100%'>
           <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={MdOutlineHub} name="Hubs" />
           <UserDrawerItem  isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={LuPencilLine} name="Enrolled">
             <UserDrawerDropdown DropDownElements={dropdownElementsEnrolled} />
@@ -56,6 +61,12 @@ const UserDrawer = () => {
           </UserDrawerItem>
           <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={IoCalendar} name="Calender" />
           <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={SlSettings} name="Settings" />
+          <Stack style={{flex:1}}></Stack>
+          <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={GiStarSwirl} name="Upgrade Plan" onClick={()=>{
+            if(!isUpgradePlanModalOpen)
+            setIsUpgradePlanModalOpen(true)
+          }}/>
+          <UpgradePlan isOpen={isUpgradePlanModalOpen} setIsOpen={setIsUpgradePlanModalOpen}/>
         </Stack>
       </AppShell.Navbar>
     </AppShell>

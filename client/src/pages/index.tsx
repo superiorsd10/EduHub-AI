@@ -1,6 +1,17 @@
 import React, { useContext } from "react";
 import { NextPage } from "next";
-import { Avatar, Button, Flex, Group, Image, Stack, Textarea } from "@mantine/core";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Group,
+  Image,
+  Stack,
+  Text,
+  Textarea,
+} from "@mantine/core";
 import Banner from "@/components/HomePage/Banner";
 import Faqs from "@/components/HomePage/FAQs/Faqs";
 import Footer from "@/components/HomePage/Footer";
@@ -11,9 +22,9 @@ import { AuthContext } from "@/components/Providers/AuthProvider";
 import Link from "next/link";
 import { IoMdArrowDropup } from "react-icons/io";
 import NextLink from "@/utils/NextLink";
-import { useDisclosure } from '@mantine/hooks';
-import { Modal } from '@mantine/core';
-import { Input } from '@mantine/core';
+import { useDisclosure } from "@mantine/hooks";
+import { Modal } from "@mantine/core";
+import { Input } from "@mantine/core";
 
 const ScrollToTopContainerVariants: Variants = {
   hide: { opacity: 0, y: 100 },
@@ -59,10 +70,10 @@ const index: NextPage = () => {
         <Flex w="100vw" maw="100%" h={componentHeight} justify="flex-end">
           <motion.div
             initial={{ width: "94vw" }}
-            animate={{ width: isDrawerOpen ? "84vw" : "94vw" }}
+            animate={{ width: isDrawerOpen ? "83vw" : "94vw" }}
             transition={{ duration: 0.4 }}
           >
-            <Stack w="100%" h={componentHeight} justify="center" align="center">
+            {/* <Stack w="100%" h={componentHeight} justify="center" align="center">
               <Image
                 h="50svh"
                 src="/assets/LandingPageIllustration.png"
@@ -89,7 +100,23 @@ const index: NextPage = () => {
                   <Button color="black" radius='md'>Join Hub</Button>
                 </NextLink>
               </Group>
-            </Stack>
+            </Stack> */}
+            <Flex w="100%" h={componentHeight} p="lg" gap="lg">
+              <Card shadow="sm" padding="lg" radius="md" h='fit-content' w='20%' withBorder>
+                <Card.Section h='15vh' bg='red' style={{position:'relative'}}>
+                  <Group p='lg'>
+                    <Stack>
+                      <Text color="white" size='xl'>Cryptography</Text>
+                      <Text color="white" size='sm'>Dr. Dhananjoy Dey</Text>
+                    </Stack>
+                  </Group>
+                  <Avatar style={{position:'absolute', right:'10%'}}></Avatar>
+                </Card.Section>
+                <Stack h='25vh'>
+                
+                </Stack>
+              </Card>
+            </Flex>
           </motion.div>
         </Flex>
       )}

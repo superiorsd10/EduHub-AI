@@ -2,6 +2,7 @@ import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../Providers/AuthProvider";
 import { IoMdArrowDropright, IoMdArrowDropdown } from "react-icons/io";
+import { useHover } from '@mantine/hooks';
 
 import { Box, Collapse, Group, Stack } from "@mantine/core";
 import NextLink from "@/utils/NextLink";
@@ -12,6 +13,7 @@ type Props = {
   href?: string;
   children?: ReactNode;
   isDrawerTemporarilyOpen: boolean;
+  onClick?: ()=>void;
 };
 
 const UserDrawerItem: React.FC<Props> = ({
@@ -20,14 +22,18 @@ const UserDrawerItem: React.FC<Props> = ({
   href = "#",
   children,
   isDrawerTemporarilyOpen,
+  onClick
 }) => {
+  const { hovered, ref } = useHover();
   const { isDrawerOpen } = useContext(AuthContext);
   useEffect(() => {
     if (!isDrawerOpen && !isDrawerTemporarilyOpen) setIsDropDownVisible(false);
   }, [isDrawerOpen, isDrawerTemporarilyOpen]);
   const [isDropDownVisible, setIsDropDownVisible] = useState<boolean>(false);
   return (
-    <Stack gap="0">
+    <Stack gap="0" ref={ref} bg={hovered?'#DEE2E6':'white'} style={{cursor:'pointer'}} onClick={()=>{
+      if(onClick) onClick()
+    }}>
       <Group gap="sm" justify="center" align="center" h='2vw'>
         <Box
           style={{
