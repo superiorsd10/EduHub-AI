@@ -38,6 +38,8 @@ class Config:
     REDIS_HOST = os.environ.get("REDIS_HOST")
     redis_client = redis.from_url(REDIS_URL)
     CRYPTO_SECRET_KEY = os.getenv("CRYPTO_SECRET_KEY")
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 
 class TestConfig:

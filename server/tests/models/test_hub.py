@@ -148,7 +148,7 @@ def test_hub_with_posts_messages(setup_teardown):
                 type="announcement",
                 title="Important Announcement",
                 description="This is a crucial announcement.",
-                attachments_url="https://example.com/attachment",
+                attachments_url=["https://example.com/attachment"],
                 attachments_type=["pdf"],
                 topic="General",
                 created_at=datetime(2024, 2, 15, 10, 0, 0),
@@ -159,7 +159,7 @@ def test_hub_with_posts_messages(setup_teardown):
                 type="material",
                 title="Study Material",
                 description="Attached is the study material for the upcoming quiz.",
-                attachments_url="https://example.com/study_material",
+                attachments_url=["https://example.com/study_material"],
                 attachments_type=["docx"],
                 topic="Science",
                 created_at=datetime(2024, 2, 16, 12, 0, 0),
@@ -198,7 +198,8 @@ def test_hub_with_posts_messages(setup_teardown):
     assert len(retrieved_hub.posts) == 2
     assert retrieved_hub.posts[0].type == "announcement"
     assert (
-        retrieved_hub.posts[1].attachments_url == "https://example.com/study_material"
+        retrieved_hub.posts[1].attachments_url[0]
+        == "https://example.com/study_material"
     )
 
     # Verify messages
