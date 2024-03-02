@@ -30,6 +30,8 @@
     "@mantine/nprogress": "^7.4.1",
     "@mantine/spotlight": "^7.4.1",
     "@mantine/tiptap": "^7.4.1",
+    "@stripe/react-stripe-js": "^2.5.1",
+    "@stripe/stripe-js": "^3.0.6",
     "@tabler/icons-react": "^2.46.0",
     "@tiptap/extension-link": "^2.1.16",
     "@tiptap/react": "^2.1.16",

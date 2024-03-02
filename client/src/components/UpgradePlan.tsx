@@ -3,6 +3,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { Modal, Button, Title, Group, Stack, List, Text } from "@mantine/core";
 import { FaCheck } from "react-icons/fa6";
 import { PlanDetails } from "./PlanDetails";
+import { loadStripe } from "@stripe/stripe-js";
+import { useRouter} from "next/router";
 
 type Props = {};
 
@@ -14,6 +16,12 @@ const UpgradePlan = ({
   setIsOpen: (isOpen: boolean) => void;
 }) => {
   const { free, pro } = PlanDetails;
+  const router = useRouter();
+
+  const handleClickUpgrade = async () => {
+    router.push('./checkout');
+  };
+
   return (
     <>
       <Modal
@@ -60,7 +68,12 @@ const UpgradePlan = ({
           >
             <Title size="h5">Pro</Title>
             <Title size="h5">USD 20$/month</Title>
-            <Button variant="filled" color="black" size="md">
+            <Button
+              variant="filled"
+              color="black"
+              size="md"
+              onClick={handleClickUpgrade}
+            >
               Upgrade to Pro
             </Button>
             <List>

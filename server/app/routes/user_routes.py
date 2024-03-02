@@ -2,6 +2,8 @@
 User routes for the Flask application.
 """
 
+import os
+import stripe
 from flask import Blueprint, request, jsonify, session
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
@@ -76,3 +78,76 @@ def create_user():
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+
+
+@user_blueprint.route("/api/create-payment-intent", methods=["POST"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def create_payment():
+    """
+    Create a new payment intent.
+
+    This route expects a JSON payload with 'email' field.
+    If the payload is valid, it creates a new payment id and returns a client_secret key.
+
+    Decorators:
+    - @firebase_token_required: Ensures that the request has a valid Firebase authentication token.
+
+    :return: JSON response with client_secret key or error message.
+    """
+    try:
+        print(request.get_json())
+        email = request.get_json()["email"]
+        stripe_keys = {
+            "secret_key": os.environ["STRIPE_SECRET_KEY"],
+            "publishable_key": os.environ["STRIPE_PUBLISHABLE_KEY"],
+        }
+
+        stripe.api_key = stripe_keys["secret_key"]
+        intent = stripe.PaymentIntent.create(
+            amount=500,
+            currency="inr",
+            automatic_payment_methods={
+                "enabled": True,
+            },
+            receipt_email=email,
+        )
+
+        return (
+            {
+                "clientSecret": intent["client_secret"],
+            },
+            StatusCode.SUCCESS,
+        )
+
+    except Exception as error:
+        return jsonify(error=str(error)), StatusCode.UNAUTHORIZED
+
+
+# @user_blueprint.route('/api/activities/check-payment-intent', methods=['POST'])
+# def check_payment():
+#     stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
+#     endpoint_secret = os.environ["STRIPE_ENDPOINT_KEY"]
+
+#     event = None
+#     payload = request.data
+#     sig_header = request.headers['STRIPE_SIGNATURE']
+
+#     try:
+#         event = stripe.Webhook.construct_event(
+#             payload, sig_header, endpoint_secret
+#         )
+#     except ValueError as e:
+#         raise e
+#     except stripe.error.SignatureVerificationError as e:
+#         raise e
+
+#     if event['type'] == 'payment_intent.succeeded':
+#         payment_intent = event['data']['object']
+#         user_uuid = payment_intent['metadata']['customer']
+#         print(f"User {user_uuid} completed a payment.")
+
+#     else:
+#         print('Unhandled event type {}'.format(event['type']))
+
+#     return jsonify(success=True)
