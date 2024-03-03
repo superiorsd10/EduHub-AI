@@ -15,6 +15,7 @@ from marshmallow import Schema, fields, ValidationError
 from app.enums import StatusCode
 from app.models.hub import Post, Hub
 from bson import ObjectId
+from app.celery.tasks.post_tasks import process_uploaded_file
 
 post_blueprint = Blueprint("post", __name__)
 
@@ -153,8 +154,12 @@ def create_post(hub_id):
 
         uploaded_file_urls = []
 
+        hub_object_id = decode_base64_to_objectid(hub_id)
+        post_uuid = uuid.uuid4()
+
         for file in files:
             if file and allowed_file(file.filename):
+                file_data = file.read()
                 filename = secure_filename(file.filename)
                 extension = os.path.splitext(filename)[1]
                 unique_filename = str(uuid.uuid4()) + extension
@@ -168,10 +173,15 @@ def create_post(hub_id):
                 )
                 file_url = f"https://eduhub-ai.s3.amazonaws.com/{file_key}"
                 uploaded_file_urls.append(file_url)
-
-        hub_object_id = decode_base64_to_objectid(hub_id)
+                process_uploaded_file.delay(
+                    file_data,
+                    filename,
+                    hub_id,
+                    post_uuid,
+                )
 
         post = Post(
+            uuid=post_uuid,
             type=data.get("type"),
             title=data.get("title"),
             description=data.get("description"),
