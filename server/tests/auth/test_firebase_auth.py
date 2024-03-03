@@ -10,7 +10,7 @@ from app.enums import StatusCode
 from flask import jsonify
 from config.config import Config
 
-app = create_app(Config)
+app = create_app(Config)[0]
 app.config["TESTING"] = True
 app.config["DEBUG"] = False
 
