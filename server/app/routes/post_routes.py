@@ -260,7 +260,7 @@ def create_post(hub_id):
         )
 
 
-@post_blueprint.route("/api/chat-with-material/<attachment_id>", methods=["POST"])
+@post_blueprint.route("/api/chat-with-material/<attachment_id>", methods=["GET"])
 @limiter.limit("5 per minute")
 @firebase_token_required
 def chat_with_material(attachment_id):
