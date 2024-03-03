@@ -42,6 +42,7 @@ class Config:
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
     CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 
 class TestConfig:
