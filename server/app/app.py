@@ -14,7 +14,8 @@ from flask_cors import CORS
 from flask_session import Session
 from flask_socketio import SocketIO
 import boto3
-from server.celery.celery import celery_instance, init_celery
+from app.celery.celery import celery_instance, init_celery
+import google.generativeai as genai
 
 socketio = SocketIO()
 
@@ -68,6 +69,8 @@ def create_app(config=None):
     )
 
     init_celery(app)
+
+    genai.configure(api_key=Config.GOOGLE_API_KEY)
 
     try:
         connect(
