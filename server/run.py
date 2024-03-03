@@ -11,7 +11,7 @@ from app.routes.post_routes import post_blueprint
 from app.sockets.hub_sockets import handle_accept_request, handle_reject_request
 
 
-app = create_app(Config)
+app, celery_instance = create_app(Config)
 
 jwt = JWTManager(app)
 
