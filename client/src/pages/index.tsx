@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Card,
+  Divider,
   Flex,
   Group,
   Image,
@@ -25,6 +26,9 @@ import NextLink from "@/utils/NextLink";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal } from "@mantine/core";
 import { Input } from "@mantine/core";
+import { auth } from "@/firebase/clientApp";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 const ScrollToTopContainerVariants: Variants = {
   hide: { opacity: 0, y: 100 },
@@ -103,19 +107,23 @@ const index: NextPage = () => {
             </Stack> */}
             <Flex w="100%" h={componentHeight} p="lg" gap="lg">
               <Card shadow="sm" padding="lg" radius="md" h='fit-content' w='20%' withBorder>
-                <Card.Section h='15vh' bg='red' style={{position:'relative'}}>
-                  <Group p='lg'>
+                <Card.Section h='15vh' bg='orange' style={{ position: 'relative' }} withBorder>
+                  <Group p='md'>
                     <Stack>
-                      <Text color="white" size='xl'>Cryptography</Text>
+                      <Group justify="space-between">
+                        <Text color="white" size='xl'>Cryptography</Text>
+                        <FontAwesomeIcon icon={faEllipsisVertical} size="xl" style={{color: "#ffffff", position:'absolute', right:'10%'}} />
+                      </Group>
                       <Text color="white" size='sm'>Dr. Dhananjoy Dey</Text>
                     </Stack>
                   </Group>
-                  <Avatar style={{position:'absolute', right:'10%'}}></Avatar>
+                  <Avatar size="lg" src={auth.currentUser?.photoURL} style={{ position: 'absolute', right: '10%', top: '67%' }}></Avatar>
                 </Card.Section>
                 <Stack h='25vh'>
-                
+
                 </Stack>
               </Card>
+
             </Flex>
           </motion.div>
         </Flex>
