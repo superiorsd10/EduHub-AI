@@ -435,6 +435,7 @@ disable=raw-checker-failed,
         unused-argument,
         redefined-outer-name,
         protected-access,
+        not-callable,
       ;   use-implicit-booleaness-not-comparison-to-string,
       ;   use-implicit-booleaness-not-comparison-to-zero,
 
