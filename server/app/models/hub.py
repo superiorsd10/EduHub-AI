@@ -13,6 +13,7 @@ from mongoengine import (
     URLField,
     IntField,
     DateTimeField,
+    UUIDField,
 )
 
 
@@ -93,6 +94,7 @@ class Post(EmbeddedDocument):
     ]
     """
 
+    uuid = UUIDField()
     type = StringField(choices=("announcement", "material"), required=True)
     title = StringField(required=True)
     description = StringField()
