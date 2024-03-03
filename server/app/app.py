@@ -14,6 +14,7 @@ from flask_cors import CORS
 from flask_session import Session
 from flask_socketio import SocketIO
 import boto3
+from server.celery.celery import celery_instance, init_celery
 
 socketio = SocketIO()
 
@@ -66,6 +67,8 @@ def create_app(config=None):
         aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
     )
 
+    init_celery(app)
+
     try:
         connect(
             db=mongo_config["db"],
@@ -77,7 +80,7 @@ def create_app(config=None):
     except Exception as exception:
         print(f"Failed to connect to MongoDB: {exception}")
 
-    return app
+    return app, celery_instance
 
 
 def create_test_app():
