@@ -48,8 +48,7 @@ def firebase_token_required(func):
 
         try:
             decoded_token = auth.verify_id_token(id_token)
-            user_id = decoded_token["uid"]
-            request_obj.headers.add_header("user_id", user_id)
+            print(decoded_token)
         except auth.InvalidIdTokenError:
             return (
                 jsonify({"error": "Invalid authorization token"}),
