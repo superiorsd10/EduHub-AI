@@ -94,6 +94,7 @@ def process_uploaded_file(
     filename: str,
     hub_id: str,
     post_id: UUID,
+    attachment_id: str,
 ) -> None:
     """
     Asynchronously process an uploaded file, extract text content,
@@ -128,27 +129,42 @@ def process_uploaded_file(
         if file_type == "application/pdf":
             extracted_text = extract_text_from_pdf(file_data)
 
-            embeddings = []
+            embedding_docs = []
+
             num_chunks = len(extracted_text)
             remainder = num_chunks % 1000
+            counter = 0
 
             for i in range(0, num_chunks, 1000):
                 chunk = extracted_text[i : i + 1000]
                 embedding = extract_text_embedding(chunk)
-                embeddings.append(embedding)
+                counter += 1
+                embedding_doc = Embedding(
+                    hub_id=hub_id,
+                    post_id=post_id,
+                    attachment_id=attachment_id,
+                    batch_no=counter,
+                    text_content=chunk,
+                    embeddings=embedding,
+                )
+                embedding_docs.append(embedding_doc)
 
             if remainder > 0:
                 remainder_chunk = extracted_text[(num_chunks // 1000) * 1000 :]
                 embedding = extract_text_embedding(remainder_chunk)
-                embeddings.append(embedding)
+                counter += 1
+                embedding_doc = Embedding(
+                    hub_id=hub_id,
+                    post_id=post_id,
+                    attachment_id=attachment_id,
+                    batch_no=counter,
+                    text_content=remainder_chunk,
+                    embeddings=embedding,
+                )
+                embedding_docs.append(embedding_doc)
 
-            embedding_doc = Embedding(
-                hub_id=hub_id,
-                post_id=post_id,
-                embeddings=embeddings,
-            )
+            Embedding.objects.insert(embedding_docs, load_bulk=False)
 
-            embedding_doc.save()
         else:
             print("Unsupported File Type")
 
