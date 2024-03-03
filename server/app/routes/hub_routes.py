@@ -253,6 +253,7 @@ def get_hubs():
     """
     try:
         email = session.get("email")
+        print(email)
 
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"

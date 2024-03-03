@@ -25,7 +25,7 @@ const checkout: NextPageWithLayout = () => {
     const handleClickUpgrade = async () => {
       console.log("redirecting...");
       const response = await fetch(
-        "http://127.0.0.1:5000/",
+        "http://127.0.0.1:5000/api/create-payment-intent",
         {
           method: "POST",
           headers: {

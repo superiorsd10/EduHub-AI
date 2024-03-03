@@ -1,6 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { NextPage } from "next";
 import {
+  Anchor,
   Avatar,
   Badge,
   Button,
@@ -38,8 +39,24 @@ const ScrollToTopContainerVariants: Variants = {
 const index: NextPage = () => {
   const { componentHeight } = useContext(AuthContext);
   const controls = useAnimationControls();
-  const { isLoggedIn, isDrawerOpen } = useContext(AuthContext);
+  const { isLoggedIn, isDrawerOpen, token } = useContext(AuthContext);
   const [opened, { open, close }] = useDisclosure(false);
+
+  useEffect(()=>{
+    const getHubs= async ()=>{
+      const response=await fetch('http://127.0.0.1:5000/api/get-hubs',{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`, 
+        },
+      });
+      
+      const hubs = await response.json();
+      console.log(hubs)
+    }
+    if(isLoggedIn) getHubs();
+  },[isLoggedIn])
 
   return (
     <Flex
@@ -106,24 +123,54 @@ const index: NextPage = () => {
               </Group>
             </Stack> */}
             <Flex w="100%" h={componentHeight} p="lg" gap="lg">
-              <Card shadow="sm" padding="lg" radius="md" h='fit-content' w='20%' withBorder>
-                <Card.Section h='15vh' bg='orange' style={{ position: 'relative' }} withBorder>
-                  <Group p='md'>
-                    <Stack>
+              <Card
+                shadow="sm"
+                padding="lg"
+                radius="md"
+                h="fit-content"
+                w="20%"
+                withBorder
+              >
+                <Card.Section
+                  h="15vh"
+                  bg="orange"
+                  style={{ position: "relative" }}
+                  withBorder
+                >
+                  <Group p="md" style={{position:'relative'}}>
+                    <Stack >
                       <Group justify="space-between">
-                        <Text color="white" size='xl'>Cryptography</Text>
-                        <FontAwesomeIcon icon={faEllipsisVertical} size="xl" style={{color: "#ffffff", position:'absolute', right:'10%'}} />
+                        <Text color="white" size="xl">
+                          Cryptography
+                        </Text>
+                        <FontAwesomeIcon
+                          icon={faEllipsisVertical}
+                          size="xl"
+                          style={{
+                            color: "#ffffff",
+                            position: "absolute",
+                            right: "10%",
+                          }}
+                        />
                       </Group>
-                      <Text color="white" size='sm'>Dr. Dhananjoy Dey</Text>
+                      <Text color="white" size="sm">
+                        Dr. Dhananjoy Dey
+                      </Text>
                     </Stack>
                   </Group>
-                  <Avatar size="lg" src={auth.currentUser?.photoURL} style={{ position: 'absolute', right: '10%', top: '67%' }}></Avatar>
+                  <Divider
+                    my="xs"
+                    label={
+                      <Avatar
+                        size="lg"
+                        src={auth.currentUser?.photoURL}
+                        style={{marginRight:'-30%'}}
+                      ></Avatar>
+                    }
+                  />
                 </Card.Section>
-                <Stack h='25vh'>
-
-                </Stack>
+                <Stack h="25vh"></Stack>
               </Card>
-
             </Flex>
           </motion.div>
         </Flex>

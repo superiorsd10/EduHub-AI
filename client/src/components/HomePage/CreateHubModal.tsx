@@ -13,10 +13,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
       centered
       radius="md"
     >
-      <Input
-        placeholder="Hub Name"
-        radius="md"
-      />
+      <Input placeholder="Hub Name" radius="md" />
       <Input placeholder="Section" mt="sm" radius="md" />
       <Textarea
         placeholder="Description"

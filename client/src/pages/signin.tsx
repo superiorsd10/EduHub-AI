@@ -32,8 +32,35 @@ const SignIn: NextPageWithLayout = () => {
 
   const handleSignInWithGoogle = async () => {
     try {
-      await signInWithGoogle();
-      router.push("/");
+      const user = await signInWithGoogle();
+      const token = await user!.user.getIdToken();
+      if(user?.user.metadata.creationTime===user?.user.metadata.lastSignInTime) {
+        await fetch('http://127.0.0.1:5000/api/sign-up',{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${token}`, 
+          },
+          body: JSON.stringify({
+            "name": user!.user.displayName, 
+            "email": user!.user.email, 
+          }),
+        });
+        router.push("/");
+      }
+      else {
+        await fetch('http://127.0.0.1:5000/api/sign-in',{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${token}`, 
+          },
+          body: JSON.stringify({
+            "email": user!.user.email, 
+          }),
+        });
+        router.push("/");
+      }
     } catch (error) {
       console.error("Error during OAuth sign-in:", error);
     }
@@ -65,7 +92,18 @@ const SignIn: NextPageWithLayout = () => {
             <form
               onSubmit={form.onSubmit(async ({ email, password }) => {
                 try {
-                  await signInWithEmailAndPassword(email, password);
+                  const user = await signInWithEmailAndPassword(email, password);
+                  const token = await user!.user.getIdToken();
+                  await fetch('http://127.0.0.1:5000/api/sign-in',{
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `${token}`, 
+                    },
+                    body: JSON.stringify({
+                      "email": email, 
+                    }),
+                  });
                   router.push("/");
                 } catch (error) {
                   console.error("Error during Custom sign-in:", error);

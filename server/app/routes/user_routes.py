@@ -49,6 +49,7 @@ def create_user():
         redis_client = Config.redis_client
 
         user_cache_key = f"user:{data['email']}"
+        print(user_cache_key)
 
         if not redis_client.exists(user_cache_key):
             new_user.save()
@@ -71,6 +72,53 @@ def create_user():
         return (
             jsonify({"error": "User already exists", "success": False}),
             StatusCode.BAD_REQUEST.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@user_blueprint.route("/api/sign-in", methods=["POST"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def sign_in():
+    """
+    Signs in and updates user's email in Flask's session.
+
+    This route expects a JSON payload with 'email' field.
+    If the payload is valid, it creates a new User and returns a success message.
+
+    Decorators:
+    - @firebase_token_required: Ensures that the request has a valid Firebase authentication token.
+
+    :return: JSON response with success or error message.
+    """
+    try:
+        data = request.get_json()
+
+        if "email" not in data:
+            return (
+                jsonify({"error": "Invalid data provided", "success": False}),
+                StatusCode.BAD_REQUEST.value,
+            )
+
+        redis_client = Config.redis_client
+
+        user_cache_key = f"user:{data['email']}"
+
+        if not redis_client.exists(user_cache_key):
+            return (
+                jsonify({"message": "User doesn't exist", "success": False}),
+                StatusCode.BAD_REQUEST.value,
+            )
+
+        session["email"] = data["email"]
+        return (
+            jsonify({"error": "User already exists", "success": True}),
+            StatusCode.SUCCESS.value,
         )
 
     except Exception as error:

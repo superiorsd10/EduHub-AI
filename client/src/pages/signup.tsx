@@ -1,11 +1,4 @@
-import {
-  Avatar,
-  Button,
-  Flex,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Avatar, Button, Flex, Stack, Text, Title } from "@mantine/core";
 import React from "react";
 import { useForm } from "@mantine/form";
 import { PasswordInput, TextInput } from "@mantine/core";
@@ -31,10 +24,37 @@ const SignUp: NextPageWithLayout = () => {
     useCreateUserWithEmailAndPassword(auth);
   const router = useRouter();
 
-  const handleOAuthSign = async () => {
+  const handleSignInWithGoogle = async () => {
     try {
-      await signInWithGoogle();
-      router.push("/");
+      const user = await signInWithGoogle();
+      const token = await user!.user.getIdToken();
+      if(user?.user.metadata.creationTime===user?.user.metadata.lastSignInTime) {
+        await fetch('http://127.0.0.1:5000/api/sign-up',{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${token}`, 
+          },
+          body: JSON.stringify({
+            "name": user!.user.displayName, 
+            "email": user!.user.email, 
+          }),
+        });
+        router.push("/");
+      }
+      else {
+        await fetch('http://127.0.0.1:5000/api/sign-in',{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${token}`, 
+          },
+          body: JSON.stringify({
+            "email": user!.user.email, 
+          }),
+        });
+        router.push("/");
+      }
     } catch (error) {
       console.error("Error during OAuth sign-in:", error);
     }
@@ -46,7 +66,8 @@ const SignUp: NextPageWithLayout = () => {
       name: (value) =>
         value.length < 3 ? "Name must have at least 3 letters" : null,
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
-      password: (value) => value.length < 6 ? "Password must be of atleast 6 length" : null
+      password: (value) =>
+        value.length < 6 ? "Password must be of atleast 6 length" : null,
     },
   });
 
@@ -58,23 +79,41 @@ const SignUp: NextPageWithLayout = () => {
         w="100vw"
         maw="100%"
         h="85svh"
-        justify='center'
-        align='center'
+        justify="center"
+        align="center"
       >
         <Banner imageSrc="/assets/SignUp.png" />
-        <Stack w={{ base: "90vw", sm: "90vw", md: "45vw", lg: "45vw" }}
+        <Stack
+          w={{ base: "90vw", sm: "90vw", md: "45vw", lg: "45vw" }}
           bg="white"
           justify="center"
-          align="center">
+          align="center"
+        >
           <Stack w={{ base: "80vw", sm: "60vw", md: "30vw", lg: "30vw" }}>
             <Title order={1} size="h1">
               Sign Up
             </Title>
             <Text size="xl">Join EduHub-AI for Innovative Learning!</Text>
             <form
-              onSubmit={form.onSubmit(async ({ email, password }) => {
+              onSubmit={form.onSubmit(async () => {
+                const { email, password, name } = form.values;
                 try {
-                  await createUserWithEmailAndPassword(email, password);
+                  const user = await createUserWithEmailAndPassword(email, password);
+                  const token = await user!.user.getIdToken();
+                  await fetch(
+                    "http://127.0.0.1:5000/api/sign-up",
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `${token}`,
+                      },
+                      body: JSON.stringify({
+                        "name": name,
+                        "email": email,
+                      }),
+                    }
+                  );
                   router.push("/");
                 } catch (error) {
                   console.error("Error during Custom sign-in:", error);
@@ -153,7 +192,7 @@ const SignUp: NextPageWithLayout = () => {
                 mt="lg"
                 size="md"
                 radius="md"
-                w={{base:'80vw',sm:'60vw',md:"30vw",lg:'30vw'}}
+                w={{ base: "80vw", sm: "60vw", md: "30vw", lg: "30vw" }}
                 name="Sign Up"
               >
                 Sign Up
@@ -164,8 +203,8 @@ const SignUp: NextPageWithLayout = () => {
               <Button
                 mb="xl"
                 variant="default"
-                w={{base:'80vw',sm:'60vw',md:"30vw",lg:'30vw'}}
-                onClick={handleOAuthSign}
+                w={{ base: "80vw", sm: "60vw", md: "30vw", lg: "30vw" }}
+                onClick={handleSignInWithGoogle}
                 size="md"
                 radius="md"
                 name="Sign up with Google"
