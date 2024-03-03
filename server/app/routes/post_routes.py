@@ -14,8 +14,11 @@ from app.core import limiter
 from marshmallow import Schema, fields, ValidationError
 from app.enums import StatusCode
 from app.models.hub import Post, Hub
+from app.models.embedding import Embedding
 from bson import ObjectId
 from app.celery.tasks.post_tasks import process_uploaded_file
+import google.generativeai as genai
+
 
 post_blueprint = Blueprint("post", __name__)
 
@@ -68,6 +71,32 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     return object_id
 
 
+def extract_text_embedding(chunk: str) -> list:
+    """
+    Generate text embeddings for a text chunk using a pre-trained model.
+
+    Args:
+        chunk (str): The text chunk for which embeddings are to be generated.
+
+    Returns:
+        list: A list of embedding vectors representing the text chunk.
+
+    Raises:
+        Exception: If an error occurs during the embedding generation process.
+
+    """
+    try:
+        result = genai.embed_content(
+            model="models/embedding-001",
+            content=chunk,
+            task_type="semantic_similarity",
+        )
+        return result["embedding"]
+    except Exception as error:
+        print(f"Error: {error}")
+        raise
+
+
 class CreatePostSchema(Schema):
     """
     Schema for validating and serializing data when creating a post.
@@ -95,6 +124,17 @@ class CreatePostSchema(Schema):
     description = fields.String()
     topic = fields.String()
     files = fields.List(fields.Field())
+
+
+class ChatWithMaterialSchema(Schema):
+    """
+    Represents a schema for handling chat data with material.
+
+    Attributes:
+        query (str): The query string associated with the chat.
+    """
+
+    query = fields.String(required=True)
 
 
 @post_blueprint.route("/api/<hub_id>/create-post", methods=["POST"])
@@ -155,14 +195,15 @@ def create_post(hub_id):
         uploaded_file_urls = []
 
         hub_object_id = decode_base64_to_objectid(hub_id)
-        post_uuid = uuid.uuid4()
+        post_uuid = str(uuid.uuid4())
 
         for file in files:
             if file and allowed_file(file.filename):
                 file_data = file.read()
                 filename = secure_filename(file.filename)
                 extension = os.path.splitext(filename)[1]
-                unique_filename = str(uuid.uuid4()) + extension
+                attachment_uuid = str(uuid.uuid4())
+                unique_filename = attachment_uuid + extension
 
                 file_key = f"posts/{hub_id}/{unique_filename}"
                 s3_client.upload_fileobj(
@@ -178,6 +219,7 @@ def create_post(hub_id):
                     filename,
                     hub_id,
                     post_uuid,
+                    attachment_uuid,
                 )
 
         post = Post(
@@ -211,6 +253,89 @@ def create_post(hub_id):
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@post_blueprint.route("/api/chat-with-material/<attachment_id>", methods=["POST"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def chat_with_material(attachment_id):
+    """
+    Handle chat with material based on provided attachment_id.
+
+    This endpoint receives a POST request containing a JSON payload with a 'query' field,
+    representing the user's question. It then performs a vector search on the database
+    using the provided query, constrained by the attachment_id. After retrieving the
+    context related to the query, it prompts the generative model to provide an informative
+    response to the question based on the retrieved context.
+
+    Args:
+        attachment_id (str): The ID of the material attachment.
+
+    Returns:
+        tuple: A tuple containing JSON response and HTTP status code.
+            - If the operation is successful, returns a JSON response with the generated answer
+              and success status along with HTTP status code 200 (OK).
+            - If an error occurs, returns a JSON response with error message and failure status
+              along with HTTP status code 500 (Internal Server Error).
+    """
+    try:
+        schema = ChatWithMaterialSchema()
+        data = schema.load(request.get_json())
+
+        query = data.get("query")
+
+        query_embeddings = extract_text_embedding(query)
+
+        results = Embedding.objects.aggregate(
+            [
+                {
+                    "$vectorSearch": {
+                        "index": "embeddedVectorIndex",
+                        "path": "embeddings",
+                        "queryVector": query_embeddings,
+                        "filter": {"attachment_id": str(attachment_id)},
+                        "numCandidates": 1,
+                        "limit": 1,
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "text_content": 1,
+                    }
+                },
+            ]
+        )
+
+        retrieved_context = list(results)[0]["text_content"]
+
+        prompt = f"""
+        Instruction: Please provide an informative response to the following question based on the Retrieved Context
+
+        Question: {query}
+
+        Retrieved Context: {retrieved_context}
+        """
+
+        model = genai.GenerativeModel("gemini-pro")
+
+        answer = model.generate_content(prompt)
+
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": answer.text,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
+
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
