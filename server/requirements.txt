@@ -91,8 +91,9 @@ Pygments==2.17.2
 PyJWT==2.8.0
 pylint==3.0.3
 pymongo==4.6.1
+PyMuPDF==1.23.26
+PyMuPDFb==1.23.22
 pyparsing==3.1.1
-PyPDF2==3.0.1
 pytest==7.4.4
 pytest-asyncio==0.23.4
 pytest-mock==3.12.0
