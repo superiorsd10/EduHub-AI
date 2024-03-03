@@ -9,7 +9,7 @@ from mongoengine import (
     FloatField,
     ListField,
     StringField,
-    UUIDField,
+    IntField,
 )
 
 
@@ -27,6 +27,16 @@ class Embedding(Document):
     """
 
     hub_id = StringField(required=True)
-    post_id = UUIDField(required=True)
-    embeddings = ListField(ListField(FloatField()), required=True)
+    post_id = StringField(required=True)
+    attachment_id = StringField(required=True)
+    batch_no = IntField(required=True)
+    text_content = StringField(required=True)
+    embeddings = ListField(FloatField(), required=True)
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
+
+    meta = {
+        "collection": "embedding",
+        "indexes": [
+            {"fields": ["attachment_id"]},
+        ],
+    }
