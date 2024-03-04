@@ -5,12 +5,12 @@ import { ReactNode, useContext } from "react";
 
 const ResizableFlex = ({children}:{children?: ReactNode}) => {
   const { componentHeight } = useContext(AuthContext);
-  const { isLoggedIn, isDrawerOpen, isDrawerTemporarilyOpen } = useContext(AuthContext);
+  const { isDrawerOpen, isDrawerTemporarilyOpen } = useContext(AuthContext);
   return (
     <Flex w="100vw" maw="100%" h={componentHeight} justify="flex-end">
       <motion.div
-        initial={{ width: "94vw" }}
-        animate={{ width: (isDrawerOpen || isDrawerTemporarilyOpen) ? "83vw" : "94vw" }}
+        initial={{ width: "93vw" }}
+        animate={{ width: (isDrawerOpen || isDrawerTemporarilyOpen) ? "82vw" : "93vw" }}
         transition={{ duration: 0.4 }}
       >
         {children}

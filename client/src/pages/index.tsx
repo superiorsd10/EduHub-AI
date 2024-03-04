@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { NextPage } from "next";
 import {
   Anchor,
@@ -25,39 +25,50 @@ import Link from "next/link";
 import { IoMdArrowDropup } from "react-icons/io";
 import NextLink from "@/utils/NextLink";
 import { useDisclosure } from "@mantine/hooks";
-import { Modal } from "@mantine/core";
-import { Input } from "@mantine/core";
-import { auth } from "@/firebase/clientApp";
+import ResizableFlex from "@/utils/ResizableFlex";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import ResizableFlex from "@/utils/ResizableFlex";
+import Hub from "@/components/Hub";
 
-const ScrollToTopContainerVariants: Variants = {
-  hide: { opacity: 0, y: 100 },
-  show: { opacity: 1, y: 0 },
+type Hub = {
+  creator_name: string;
+  hub_id: string;
+  name: string;
+};
+
+type Hubs = {
+  student: Hub[];
+  teacher: Hub[];
 };
 
 const index: NextPage = () => {
   const { componentHeight } = useContext(AuthContext);
-  const controls = useAnimationControls();
   const { isLoggedIn, isDrawerOpen, token } = useContext(AuthContext);
   const [opened, { open, close }] = useDisclosure(false);
+  const [hubList, setHubList] = useState<Hubs>();
+  const [isClassroomEmpty, setIsClassroomEmpty] = useState<boolean>(true);
 
-  useEffect(()=>{
-    const getHubs= async ()=>{
-      const response=await fetch('http://127.0.0.1:5000/api/get-hubs',{
+  useEffect(() => {
+    const getHubs = async () => {
+      const response = await fetch("http://127.0.0.1:5000/api/get-hubs", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `${token}`, 
+          Authorization: `${token}`,
         },
       });
-      
-      const hubs = await response.json();
-      console.log(hubs)
-    }
-    if(isLoggedIn) getHubs();
-  },[isLoggedIn])
+
+      const data = await response.json();
+      const hubs: Hubs = data.data[0];
+      console.log(hubs);
+
+      setHubList(hubs);
+      setIsClassroomEmpty(
+        hubs.student.length + hubs.teacher.length > 0 ? false : true
+      );
+    };
+    if (isLoggedIn) getHubs();
+  }, [isLoggedIn]);
 
   return (
     <Flex
@@ -90,13 +101,14 @@ const index: NextPage = () => {
         </>
       ) : (
         <ResizableFlex>
+          {isClassroomEmpty ? (
             <Stack w="100%" h={componentHeight} justify="center" align="center">
               <Image
                 h="50svh"
                 src="/assets/LandingPageIllustration.png"
                 style={{ objectFit: "contain" }}
               />
-              <CreateHubModal opened={opened} close={close}/>
+              <CreateHubModal opened={opened} close={close} />
               <Group>
                 <NextLink href="#">
                   <Button
@@ -114,61 +126,31 @@ const index: NextPage = () => {
                   </Button>
                 </NextLink>
                 <NextLink href="#">
-                  <Button color="black" radius='md'>Join Hub</Button>
+                  <Button color="black" radius="md">
+                    Join Hub
+                  </Button>
                 </NextLink>
               </Group>
             </Stack>
-            {/* <Flex w="100%" h={componentHeight} p="lg" gap="lg">
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                h="fit-content"
-                w="20%"
-                withBorder
-              >
-                <Card.Section
-                  h="15vh"
-                  bg="orange"
-                  style={{ position: "relative" }}
-                  withBorder
-                >
-                  <Group p="md" style={{position:'relative'}}>
-                    <Stack >
-                      <Group justify="space-between">
-                        <Text color="white" size="xl">
-                          Cryptography
-                        </Text>
-                        <FontAwesomeIcon
-                          icon={faEllipsisVertical}
-                          size="xl"
-                          style={{
-                            color: "#ffffff",
-                            position: "absolute",
-                            right: "10%",
-                          }}
-                        />
-                      </Group>
-                      <Text color="white" size="sm">
-                        Dr. Dhananjoy Dey
-                      </Text>
-                    </Stack>
-                  </Group>
-                  <Divider
-                    my="xs"
-                    label={
-                      <Avatar
-                        size="lg"
-                        src={auth.currentUser?.photoURL}
-                        style={{marginRight:'-30%'}}
-                      ></Avatar>
-                    }
-                  />
-                </Card.Section>
-                <Stack h="25vh"></Stack>
-              </Card>
-            </Flex> */}
-          </ResizableFlex>
+          ) : (
+            <Flex w="100%" h={componentHeight} p="lg" gap="lg">
+              {hubList?.student.map((hub) => (
+                <Hub
+                  creator_name={hub.creator_name}
+                  hub_id={hub.hub_id}
+                  name={hub.name}
+                />
+              ))}
+              {hubList?.teacher.map((hub) => (
+                <Hub
+                  creator_name={hub.creator_name}
+                  hub_id={hub.hub_id}
+                  name={hub.name}
+                />
+              ))}
+            </Flex>
+          )}
+        </ResizableFlex>
       )}
     </Flex>
   );
