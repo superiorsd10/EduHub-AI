@@ -5,6 +5,7 @@ Hub routes for the Flask application.
 import json
 import string
 import secrets
+import base64
 from datetime import datetime
 import mongoengine
 from flask import Blueprint, request, jsonify, session
@@ -16,7 +17,6 @@ from app.core import limiter
 from config.config import Config
 from marshmallow import Schema, fields, ValidationError
 from bson.objectid import ObjectId
-from app.encryption import CryptoUtils
 from redis import RedisError
 from flask_socketio import join_room
 from app.app import socketio
@@ -81,6 +81,22 @@ def generate_invite_code():
     """
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(7))
+
+
+def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
+    """
+    Decodes a base64 encoded string and converts it to an ObjectId.
+
+    Args:
+        base64_encoded (str): The base64 encoded string to decode.
+
+    Returns:
+        ObjectId: The decoded ObjectId.
+    """
+    decoded_bytes = base64.urlsafe_b64decode(base64_encoded)
+    hex_string = decoded_bytes.hex()
+    object_id = ObjectId(hex_string)
+    return object_id
 
 
 @hub_blueprint.route("/api/create-hub", methods=["POST"])
@@ -449,16 +465,7 @@ def get_hub(hub_id):
     """
 
     try:
-        try:
-            crypto_utils = CryptoUtils()
-            hub_id = crypto_utils.decrypt_object_id(hub_id)
-        except (RuntimeError, ValueError) as error:
-            return (
-                jsonify(
-                    {"error": "Failed to decrypt hub ID" + str(error), "success": False}
-                ),
-                StatusCode.BAD_REQUEST,
-            )
+        hub_id = decode_base64_to_objectid(hub_id)
 
         if not ObjectId.is_valid(hub_id):
             return (
@@ -593,7 +600,7 @@ def get_hub(hub_id):
         )
     except mongoengine.errors.DoesNotExist as error:
         return (
-            jsonify({"error": "Hub not found", "success": False}),
+            jsonify({"error": f"Hub not found: {error}", "success": False}),
             StatusCode.NOT_FOUND,
         )
     except RedisError as error:
