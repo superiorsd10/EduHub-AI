@@ -116,6 +116,11 @@ def sign_in():
             )
 
         session["email"] = data["email"]
+
+        temp_email = session.get("email")
+
+        print(f"temp email: {temp_email}")
+
         return (
             jsonify({"error": "User already exists", "success": True}),
             StatusCode.SUCCESS.value,
@@ -126,6 +131,13 @@ def sign_in():
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+
+
+# @user_blueprint.route("/api/test", methods=["GET"])
+# def test():
+#     email = session.get("email")
+#     print(f"test email: {email}")
+#     return jsonify({"message": "test"})
 
 
 @user_blueprint.route("/api/create-payment-intent", methods=["POST"])

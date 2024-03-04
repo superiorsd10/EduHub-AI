@@ -3,7 +3,6 @@ This module defines the Flask application for the project.
 """
 
 import os
-import secrets
 from flask import Flask
 from mongoengine import connect
 from config.config import Config, TestConfig
@@ -13,11 +12,13 @@ from dotenv import load_dotenv
 from app.core import limiter
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from flask_session import Session
 import boto3
 from app.celery.celery import celery_instance, init_celery
 import google.generativeai as genai
 
 socketio = SocketIO()
+sess = Session()
 
 
 def create_app(config=None):
@@ -54,11 +55,7 @@ def create_app(config=None):
 
     limiter.init_app(app)
 
-    app.config["SESSION_TYPE"] = "redis"
-    app.config["SESSION_REDIS"] = Config.redis_client
-
-    app.secret_key = secrets.token_hex(16)
-    app.permanent_session_lifetime = True
+    sess.init_app(app)
 
     socketio.init_app(app)
 

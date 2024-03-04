@@ -317,8 +317,6 @@ def chat_with_material(attachment_id):
         for result in list(results):
             retrieved_context += result["text_content"]
 
-        print(retrieved_context)
-
         prompt = f"""
         Instruction: Please provide an informative response to the following question based on the Retrieved Context combined with your knowledge in Markdown format.
 

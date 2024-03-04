@@ -37,12 +37,14 @@ class Config:
     REDIS_PORT = os.environ.get("REDIS_PORT")
     REDIS_HOST = os.environ.get("REDIS_HOST")
     redis_client = redis.from_url(REDIS_URL)
-    CRYPTO_SECRET_KEY = os.getenv("CRYPTO_SECRET_KEY")
+    SECRET_KEY = os.getenv("CRYPTO_SECRET_KEY")
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
     CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    SESSION_TYPE = os.getenv("SESSION_TYPE")
+    SESSION_REDIS = redis_client
 
 
 class TestConfig:

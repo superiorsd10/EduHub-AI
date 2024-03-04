@@ -35,7 +35,7 @@ class CryptoUtils:
             ValueError: If the secret key is not found in the app config.
         """
         if app is not None:
-            secret_key = app.config.get("CRYPTO_SECRET_KEY")
+            secret_key = app.config.get("SECRET_KEY")
             if secret_key:
                 self._cipher = Fernet(secret_key)
             else:
