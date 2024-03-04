@@ -299,8 +299,8 @@ def chat_with_material(attachment_id):
                         "path": "embeddings",
                         "queryVector": query_embeddings,
                         "filter": {"attachment_id": str(attachment_id)},
-                        "numCandidates": 1,
-                        "limit": 1,
+                        "numCandidates": 5,
+                        "limit": 2,
                     }
                 },
                 {
@@ -312,14 +312,24 @@ def chat_with_material(attachment_id):
             ]
         )
 
-        retrieved_context = list(results)[0]["text_content"]
+        retrieved_context = ""
+
+        for result in list(results):
+            retrieved_context += result["text_content"]
+
+        print(retrieved_context)
 
         prompt = f"""
-        Instruction: Please provide an informative response to the following question based on the Retrieved Context
+        Instruction: Please provide an informative response to the following question based on the Retrieved Context combined with your knowledge in Markdown format.
 
         Question: {query}
 
         Retrieved Context: {retrieved_context}
+
+        Note: If the model is unable to generate an answer based on the retrieved context, please follow these instructions:
+
+        1. Notify the user that the generated answer is based on the model's own knowledge.
+        2. Provide an answer using the model's own knowledge.
         """
 
         model = genai.GenerativeModel("gemini-pro")
