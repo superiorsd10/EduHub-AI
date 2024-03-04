@@ -65,8 +65,8 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     Returns:
         ObjectId: The decoded ObjectId.
     """
-    decoded_bytes = base64.urlsafe_b64decode(base64_encoded)
-    hex_string = decoded_bytes.hex()
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
     object_id = ObjectId(hex_string)
     return object_id
 
@@ -194,7 +194,7 @@ def create_post(hub_id):
 
         uploaded_file_urls = []
 
-        hub_object_id = decode_base64_to_objectid(hub_id)
+        hub_object_id = decode_base64_to_objectid(str(hub_id))
         post_uuid = str(uuid.uuid4())
 
         for file in files:
@@ -260,7 +260,7 @@ def create_post(hub_id):
         )
 
 
-@post_blueprint.route("/api/chat-with-material/<attachment_id>", methods=["GET"])
+@post_blueprint.route("/api/chat-with-material/<attachment_id>", methods=["POST"])
 @limiter.limit("5 per minute")
 @firebase_token_required
 def chat_with_material(attachment_id):

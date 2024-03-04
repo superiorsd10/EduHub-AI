@@ -260,7 +260,7 @@ def create_hub():
 
 
 @hub_blueprint.route("/api/get-hubs", methods=["GET"])
-@limiter.limit("5 per minute")
+# @limiter.limit("5 per minute")
 @firebase_token_required
 def get_hubs():
     """
@@ -440,7 +440,7 @@ def get_hubs():
 
 
 @hub_blueprint.route("/api/hub/<hub_id>", methods=["GET"])
-@limiter.limit("5 per minute")
+# @limiter.limit("5 per minute")
 @firebase_token_required
 def get_hub(hub_id):
     """

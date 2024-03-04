@@ -3,7 +3,7 @@ import React from "react";
 
 type Props = {};
 
-const Banner = (props: Props) => {
+const Banner = ({title}: {title:string}) => {
   return (
     <Flex
       bg="pink"
@@ -19,7 +19,7 @@ const Banner = (props: Props) => {
           bottom="5%"
           right="2%"
         >
-          Cryptography
+          {title}
         </Title>
       </BackgroundImage>
     </Flex>

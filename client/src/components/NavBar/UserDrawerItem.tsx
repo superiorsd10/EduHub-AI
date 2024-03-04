@@ -29,7 +29,7 @@ const UserDrawerItem: React.FC<Props> = ({
   }, [isDrawerOpen, isDrawerTemporarilyOpen]);
   const [isDropDownVisible, setIsDropDownVisible] = useState<boolean>(false);
   return (
-    <Stack gap="0" ref={ref} bg={hovered?'#DEE2E6':'white'} style={{cursor:'pointer'}} onClick={()=>{
+    <Stack gap="0" ref={ref} style={{cursor:'pointer'}} onClick={()=>{
       if(onClick) onClick()
     }}>
       <Group gap="sm" justify="center" align="center" h='2vw'>

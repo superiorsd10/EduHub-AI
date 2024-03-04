@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Group, Stack, ActionIcon } from "@mantine/core";
+import { Group, Stack, ActionIcon, Divider } from "@mantine/core";
 import { motion } from "framer-motion";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import ChatWithPDF from "./ChatWithPDF";
@@ -11,7 +11,7 @@ import { RenderZoomProps } from "@react-pdf-viewer/zoom";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
 import "@react-pdf-viewer/toolbar/lib/styles/index.css";
 
-const PDF = () => {
+const PDF = ({pdfUrl,attachment_id}:{pdfUrl?:string,attachment_id?:string}) => {
   const toolbarPluginInstance = toolbarPlugin();
   const zoomPluginInstance = zoomPlugin();
 
@@ -32,25 +32,30 @@ const PDF = () => {
           <Stack h="93vh">
             <Viewer
               plugins={[toolbarPluginInstance, zoomPluginInstance]}
-              fileUrl="./dummy.pdf"
+              fileUrl='./dummy12.pdf'
             />
           </Stack>
         </Stack>
       </motion.div>
-      <Stack h="100%" p="0" gap="0" justify="center">
+      <Stack h="100%" p="0" gap="0" justify="center" align="center">
+        <Divider orientation="vertical" h='46vh' color='gray.8' m='auto' mb='0' mt='0'/>
         <Zoom>
           {(props: RenderZoomProps) => (
             <ActionIcon
-              bg="black"
+            h='8vh'
+            radius='md'
+            variant="outline"
+            color='gray.8'
               onClick={() => {
                 setIsFullPDF(!isFullPDF);
                 if (isFullPDF) props.onZoom(1);
               }}
             >
-              <MdKeyboardArrowRight />
+              <MdKeyboardArrowRight size='32'/>
             </ActionIcon>
           )}
         </Zoom>
+        <Divider orientation="vertical" h='46vh' color='gray.8' m='auto' mb='0' mt='0'/>
       </Stack>
       <motion.div
         initial={{ width: "0%", height: "100%", opacity: "0" }}

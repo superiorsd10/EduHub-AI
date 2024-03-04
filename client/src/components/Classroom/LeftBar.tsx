@@ -4,7 +4,7 @@ import { PiChatCircleDotsLight } from "react-icons/pi";
 import { FaPlus } from "react-icons/fa6";
 import { BsThreeDotsVertical } from "react-icons/bs";
 
-const LeftBar = () => {
+const LeftBar = ({invite_code}:{invite_code:string}) => {
   return (
     <Stack w="15%">
       <Stack gap='sm' w='100%' style={{borderRadius:'10px',border:'2px solid #CED4DA'}} p='sm'>
@@ -12,7 +12,7 @@ const LeftBar = () => {
             <Text>Hub Code</Text>
             <BsThreeDotsVertical/>
         </Group>
-        <Text c='pink' size='lg' fw='bold'>fcpvbhw</Text>
+        <Text c='pink' size='lg' fw='bold'>{invite_code}</Text>
       </Stack>
       <Button color="#C2255C" leftSection={<FaPlus />} justify="flex-start">
         Create
