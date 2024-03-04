@@ -24,6 +24,38 @@ from app.app import socketio
 hub_blueprint = Blueprint("hub", __name__)
 
 
+class DateTimeEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder for serializing datetime objects to ISO 8601 format.
+
+    This encoder extends the standard json.JSONEncoder class to provide support
+    for serializing datetime objects to ISO 8601 format strings. When encoding
+    datetime objects, it converts them to their corresponding ISO 8601 format
+    strings using the obj.isoformat() method.
+
+    Usage:
+        Use this encoder to serialize datetime objects when converting Python
+        objects to JSON strings.
+    """
+
+    def default(self, o):
+        """
+        Override the default method to serialize datetime objects.
+
+        Args:
+            obj (Any): The object to serialize.
+
+        Returns:
+            str: The JSON-serializable representation of the object.
+
+        Raises:
+            TypeError: If the object cannot be serialized.
+        """
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
+
+
 class CreateHubSchema(Schema):
     """
     Marshmallow schema for validating and sanitizing data for creating a new hub.
@@ -93,8 +125,8 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     Returns:
         ObjectId: The decoded ObjectId.
     """
-    decoded_bytes = base64.urlsafe_b64decode(base64_encoded)
-    hex_string = decoded_bytes.hex()
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
     object_id = ObjectId(hex_string)
     return object_id
 
@@ -466,7 +498,7 @@ def get_hub(hub_id):
     """
 
     try:
-        hub_id = decode_base64_to_objectid(hub_id)
+        hub_id = decode_base64_to_objectid(str(hub_id))
 
         if not ObjectId.is_valid(hub_id):
             return (
@@ -491,8 +523,8 @@ def get_hub(hub_id):
                 jsonify(
                     {
                         "data": {
-                            "introductory": cached_introductory_data,
-                            "paginated": cached_paginated_data,
+                            "introductory": json.loads(cached_introductory_data),
+                            "paginated": json.loads(cached_paginated_data),
                         },
                         "success": True,
                     }
@@ -505,7 +537,7 @@ def get_hub(hub_id):
                 jsonify(
                     {
                         "data": {
-                            "paginated": cached_paginated_data,
+                            "paginated": json.loads(cached_paginated_data),
                         },
                         "success": True,
                     }
@@ -538,9 +570,9 @@ def get_hub(hub_id):
 
         result = list(Hub.objects.aggregate(pipeline))
 
-        paginated_data = [item["items"].to_json() for item in result]
+        paginated_data = json.dumps(result, cls=DateTimeEncoder)
 
-        redis_client.set(cache_paginated_key, jsonify(paginated_data))
+        redis_client.set(cache_paginated_key, paginated_data)
 
         if page == 1:
             introductory_data = {}
@@ -564,17 +596,21 @@ def get_hub(hub_id):
                     .to_dict()
                 )
 
+                introductory_data["_id"] = str(introductory_data.get("_id"))
+
+                introductory_data = json.dumps(introductory_data)
+
                 redis_client.set(
                     cache_introductory_key,
-                    jsonify(cache_introductory_key),
+                    introductory_data,
                 )
 
             return (
                 jsonify(
                     {
                         "data": {
-                            "introductory": introductory_data,
-                            "paginated": paginated_data,
+                            "introductory": json.loads(introductory_data),
+                            "paginated": json.loads(paginated_data),
                         },
                         "success": True,
                     }
@@ -586,7 +622,7 @@ def get_hub(hub_id):
             jsonify(
                 {
                     "data": {
-                        "paginated": paginated_data,
+                        "paginated": json.loads(paginated_data),
                     },
                     "success": True,
                 }
