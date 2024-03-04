@@ -3,6 +3,7 @@ This module defines the Flask application for the project.
 """
 
 import os
+import secrets
 from flask import Flask
 from mongoengine import connect
 from config.config import Config, TestConfig
@@ -11,7 +12,6 @@ from firebase_admin import credentials, initialize_app
 from dotenv import load_dotenv
 from app.core import limiter
 from flask_cors import CORS
-from flask_session import Session
 from flask_socketio import SocketIO
 import boto3
 from app.celery.celery import celery_instance, init_celery
@@ -57,7 +57,8 @@ def create_app(config=None):
     app.config["SESSION_TYPE"] = "redis"
     app.config["SESSION_REDIS"] = Config.redis_client
 
-    Session(app)
+    app.secret_key = secrets.token_hex(16)
+    app.permanent_session_lifetime = True
 
     socketio.init_app(app)
 
