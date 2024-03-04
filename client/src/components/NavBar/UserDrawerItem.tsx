@@ -12,7 +12,6 @@ type Props = {
   name: string;
   href?: string;
   children?: ReactNode;
-  isDrawerTemporarilyOpen: boolean;
   onClick?: ()=>void;
 };
 
@@ -21,11 +20,10 @@ const UserDrawerItem: React.FC<Props> = ({
   name,
   href = "#",
   children,
-  isDrawerTemporarilyOpen,
   onClick
 }) => {
   const { hovered, ref } = useHover();
-  const { isDrawerOpen } = useContext(AuthContext);
+  const { isDrawerOpen, isDrawerTemporarilyOpen } = useContext(AuthContext);
   useEffect(() => {
     if (!isDrawerOpen && !isDrawerTemporarilyOpen) setIsDropDownVisible(false);
   }, [isDrawerOpen, isDrawerTemporarilyOpen]);

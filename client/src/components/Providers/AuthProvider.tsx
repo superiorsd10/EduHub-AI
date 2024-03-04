@@ -10,10 +10,12 @@ interface AuthContextProps {
   loading: boolean;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (isDrawerOpen: boolean) => void;
+  isDrawerTemporarilyOpen: boolean;
+  setIsDrawerTemporarilyOpen: (isDrawerOpen: boolean) => void;
   navbarHeight: string;
   componentHeight: string;
   isLoggedIn: boolean;
-  token: string | null; // Add token to AuthContextProps
+  token: string | null; 
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -21,10 +23,12 @@ const AuthContext = createContext<AuthContextProps>({
   loading: true,
   isDrawerOpen: false,
   setIsDrawerOpen: () => {},
+  isDrawerTemporarilyOpen: false,
+  setIsDrawerTemporarilyOpen: () => {},
   navbarHeight: "15vh",
   componentHeight: "85svh",
   isLoggedIn: false,
-  token: null, // Initialize token as null
+  token: null, 
 });
 
 const AuthProvider: React.FC<AuthProviderProps> = ({
@@ -33,7 +37,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   const [user, loading] = useAuthState(auth);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [token, setToken] = useState<string | null>(null); // State to hold token
+  const [isDrawerTemporarilyOpen, setIsDrawerTemporarilyOpen] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(null); 
 
   useEffect(() => {
     if (!loading && user) {
@@ -62,10 +67,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
         loading,
         isDrawerOpen,
         setIsDrawerOpen,
+        isDrawerTemporarilyOpen,
+        setIsDrawerTemporarilyOpen,
         navbarHeight: user ? "10vh" : "15vh",
         componentHeight: user ? "90svh" : "85svh",
         isLoggedIn: !!user,
-        token, // Provide token to consumers
+        token, 
       }}
     >
       {children}

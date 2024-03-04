@@ -10,7 +10,6 @@ import { SlSettings } from "react-icons/sl";
 import { IoCalendar } from "react-icons/io5";
 import { GiStarSwirl } from "react-icons/gi";
 
-
 import UserDrawerItem from "./UserDrawerItem";
 import UserDrawerDropdown from "./UserDrawerDropdown";
 import UpgradePlan from "../UpgradePlan";
@@ -21,13 +20,18 @@ type DropDownElement = {
 };
 
 const UserDrawer = () => {
-  
-  const { isDrawerOpen } = useContext(AuthContext);
+  const {
+    isDrawerOpen,
+    setIsDrawerOpen,
+    isDrawerTemporarilyOpen,
+    setIsDrawerTemporarilyOpen,
+  } = useContext(AuthContext);
   const { hovered, ref } = useHover();
-  const [isDrawerTemporarilyOpen, setIsDrawerTemporarilyOpen] =
-    useState<boolean>(false);
+
   useEffect(() => {
-    if (!isDrawerOpen) setIsDrawerTemporarilyOpen(hovered);
+    if (!isDrawerOpen) {
+      setIsDrawerTemporarilyOpen(hovered);
+    }
   }, [hovered]);
 
   const dropdownElementsEnrolled: DropDownElement[] = [
@@ -38,7 +42,8 @@ const UserDrawer = () => {
     { text: "What not to do in life?", href: "#" },
   ];
 
-  const [isUpgradePlanModalOpen, setIsUpgradePlanModalOpen]= useState<boolean>(false);
+  const [isUpgradePlanModalOpen, setIsUpgradePlanModalOpen] =
+    useState<boolean>(false);
 
   return (
     <AppShell
@@ -50,23 +55,29 @@ const UserDrawer = () => {
       }}
       zIndex={100}
     >
-      <AppShell.Navbar ref={ref} >
-        <Stack gap="lg" p='2vw' h='100%'>
-          <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={MdOutlineHub} name="Hubs" />
-          <UserDrawerItem  isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={LuPencilLine} name="Enrolled">
+      <AppShell.Navbar ref={ref}>
+        <Stack gap="lg" p="2vw" h="100%">
+          <UserDrawerItem iconType={MdOutlineHub} name="Hubs" />
+          <UserDrawerItem iconType={LuPencilLine} name="Enrolled">
             <UserDrawerDropdown DropDownElements={dropdownElementsEnrolled} />
           </UserDrawerItem>
-          <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={TfiBlackboard} name="Teaching">
+          <UserDrawerItem iconType={TfiBlackboard} name="Teaching">
             <UserDrawerDropdown DropDownElements={dropdownElementsTeaching} />
           </UserDrawerItem>
-          <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={IoCalendar} name="Calender" />
-          <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={SlSettings} name="Settings" />
-          <Stack style={{flex:1}}></Stack>
-          <UserDrawerItem isDrawerTemporarilyOpen={isDrawerTemporarilyOpen} iconType={GiStarSwirl} name="Upgrade Plan" onClick={()=>{
-            if(!isUpgradePlanModalOpen)
-            setIsUpgradePlanModalOpen(true)
-          }}/>
-          <UpgradePlan isOpen={isUpgradePlanModalOpen} setIsOpen={setIsUpgradePlanModalOpen}/>
+          <UserDrawerItem iconType={IoCalendar} name="Calender" />
+          <UserDrawerItem iconType={SlSettings} name="Settings" />
+          <Stack style={{ flex: 1 }}></Stack>
+          <UserDrawerItem
+            iconType={GiStarSwirl}
+            name="Upgrade Plan"
+            onClick={() => {
+              if (!isUpgradePlanModalOpen) setIsUpgradePlanModalOpen(true);
+            }}
+          />
+          <UpgradePlan
+            isOpen={isUpgradePlanModalOpen}
+            setIsOpen={setIsUpgradePlanModalOpen}
+          />
         </Stack>
       </AppShell.Navbar>
     </AppShell>

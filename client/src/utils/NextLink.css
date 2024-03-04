@@ -1,0 +1,9 @@
+.next-link {
+    color: black;
+    text-decoration: none;
+  }
+  
+  .next-link:hover {
+    color: pink;
+  }
+  

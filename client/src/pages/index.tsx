@@ -30,6 +30,7 @@ import { Input } from "@mantine/core";
 import { auth } from "@/firebase/clientApp";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import ResizableFlex from "@/utils/ResizableFlex";
 
 const ScrollToTopContainerVariants: Variants = {
   hide: { opacity: 0, y: 100 },
@@ -88,13 +89,8 @@ const index: NextPage = () => {
           </Avatar>
         </>
       ) : (
-        <Flex w="100vw" maw="100%" h={componentHeight} justify="flex-end">
-          <motion.div
-            initial={{ width: "94vw" }}
-            animate={{ width: isDrawerOpen ? "83vw" : "94vw" }}
-            transition={{ duration: 0.4 }}
-          >
-            {/* <Stack w="100%" h={componentHeight} justify="center" align="center">
+        <ResizableFlex>
+            <Stack w="100%" h={componentHeight} justify="center" align="center">
               <Image
                 h="50svh"
                 src="/assets/LandingPageIllustration.png"
@@ -121,8 +117,8 @@ const index: NextPage = () => {
                   <Button color="black" radius='md'>Join Hub</Button>
                 </NextLink>
               </Group>
-            </Stack> */}
-            <Flex w="100%" h={componentHeight} p="lg" gap="lg">
+            </Stack>
+            {/* <Flex w="100%" h={componentHeight} p="lg" gap="lg">
               <Card
                 shadow="sm"
                 padding="lg"
@@ -171,9 +167,8 @@ const index: NextPage = () => {
                 </Card.Section>
                 <Stack h="25vh"></Stack>
               </Card>
-            </Flex>
-          </motion.div>
-        </Flex>
+            </Flex> */}
+          </ResizableFlex>
       )}
     </Flex>
   );
