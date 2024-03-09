@@ -133,11 +133,14 @@ def sign_in():
         )
 
 
-# @user_blueprint.route("/api/test", methods=["GET"])
-# def test():
-#     email = session.get("email")
-#     print(f"test email: {email}")
-#     return jsonify({"message": "test"})
+@user_blueprint.route("/api/test", methods=["GET"])
+def test():
+    """
+    for testing session
+    """
+    email = session.get("email")
+    print(f"test email: {email}")
+    return jsonify({"message": "test"})
 
 
 @user_blueprint.route("/api/create-payment-intent", methods=["POST"])

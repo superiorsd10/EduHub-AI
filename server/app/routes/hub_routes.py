@@ -8,7 +8,7 @@ import secrets
 import base64
 from datetime import datetime
 import mongoengine
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.hub import Hub
@@ -300,8 +300,7 @@ def get_hubs():
     - Uses Redis caching for performance optimization.
     """
     try:
-        # email = session.get("email")
-        email = "nikhilranjan1103@gmail.com"
+        email = session.get("email")
         print(email)
 
         redis_client = Config.redis_client

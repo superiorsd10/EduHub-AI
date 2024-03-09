@@ -48,9 +48,7 @@ def handle_accept_request(data):
         Hub.objects(id=hub_id).update_one(push__members_id__student=user_id)
 
         emit("join_request_accepted", {"hub_id": hub_id}, room=room_id)
-
         close_room(room_id)
-
     except Exception as error:
         emit("error", {"message": f"An error occurred: {error}"}, room=room_id)
 
@@ -80,7 +78,6 @@ def handle_reject_request(data):
     """
     try:
         room_id = data.get("room_id")
-
         close_room(room_id)
 
     except Exception as error:
