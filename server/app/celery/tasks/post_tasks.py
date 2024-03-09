@@ -152,10 +152,12 @@ def process_uploaded_file(
 
             Embedding.objects.insert(embedding_docs, load_bulk=False)
             redis_client = Config.redis_client
-            post_number_of_embeddings_key = f"post_id_{post_id}_number_of_embeddings"
+            attachment_number_of_embeddings_key = (
+                f"attachment_id_{attachment_id}_number_of_embeddings"
+            )
 
             redis_client.set(
-                post_number_of_embeddings_key, math.ceil(num_chunks / 1000)
+                attachment_number_of_embeddings_key, math.ceil(num_chunks / 1000)
             )
         else:
             print("Unsupported File Type")
