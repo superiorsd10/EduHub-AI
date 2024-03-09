@@ -132,7 +132,6 @@ def process_uploaded_file(
             embedding_docs = []
 
             num_chunks = len(extracted_text)
-            remainder = num_chunks % 1000
             counter = 0
 
             for i in range(0, num_chunks, 1000):
@@ -145,20 +144,6 @@ def process_uploaded_file(
                     attachment_id=attachment_id,
                     batch_no=counter,
                     text_content=chunk,
-                    embeddings=embedding,
-                )
-                embedding_docs.append(embedding_doc)
-
-            if remainder > 0:
-                remainder_chunk = extracted_text[(num_chunks // 1000) * 1000 :]
-                embedding = extract_text_embedding(remainder_chunk)
-                counter += 1
-                embedding_doc = Embedding(
-                    hub_id=hub_id,
-                    post_id=post_id,
-                    attachment_id=attachment_id,
-                    batch_no=counter,
-                    text_content=remainder_chunk,
                     embeddings=embedding,
                 )
                 embedding_docs.append(embedding_doc)
