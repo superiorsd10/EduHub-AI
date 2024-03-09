@@ -341,6 +341,9 @@ def chat_with_material(attachment_id):
         else:
             previous_conversation = "No previous conversation found!"
 
+        if len(previous_conversation) > 10000:
+            previous_conversation = previous_conversation[-10000:]
+
         prompt = f"""
         Instruction: Please provide an informative response to the following question with the help of your knowledge, the Retrieved Context and the Previous Conversation in Markdown format.
 
