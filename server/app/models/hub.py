@@ -99,7 +99,6 @@ class Post(EmbeddedDocument):
     description = StringField()
     attachments_url = ListField(URLField())
     attachments_type = ListField(StringField())
-    number_of_embeddings = IntField()
     topic = StringField()
     created_at = DateTimeField()
     poll_options = ListField(StringField())
