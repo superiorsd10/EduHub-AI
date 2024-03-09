@@ -206,11 +206,11 @@ def create_post(hub_id):
                 unique_filename = attachment_uuid + extension
 
                 file_key = f"posts/{hub_id}/{unique_filename}"
-                s3_client.upload_fileobj(
-                    file,
-                    "eduhub-ai",
-                    file_key,
-                    ExtraArgs={"ContentType": mimetypes.guess_type(filename)[0]},
+                s3_client.put_object(
+                    Body=file_data,
+                    Bucket="eduhub-ai",
+                    Key=file_key,
+                    ContentType=mimetypes.guess_type(filename)[0],
                 )
                 file_url = f"https://eduhub-ai.s3.amazonaws.com/{file_key}"
                 uploaded_file_urls.append(file_url)
