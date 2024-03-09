@@ -5,6 +5,7 @@ Post routes for the Flask application.
 import os
 import uuid
 import mimetypes
+import math
 from datetime import datetime
 import base64
 from flask import Blueprint, request, current_app, jsonify
@@ -18,6 +19,7 @@ from app.models.embedding import Embedding
 from bson import ObjectId
 from app.celery.tasks.post_tasks import process_uploaded_file
 import google.generativeai as genai
+from config.config import Config
 
 
 post_blueprint = Blueprint("post", __name__)
@@ -291,6 +293,16 @@ def chat_with_material(attachment_id):
 
         query_embeddings = extract_text_embedding(query)
 
+        redis_client = Config.redis_client
+        attachment_number_of_embeddings_key = (
+            f"attachment_id_{attachment_id}_number_of_embeddings"
+        )
+        number_of_embeddings = redis_client.get(attachment_number_of_embeddings_key)
+        number_of_embeddings = int(number_of_embeddings.decode("utf-8"))
+        print(number_of_embeddings)
+        limit_results = math.ceil(math.sqrt(number_of_embeddings))
+        print(limit_results)
+
         results = Embedding.objects.aggregate(
             [
                 {
@@ -299,8 +311,8 @@ def chat_with_material(attachment_id):
                         "path": "embeddings",
                         "queryVector": query_embeddings,
                         "filter": {"attachment_id": str(attachment_id)},
-                        "numCandidates": 5,
-                        "limit": 2,
+                        "numCandidates": number_of_embeddings,
+                        "limit": limit_results,
                     }
                 },
                 {
@@ -317,22 +329,45 @@ def chat_with_material(attachment_id):
         for result in list(results):
             retrieved_context += result["text_content"]
 
+        attachment_previous_conversation_key = (
+            f"attachment_id_{attachment_id}_previous_conversation"
+        )
+        previous_conversation = redis_client.get(attachment_previous_conversation_key)
+
+        print(previous_conversation)
+
+        if previous_conversation is not None:
+            previous_conversation = previous_conversation.decode("utf-8")
+        else:
+            previous_conversation = "No previous conversation found!"
+
         prompt = f"""
-        Instruction: Please provide an informative response to the following question based on the Retrieved Context combined with your knowledge in Markdown format.
+        Instruction: Please provide an informative response to the following question with the help of your knowledge, the Retrieved Context and the Previous Conversation in Markdown format.
 
         Question: {query}
 
         Retrieved Context: {retrieved_context}
 
-        Note: If the model is unable to generate an answer based on the retrieved context, please follow these instructions:
+        Previous Conversation: {previous_conversation}
+
+        Note: If the model is unable to generate an answer based on the retrieved context or previous conversation, please follow these instructions:
 
         1. Notify the user that the generated answer is based on the model's own knowledge.
         2. Provide an answer using the model's own knowledge.
+        3. If possible, prompt something related to the topic to continue the conversation.
         """
+
+        if len(prompt) > 25000:
+            prompt = prompt[:25000]
 
         model = genai.GenerativeModel("gemini-pro")
 
         answer = model.generate_content(prompt)
+
+        previous_conversation += f"user: {query}\nmodel: {answer.text}\n"
+        redis_client.set(
+            attachment_previous_conversation_key, previous_conversation, ex=3600
+        )
 
         return (
             jsonify(
