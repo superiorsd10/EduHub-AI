@@ -24,11 +24,14 @@ import math
 from uuid import UUID
 import fitz
 from app.celery.celery import celery_instance
+from celery.signals import task_success, task_failure
 import google.generativeai as genai
 from app.models.embedding import Embedding
 from mongoengine import connect
 from dotenv import load_dotenv
 from config.config import Config
+
+redis_client = Config.redis_client
 
 
 def extract_text_from_pdf(file_data: bytes) -> str:
@@ -90,7 +93,7 @@ def extract_text_embedding(chunk: str) -> list:
         raise
 
 
-@celery_instance.task
+@celery_instance.task(soft_time_limit=60, time_limit=120)
 def process_uploaded_file(
     file_data: bytes,
     filename: str,
@@ -151,7 +154,6 @@ def process_uploaded_file(
                 embedding_docs.append(embedding_doc)
 
             Embedding.objects.insert(embedding_docs, load_bulk=False)
-            redis_client = Config.redis_client
             attachment_number_of_embeddings_key = (
                 f"attachment_id_{attachment_id}_number_of_embeddings"
             )
@@ -164,3 +166,42 @@ def process_uploaded_file(
 
     except Exception as error:
         print(f"error: {error}")
+
+
+@task_success.connect(sender=process_uploaded_file)
+def task_success_handler(sender=None, result=None, **kwargs):
+    """
+    Event handler function triggered when a Celery task succeeds.
+
+    Args:
+        sender: The sender of the signal (the Celery task).
+        result: The result returned by the Celery task.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        None
+
+    """
+    task_id = sender.request.id
+    print("SUCCESS")
+    redis_client.publish(f"{task_id}", "SUCCESS")
+
+
+@task_failure.connect(sender=process_uploaded_file)
+def task_failure_handler(sender=None, exception=None, traceback=None, **kwargs):
+    """
+    Event handler function triggered when a Celery task fails.
+
+    Args:
+        sender: The sender of the signal (the Celery task).
+        exception: The exception raised by the Celery task.
+        traceback: The traceback associated with the exception.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        None
+
+    """
+    task_id = sender.request.id
+    print("FAILURE")
+    redis_client.publish(f"{task_id}", "FAILURE")
