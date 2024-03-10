@@ -67,8 +67,8 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     Returns:
         ObjectId: The decoded ObjectId.
     """
-    decoded_bytes = base64.b64decode(base64_encoded)
-    hex_string = decoded_bytes.decode("utf-8")
+    decoded_bytes = base64.urlsafe_b64decode(base64_encoded)
+    hex_string = decoded_bytes.hex()
     object_id = ObjectId(hex_string)
     return object_id
 
@@ -195,9 +195,12 @@ def create_post(hub_id):
         files = request.files.getlist("files")
 
         uploaded_file_urls = []
+        task_ids = []
 
         hub_object_id = decode_base64_to_objectid(str(hub_id))
         post_uuid = str(uuid.uuid4())
+
+        redis_client = Config.redis_client
 
         for file in files:
             if file and allowed_file(file.filename):
@@ -216,13 +219,22 @@ def create_post(hub_id):
                 )
                 file_url = f"https://eduhub-ai.s3.amazonaws.com/{file_key}"
                 uploaded_file_urls.append(file_url)
-                process_uploaded_file.delay(
-                    file_data,
-                    filename,
-                    hub_id,
-                    post_uuid,
-                    attachment_uuid,
+                task = process_uploaded_file.apply_async(
+                    args=[
+                        file_data,
+                        filename,
+                        hub_id,
+                        post_uuid,
+                        attachment_uuid,
+                    ],
+                    retry_policy={
+                        "max_retries": 3,
+                        "interval_start": 2,
+                        "interval_step": 2,
+                        "interval_max": 10,
+                    },
                 )
+                task_ids.append(task.id)
 
         post = Post(
             uuid=post_uuid,
@@ -236,11 +248,18 @@ def create_post(hub_id):
 
         Hub.objects(id=hub_object_id).update_one(push__posts=post)
 
+        print(task_ids)
+
+        for task_id in task_ids:
+            print(task_id)
+            redis_client.publish(f"{task_id}", "PENDING")
+
         return (
             jsonify(
                 {
                     "message": "Post created successfully",
                     "success": True,
+                    "task_ids": task_ids,
                 }
             ),
             StatusCode.SUCCESS.value,
@@ -297,11 +316,18 @@ def chat_with_material(attachment_id):
         attachment_number_of_embeddings_key = (
             f"attachment_id_{attachment_id}_number_of_embeddings"
         )
-        number_of_embeddings = redis_client.get(attachment_number_of_embeddings_key)
+        attachment_previous_conversation_key = (
+            f"attachment_id_{attachment_id}_previous_conversation"
+        )
+        attachment_cached_data = redis_client.mget(
+            attachment_number_of_embeddings_key, attachment_previous_conversation_key
+        )
+
+        number_of_embeddings = attachment_cached_data[0]
         number_of_embeddings = int(number_of_embeddings.decode("utf-8"))
-        print(number_of_embeddings)
         limit_results = math.ceil(math.sqrt(number_of_embeddings))
-        print(limit_results)
+
+        previous_conversation = attachment_cached_data[1]
 
         results = Embedding.objects.aggregate(
             [
@@ -328,13 +354,6 @@ def chat_with_material(attachment_id):
 
         for result in list(results):
             retrieved_context += result["text_content"]
-
-        attachment_previous_conversation_key = (
-            f"attachment_id_{attachment_id}_previous_conversation"
-        )
-        previous_conversation = redis_client.get(attachment_previous_conversation_key)
-
-        print(previous_conversation)
 
         if previous_conversation is not None:
             previous_conversation = previous_conversation.decode("utf-8")
