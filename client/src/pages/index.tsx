@@ -17,10 +17,10 @@ import {
 import Banner from "@/components/HomePage/Banner";
 import Faqs from "@/components/HomePage/FAQs/Faqs";
 import Footer from "@/components/HomePage/Footer";
-import CreateHubModal from "@/components/HomePage/CreateHubModal";
+import CreateHubModal from "@/components/Modals/CreateHubModal";
 import Features from "@/components/HomePage/Features/Features";
 import { Variants, motion, useAnimationControls } from "framer-motion";
-import { AuthContext } from "@/components/Providers/AuthProvider";
+import { AuthContext } from "@/providers/AuthProvider";
 import Link from "next/link";
 import { IoMdArrowDropup } from "react-icons/io";
 import NextLink from "@/utils/NextLink";
@@ -34,6 +34,7 @@ type Hub = {
   creator_name: string;
   hub_id: string;
   name: string;
+  photo_url: string;
 };
 
 type Hubs = {
@@ -42,7 +43,7 @@ type Hubs = {
 };
 
 const index: NextPage = () => {
-  const { componentHeight } = useContext(AuthContext);
+  const { componentHeight, isCreateHubVisible, setIsCreateHubVisible } = useContext(AuthContext);
   const { isLoggedIn, isDrawerOpen, token } = useContext(AuthContext);
   const [opened, { open, close }] = useDisclosure(false);
   const [hubList, setHubList] = useState<Hubs>();
@@ -108,11 +109,13 @@ const index: NextPage = () => {
                 src="/assets/LandingPageIllustration.png"
                 style={{ objectFit: "contain" }}
               />
-              <CreateHubModal opened={opened} close={close} />
+              <CreateHubModal opened={isCreateHubVisible} close={()=>{
+                setIsCreateHubVisible(false);
+              }} />
               <Group>
                 <NextLink href="#">
                   <Button
-                    onClick={open}
+                    onClick={()=>setIsCreateHubVisible(true)}
                     variant="default"
                     radius="md"
                     color="black"
@@ -133,19 +136,23 @@ const index: NextPage = () => {
               </Group>
             </Stack>
           ) : (
-            <Flex w="100%" h={componentHeight} p="lg" gap="lg">
-              {hubList?.student.map((hub) => (
+            <Flex w="100%" h={componentHeight} p="lg" gap="lg" wrap='wrap' justify=''>
+              {hubList?.student.map((hub,id) => (
                 <Hub
                   creator_name={hub.creator_name}
                   hub_id={hub.hub_id}
                   name={hub.name}
+                  photo_url={hub.photo_url}
+                  key={id}
                 />
               ))}
-              {hubList?.teacher.map((hub) => (
+              {hubList?.teacher.map((hub,id) => (
                 <Hub
                   creator_name={hub.creator_name}
                   hub_id={hub.hub_id}
                   name={hub.name}
+                  photo_url={hub.photo_url}
+                  key={hubList.student.length+id}
                 />
               ))}
             </Flex>

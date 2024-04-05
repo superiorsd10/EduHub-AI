@@ -2,7 +2,7 @@ import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal, Button, Title, Group, Stack, List, Text } from "@mantine/core";
 import { FaCheck } from "react-icons/fa6";
-import { PlanDetails } from "./PlanDetails";
+import { PlanDetails } from "../PlanDetails";
 import { loadStripe } from "@stripe/stripe-js";
 import { useRouter} from "next/router";
 

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { motion, Variants } from "framer-motion";
 import { Flex, Image, Stack, Text, Title } from "@mantine/core";
-import { AuthContext } from "@/components/Providers/AuthProvider";
+import { AuthContext } from "@/providers/AuthProvider";
 
 type Props = {
   index: boolean;

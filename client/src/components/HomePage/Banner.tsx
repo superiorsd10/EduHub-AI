@@ -1,7 +1,7 @@
 import { Button, Flex, Group, Image, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
 import React, { useContext } from "react";
-import { AuthContext } from "../Providers/AuthProvider";
+import { AuthContext } from "../../providers/AuthProvider";
 
 const Banner:React.FC = () => {
   const {componentHeight} = useContext(AuthContext);

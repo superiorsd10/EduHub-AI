@@ -5,7 +5,7 @@ import { createTheme, MantineProvider, rem } from "@mantine/core";
 import Layout from "@/layout/Layout";
 import localFont from "next/font/local";
 import "../firebase/clientApp";
-import { AuthProvider } from "@/components/Providers/AuthProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
 const geistRegular = localFont({

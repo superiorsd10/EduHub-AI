@@ -22,7 +22,7 @@ import {
   faRightToBracket,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { AuthContext } from "../Providers/AuthProvider";
+import { AuthContext } from "../../providers/AuthProvider";
 import NextLink from "@/utils/NextLink";
 
 const MobileDrawer = () => {

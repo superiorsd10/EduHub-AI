@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useHover } from "@mantine/hooks";
-import { AuthContext } from "../Providers/AuthProvider";
+import { AuthContext } from "../../providers/AuthProvider";
 import { Stack, AppShell } from "@mantine/core";
 
 import { MdOutlineHub } from "react-icons/md";
@@ -12,7 +12,7 @@ import { GiStarSwirl } from "react-icons/gi";
 
 import UserDrawerItem from "./UserDrawerItem";
 import UserDrawerDropdown from "./UserDrawerDropdown";
-import UpgradePlan from "../UpgradePlan";
+import UpgradePlan from "../Modals/UpgradePlan";
 
 type DropDownElement = {
   text: string;

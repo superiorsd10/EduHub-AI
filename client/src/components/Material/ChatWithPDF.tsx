@@ -10,10 +10,9 @@ import {
   Title,
 } from "@mantine/core";
 import React, { useEffect, useRef, useState } from "react";
-import { LuArrowBigRight } from "react-icons/lu";
 import { FaLocationArrow } from "react-icons/fa";
-import Markdown, { compiler } from "markdown-to-jsx";
-import { AuthContext } from "./Providers/AuthProvider";
+import Markdown from "markdown-to-jsx";
+import { AuthContext } from "../../providers/AuthProvider";
 import { useContext } from "react";
 
 type Chat = {
@@ -24,7 +23,6 @@ type Chat = {
 const ChatWithPDF = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Function to scroll chat container to bottom
   const [chats, setChats] = useState<Chat[]>([]);
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -106,7 +104,7 @@ const ChatWithPDF = () => {
       <Stack
         w="100%"
         mah="100%"
-        style={{ overflowY: "scroll" }}
+        style={{ overflowY: "auto" }}
         pr="md"
         ref={chatContainerRef}
       >

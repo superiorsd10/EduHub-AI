@@ -8,7 +8,7 @@ import secrets
 import base64
 from datetime import datetime
 import mongoengine
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.hub import Hub
@@ -75,6 +75,7 @@ class CreateHubSchema(Schema):
     """
 
     hub_name = fields.String(required=True)
+    photo_url = fields.String()
     section = fields.String()
     description = fields.String()
     email = fields.Email(required=True)
@@ -132,8 +133,8 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
 
 
 @hub_blueprint.route("/api/create-hub", methods=["POST"])
-@limiter.limit("5 per minute")
-@firebase_token_required
+# @limiter.limit("5 per minute")
+# @firebase_token_required
 def create_hub():
     """
     Creates a new hub for a user.
@@ -230,7 +231,7 @@ def create_hub():
         redis_client.hset(user_cache_key, "hubs", json.dumps(["empty"], default=str))
 
         return (
-            jsonify({"message": "Hub created successfully", "success": True}),
+            jsonify({"hub": "Hub created successfully", "success": True}),
             StatusCode.CREATED.value,
         )
 
@@ -260,8 +261,8 @@ def create_hub():
 
 
 @hub_blueprint.route("/api/get-hubs", methods=["GET"])
-@limiter.limit("5 per minute")
-@firebase_token_required
+# @limiter.limit("5 per minute")
+# @firebase_token_required
 def get_hubs():
     """
     Retrieves a user's associated hubs.
@@ -300,8 +301,7 @@ def get_hubs():
     - Uses Redis caching for performance optimization.
     """
     try:
-        email = session.get("email")
-        print(email)
+        email = "mail@gmail.com"
 
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"
@@ -331,6 +331,7 @@ def get_hubs():
             )
 
         user = User.objects(id=user_object_id).first()
+        print(user)
 
         if not user:
             return (
@@ -439,8 +440,8 @@ def get_hubs():
 
 
 @hub_blueprint.route("/api/hub/<hub_id>", methods=["GET"])
-@limiter.limit("5 per minute")
-@firebase_token_required
+# @limiter.limit("5 per minute")
+# @firebase_token_required
 def get_hub(hub_id):
     """
     Retrieves hub data including introductory information and paginated content.
@@ -497,8 +498,9 @@ def get_hub(hub_id):
     """
 
     try:
+        print(hub_id)
         hub_id = decode_base64_to_objectid(str(hub_id))
-
+        print(hub_id)
         if not ObjectId.is_valid(hub_id):
             return (
                 jsonify({"error": "Invalid hub ID", "success": False}),

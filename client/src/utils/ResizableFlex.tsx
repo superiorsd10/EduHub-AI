@@ -1,4 +1,4 @@
-import { AuthContext } from "@/components/Providers/AuthProvider";
+import { AuthContext } from "@/providers/AuthProvider";
 import { Flex } from "@mantine/core";
 import { motion } from "framer-motion";
 import { ReactNode, useContext } from "react";

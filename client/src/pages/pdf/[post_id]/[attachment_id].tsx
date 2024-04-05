@@ -1,7 +1,7 @@
 import React from "react";
-import EmptyLayout from "@/components/HomePage/EmptyLayout";
+import EmptyLayout from "@/components/EmptyLayout";
 import { Flex } from "@mantine/core";
-import PDF from "@/components/PDF";
+import PDF from "@/components/Material/PDF";
 import { Worker } from "@react-pdf-viewer/core";
 import { NextPageWithLayout } from "@/pages/_app";
 import { useRouter } from "next/router";

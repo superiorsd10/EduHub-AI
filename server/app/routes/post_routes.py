@@ -67,8 +67,8 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     Returns:
         ObjectId: The decoded ObjectId.
     """
-    decoded_bytes = base64.urlsafe_b64decode(base64_encoded)
-    hex_string = decoded_bytes.hex()
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
     object_id = ObjectId(hex_string)
     return object_id
 
@@ -140,8 +140,8 @@ class ChatWithMaterialSchema(Schema):
 
 
 @post_blueprint.route("/api/<hub_id>/create-post", methods=["POST"])
-@limiter.limit("5 per minute")
-@firebase_token_required
+# @limiter.limit("5 per minute")
+# @firebase_token_required
 def create_post(hub_id):
     """
     Create a post within a specified hub.
@@ -196,8 +196,9 @@ def create_post(hub_id):
 
         uploaded_file_urls = []
         task_ids = []
-
+        print(hub_id)
         hub_object_id = decode_base64_to_objectid(str(hub_id))
+        # hub_object_id = hub_id
         post_uuid = str(uuid.uuid4())
 
         redis_client = Config.redis_client

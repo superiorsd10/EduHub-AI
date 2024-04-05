@@ -15,11 +15,14 @@ interface AuthContextProps {
   navbarHeight: string;
   componentHeight: string;
   isLoggedIn: boolean;
+  isCreateHubVisible: boolean;
+  setIsCreateHubVisible : (isCreateHubVisible: boolean) => void;
   token: string | null; 
 }
 
 const AuthContext = createContext<AuthContextProps>({
   email: null,
+  // displayPhoto: 
   loading: true,
   isDrawerOpen: false,
   setIsDrawerOpen: () => {},
@@ -28,6 +31,8 @@ const AuthContext = createContext<AuthContextProps>({
   navbarHeight: "15vh",
   componentHeight: "85svh",
   isLoggedIn: false,
+  isCreateHubVisible:false,
+  setIsCreateHubVisible: () => {},
   token: null, 
 });
 
@@ -38,6 +43,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isDrawerTemporarilyOpen, setIsDrawerTemporarilyOpen] = useState<boolean>(false);
+  const [isCreateHubVisible, setIsCreateHubVisible] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null); 
 
   useEffect(() => {
@@ -73,6 +79,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
         componentHeight: user ? "90svh" : "85svh",
         isLoggedIn: !!user,
         token, 
+        isCreateHubVisible,
+        setIsCreateHubVisible,
       }}
     >
       {children}

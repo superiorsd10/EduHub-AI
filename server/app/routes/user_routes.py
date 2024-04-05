@@ -15,8 +15,8 @@ user_blueprint = Blueprint("user", __name__)
 
 
 @user_blueprint.route("/api/sign-up", methods=["POST"])
-@limiter.limit("5 per minute")
-@firebase_token_required
+# @limiter.limit("5 per minute")
+# @firebase_token_required
 def create_user():
     """
     Create a new user.
@@ -54,7 +54,7 @@ def create_user():
         if not redis_client.exists(user_cache_key):
             new_user.save()
 
-            session["email"] = new_user.email
+            # session["email"] = new_user.email
 
             user_object_id = new_user.id
 

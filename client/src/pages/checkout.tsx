@@ -8,7 +8,7 @@ import {
 import { loadStripe } from "@stripe/stripe-js";
 import { Button, Stack } from "@mantine/core";
 import { NextPageWithLayout } from "./_app";
-import EmptyLayout from "@/components/HomePage/EmptyLayout";
+import EmptyLayout from "@/components/EmptyLayout";
 import Navbar from "@/components/Auth/Navbar";
 import CheckoutForm from "@/components/CheckoutForm";
 

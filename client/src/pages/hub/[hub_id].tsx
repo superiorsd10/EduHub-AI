@@ -4,10 +4,11 @@ import Header from "@/components/Classroom/Header";
 import ResizableFlex from "@/utils/ResizableFlex";
 import { Stack } from "@mantine/core";
 import React, { useEffect, useContext, useState } from "react";
-import { AuthContext } from "@/components/Providers/AuthProvider";
+import { AuthContext } from "@/providers/AuthProvider";
 import { useRouter } from "next/router";
 
 type HubIntroductoryData = {
+  assignments: any[];
   auth_option: string;
   description: string;
   invite_code: string;
@@ -64,6 +65,7 @@ const classroom = () => {
       const hubsData: HubsData = data.data;
       console.log(hubsData);
       setCurrentHubData(hubsData);
+      console.log(currentHubData)
     };
     getHub();
   }, [router]);

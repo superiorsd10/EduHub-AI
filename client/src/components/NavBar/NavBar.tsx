@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import { useSignOut } from "react-firebase-hooks/auth";
 import { auth } from "@/firebase/clientApp";
-import { AuthContext } from "../Providers/AuthProvider";
+import { AuthContext } from "../../providers/AuthProvider";
 
 import { Avatar, Box, Button, Flex, Group, Image, Menu } from "@mantine/core";
 
@@ -19,7 +19,7 @@ import NextLink from "@/utils/NextLink";
 
 const NavBar: React.FC = () => {
   const router = useRouter();
-  const { isLoggedIn, isDrawerOpen, setIsDrawerOpen, navbarHeight } =
+  const { isLoggedIn, isDrawerOpen, setIsDrawerOpen, navbarHeight, isCreateHubVisible,setIsCreateHubVisible } =
     useContext(AuthContext);
   const [signOut] = useSignOut(auth);
 
@@ -113,7 +113,7 @@ const NavBar: React.FC = () => {
       <Group ml="auto" visibleFrom="md" gap="md">
         {isLoggedIn ? (
           <Group gap="md">
-            <Box w="2vw" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
+            <Box w="2vw" style={{ cursor: "pointer" }} onClick={() => setIsCreateHubVisible(true)}>
               <FaPlus size={20} />
             </Box>
             <Menu shadow="md" position="bottom-end">

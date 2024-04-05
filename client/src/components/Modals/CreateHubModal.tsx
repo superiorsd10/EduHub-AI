@@ -1,6 +1,6 @@
 import NextLink from "@/utils/NextLink";
 import { Button, Group, Input, Modal, Textarea } from "@mantine/core";
-import { AuthContext } from "../Providers/AuthProvider";
+import { AuthContext } from "../../providers/AuthProvider";
 import { useContext, useState } from "react";
 
 const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
@@ -10,22 +10,31 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   const [hubName, setHubName] = useState("");
   const [section, setSection] = useState("");
   const [description, setDescription] = useState("");
-  const { token } = useContext(AuthContext);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { token,setIsCreateHubVisible } = useContext(AuthContext);
 
   const handleCreateHub = async () => {
-    await fetch('http://127.0.0.1:5000/api/create-hub',{
-      method:'POST',
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token}`, 
-      },
-      body: JSON.stringify({
-        hub_name: hubName,
-        section: section,
-        description: description,
-        email: "nikhilranjan1103@gmail.com" 
-      }),
-    });
+    setLoading(true);
+    try {
+      const resp=await fetch('http://127.0.0.1:5000/api/create-hub',{
+        method:'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`, 
+        },
+        body: JSON.stringify({
+          hub_name: hubName,
+          section: section,
+          description: description,
+          email: "mail@gmail.com"
+        }),
+      });
+      setIsCreateHubVisible(false);
+    }
+    catch (error){
+      console.log(error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -74,7 +83,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
         >
           <NextLink href="#">Cancel</NextLink>
         </Button>
-        <Button color="black" radius="md" onClick={handleCreateHub}>
+        <Button loading={loading} color="black" radius="md" onClick={handleCreateHub}>
           Create
         </Button>
       </Group>

@@ -1,6 +1,6 @@
 import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AuthContext } from "../Providers/AuthProvider";
+import { AuthContext } from "../../providers/AuthProvider";
 import { IoMdArrowDropright, IoMdArrowDropdown } from "react-icons/io";
 import { useHover } from '@mantine/hooks';
 

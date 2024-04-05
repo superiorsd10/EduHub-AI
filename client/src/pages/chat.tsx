@@ -1,9 +1,9 @@
 // import ABC from "@/components/ABC";
 import React from "react";
 import { NextPageWithLayout } from "./_app";
-import EmptyLayout from "@/components/HomePage/EmptyLayout";
+import EmptyLayout from "@/components/EmptyLayout";
 import { Flex } from "@mantine/core";
-import PDF from "@/components/PDF";
+import PDF from "@/components/Material/PDF";
 import { Worker } from "@react-pdf-viewer/core";
 
 const chat: NextPageWithLayout = () => {
