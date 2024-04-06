@@ -1,6 +1,7 @@
 import "@mantine/core/styles.css";
 
 import type { AppProps } from "next/app";
+import { HMSPrebuilt } from '@100mslive/roomkit-react';
 import { createTheme, MantineProvider, rem } from "@mantine/core";
 import Layout from "@/layout/Layout";
 import localFont from "next/font/local";
