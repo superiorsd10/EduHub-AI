@@ -79,6 +79,9 @@ class CreateHubSchema(Schema):
     section = fields.String()
     description = fields.String()
     email = fields.Email(required=True)
+    room_code_teacher = fields.String(required=True)
+    room_code_ta = fields.String(required=True)
+    room_code_student = fields.String(required=True)
 
 
 class JoinHubSchema(Schema):
@@ -182,11 +185,14 @@ def create_hub():
     try:
         schema = CreateHubSchema()
         data = schema.load(request.get_json())
-
+        print(data)
         hub_name = data["hub_name"]
         section = data["section"]
         description = data["description"]
         email = data["email"]
+        room_code_teacher = data["room_code_teacher"]
+        room_code_ta = data["room_code_ta"]
+        room_code_student = data["room_code_student"]
 
         user_cache_key = f"user:{email}"
         redis_client = Config.redis_client
@@ -214,7 +220,9 @@ def create_hub():
             creator_id=user_object_id,
             members_id=default_member_id,
             invite_code=generate_invite_code(),
-            streaming_url=f"https://localhost:3000/{generate_invite_code()}",
+            room_code_teacher=room_code_teacher,
+            room_code_ta=room_code_ta,
+            room_code_student=room_code_student,
             created_at=datetime.now().replace(microsecond=0),
         )
 
@@ -301,7 +309,7 @@ def get_hubs():
     - Uses Redis caching for performance optimization.
     """
     try:
-        email = "mail@gmail.com"
+        email = "fuck@fuck.fuck"
 
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"
@@ -590,7 +598,9 @@ def get_hub(hub_id):
                         "theme_color",
                         "photo_url",
                         "invite_code",
-                        "streaming_url",
+                        "room_code_teacher",
+                        "room_code_student",
+                        "room_code_ta",
                     )
                     .first()
                     .to_mongo()
