@@ -75,7 +75,6 @@ class CreateHubSchema(Schema):
     """
 
     hub_name = fields.String(required=True)
-    photo_url = fields.String()
     section = fields.String()
     description = fields.String()
     email = fields.Email(required=True)
