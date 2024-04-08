@@ -17,6 +17,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/Material/PDF.tsx", "src/pages/live.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/Material/PDF.tsx", "src/pages/live.jsx", "src/pages/class/[room_code].tsx"],
   "exclude": ["node_modules"]
 }

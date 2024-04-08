@@ -227,6 +227,8 @@ def create_hub():
 
         new_hub.save()
 
+        print(new_hub)
+
         new_hub_id = new_hub.id
 
         if "teacher" not in user.hubs:
@@ -308,7 +310,7 @@ def get_hubs():
     - Uses Redis caching for performance optimization.
     """
     try:
-        email = "fuck@fuck.fuck"
+        email = "nikhilranjan1103@gmail.com"
 
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"

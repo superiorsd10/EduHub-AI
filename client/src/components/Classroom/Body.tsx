@@ -16,6 +16,7 @@ type HubIntroductoryData = {
   recordings: any[]; 
   section: string;
   streaming_url: string;
+  room_code_teacher: string;
   _id: string;
 }
 type Post={
@@ -40,7 +41,7 @@ const Body = (props: HubsData) => {
   const { componentHeight } = useContext(AuthContext);
   return (
     <Group pos="relative" w='100%' gap='xl' align="center">
-      <LeftBar invite_code={props.introductory.invite_code}/>
+      <LeftBar invite_code={props.introductory.invite_code} room_code={props.introductory.room_code_teacher}/>
       <Stack style={{ flex: 1 }}>
       {props.paginatedData.map((post,id)=><Content key={id} post={post.items}/>)}
       </Stack>

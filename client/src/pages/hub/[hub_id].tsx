@@ -20,6 +20,7 @@ type HubIntroductoryData = {
   recordings: any[];
   section: string;
   streaming_url: string;
+  room_code_teacher: string;
   _id: string;
 };
 
@@ -28,8 +29,8 @@ type Post = {
   attachments_url: string[];
   created_at: string;
   description: string;
-  emoji_reactions: Record<string, any>; // Assuming emoji_reactions can be any key-value pair
-  poll_options: any[]; // Assuming poll_options can be any type of array
+  emoji_reactions: Record<string, any>; 
+  poll_options: any[]; 
   title: string;
   topic: string;
   type: string;

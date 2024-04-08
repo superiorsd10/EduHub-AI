@@ -43,7 +43,8 @@ type Hubs = {
 };
 
 const index: NextPage = () => {
-  const { componentHeight, isCreateHubVisible, setIsCreateHubVisible } = useContext(AuthContext);
+  const { componentHeight, isCreateHubVisible, setIsCreateHubVisible } =
+    useContext(AuthContext);
   const { isLoggedIn, isDrawerOpen, token } = useContext(AuthContext);
   const [opened, { open, close }] = useDisclosure(false);
   const [hubList, setHubList] = useState<Hubs>();
@@ -102,6 +103,13 @@ const index: NextPage = () => {
         </>
       ) : (
         <ResizableFlex>
+          <CreateHubModal
+            opened={isCreateHubVisible}
+            close={() => {
+              setIsCreateHubVisible(false);
+            }}
+          />
+          {/* "frv-bqmf-msl" */}
           {isClassroomEmpty ? (
             <Stack w="100%" h={componentHeight} justify="center" align="center">
               <Image
@@ -109,13 +117,11 @@ const index: NextPage = () => {
                 src="/assets/LandingPageIllustration.png"
                 style={{ objectFit: "contain" }}
               />
-              <CreateHubModal opened={isCreateHubVisible} close={()=>{
-                setIsCreateHubVisible(false);
-              }} />
+
               <Group>
                 <NextLink href="#">
                   <Button
-                    onClick={()=>setIsCreateHubVisible(true)}
+                    onClick={() => setIsCreateHubVisible(true)}
                     variant="default"
                     radius="md"
                     color="black"
@@ -136,8 +142,15 @@ const index: NextPage = () => {
               </Group>
             </Stack>
           ) : (
-            <Flex w="100%" h={componentHeight} p="lg" gap="lg" wrap='wrap' justify=''>
-              {hubList?.student.map((hub,id) => (
+            <Flex
+              w="100%"
+              h={componentHeight}
+              p="lg"
+              gap="lg"
+              wrap="wrap"
+              justify=""
+            >
+              {hubList?.student.map((hub, id) => (
                 <Hub
                   creator_name={hub.creator_name}
                   hub_id={hub.hub_id}
@@ -146,13 +159,13 @@ const index: NextPage = () => {
                   key={id}
                 />
               ))}
-              {hubList?.teacher.map((hub,id) => (
+              {hubList?.teacher.map((hub, id) => (
                 <Hub
                   creator_name={hub.creator_name}
                   hub_id={hub.hub_id}
                   name={hub.name}
                   photo_url={hub.photo_url}
-                  key={hubList.student.length+id}
+                  key={hubList.student.length + id}
                 />
               ))}
             </Flex>

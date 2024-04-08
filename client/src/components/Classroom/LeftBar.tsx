@@ -3,8 +3,12 @@ import React from "react";
 import { PiChatCircleDotsLight } from "react-icons/pi";
 import { FaPlus } from "react-icons/fa6";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { MdLiveTv } from "react-icons/md";
+import Link from "next/link";
+import NextLink from "@/utils/NextLink";
 
-const LeftBar = ({invite_code}:{invite_code:string}) => {
+const LeftBar = ({invite_code,room_code}:{invite_code:string,room_code:string}) => {
+  console.log(room_code)
   return (
     <Stack w="15%">
       <Stack gap='sm' w='100%' style={{borderRadius:'10px',border:'2px solid #CED4DA'}} p='sm'>
@@ -19,6 +23,11 @@ const LeftBar = ({invite_code}:{invite_code:string}) => {
       </Button>
       <Button color="#C2255C" leftSection={<PiChatCircleDotsLight />} justify="flex-start">
         Chat with Material
+      </Button>
+      <Button color="#C92A2A" variant="outline" leftSection={<MdLiveTv />} justify="flex-start">
+        <NextLink href={`http://localhost:3000/class/${room_code}`}>
+        Start Live Class
+        </NextLink>
       </Button>
     </Stack>
   );
