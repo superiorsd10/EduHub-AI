@@ -27,8 +27,8 @@ const CreatePostModal: React.FC<{
   const [description, setDescription] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string | null>("first");
 
+  const { token, setIsCreateHubVisible } = useContext(AuthContext);
   const handleCreateHub = async () => {
-    const { token, setIsCreateHubVisible } = useContext(AuthContext);
     try {
       await fetch(`http://127.0.0.1:5000/api/${id}/create-post`, {
         method: "POST",
