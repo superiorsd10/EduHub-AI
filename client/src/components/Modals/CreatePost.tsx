@@ -29,19 +29,18 @@ const CreatePostModal: React.FC<{
 
   const { token, setIsCreateHubVisible } = useContext(AuthContext);
   const handleCreateHub = async () => {
+    const formData = new FormData();
+  formData.append('type', activeTab === "first" ? "announcement" : "material");
+  formData.append('title', title);
+  formData.append('topic', topic);
+  formData.append('description', description);
     try {
-      await fetch(`http://127.0.0.1:5000/api/${id}/create-post`, {
+      await fetch(`http://127.0.0.1:5000/api/${encoded_base64}/create-post`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `${token}`,
         },
-        body: JSON.stringify({
-          "type":activeTab=="first"?"announcement":"material",
-          "title":title,
-          "topic":topic,
-          "description":description
-        }),
+        body: formData,
       });
     } catch (error) {
       console.log(error);

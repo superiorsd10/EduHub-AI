@@ -185,6 +185,7 @@ def create_post(hub_id):
 
     """
     try:
+
         schema = CreatePostSchema()
         data = schema.load(request.form)
 
