@@ -160,7 +160,7 @@ const CreatePostModal: React.FC<{
           >
             <NextLink href="#">Cancel</NextLink>
           </Button>
-          <Button loading={false} color="black" radius="md">
+          <Button loading={false} color="black" radius="md" onClick={handleCreateHub}>
             Post
           </Button>
         </Group>
