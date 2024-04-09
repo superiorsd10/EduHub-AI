@@ -89,7 +89,6 @@ const ChatWithPDF = () => {
       return newChats;
     });
     setIsLoading(false);
-    console.log(body);
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {

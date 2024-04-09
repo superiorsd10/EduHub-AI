@@ -10,7 +10,6 @@ import { AuthContext } from "@/providers/AuthProvider";
 
 const LeftBar = ({invite_code,room_code}:{invite_code:string,room_code:string}) => {
   const {isCreatePostVisible,setIsCreatePostVisible}=useContext(AuthContext);
-  console.log(room_code)
   return (
     <Stack w="15%">
       <Stack gap='sm' w='100%' style={{borderRadius:'10px',border:'2px solid #CED4DA'}} p='sm'>

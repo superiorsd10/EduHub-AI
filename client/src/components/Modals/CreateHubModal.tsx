@@ -43,7 +43,6 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
         }),
       });
       const print=await resp.json();
-      console.log(print);
       setIsCreateHubVisible(false);
     }
     catch (error){
@@ -59,6 +58,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
       title="Create Hub"
       centered
       radius="md"
+      zIndex={100001}
     >
       <Input
         placeholder="Hub Name"

@@ -22,14 +22,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           }}
         />
       )}
-      {isLoggedIn && (
-        <CreatePostModal
-          opened={isCreatePostVisible}
-          close={() => {
-            setIsCreatePostVisible(false);
-          }}
-        />
-      )}
       {children}
     </>
   );

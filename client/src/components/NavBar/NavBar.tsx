@@ -113,7 +113,7 @@ const NavBar: React.FC = () => {
       <Group ml="auto" visibleFrom="md" gap="md">
         {isLoggedIn ? (
           <Group gap="md">
-            <Box w="2vw" style={{ cursor: "pointer" }} onClick={() => {setIsCreateHubVisible(true); console.log('okkk')}}>
+            <Box w="2vw" style={{ cursor: "pointer" }} onClick={() => {setIsCreateHubVisible(true)}}>
               <FaPlus size={20} />
             </Box>
             <Menu shadow="md" position="bottom-end">

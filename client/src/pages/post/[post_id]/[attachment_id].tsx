@@ -9,8 +9,6 @@ const post = () => {
     const router = useRouter();
     const post_id = router.query.post_id as string;
     const attachment_id = router.query.attachment_id as string;
-    console.log(post_id)
-    console.log(attachment_id)
     return (
         <ResizableFlex>
           <Center>

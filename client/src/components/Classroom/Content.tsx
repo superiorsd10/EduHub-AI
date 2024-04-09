@@ -18,7 +18,6 @@ type Post={
 }
 
 const Content = ({post}:{post:Post}) => {
-  console.log(post)
   let url=post.attachments_url[0];
   let str=url.split('/');
   const attachment_id = str[str.length - 1].replace('.pdf', '');

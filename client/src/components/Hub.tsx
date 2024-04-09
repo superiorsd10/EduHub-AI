@@ -23,8 +23,6 @@ const googleClassroomPalette = [
 ];
 
 const Hub = ({ creator_name, hub_id, name, photo_url }: Props) => {
-  console.log(name,photo_url)
-  if(photo_url===undefined) console.log(name,true)
   const router = useRouter();
   return (
     <Card

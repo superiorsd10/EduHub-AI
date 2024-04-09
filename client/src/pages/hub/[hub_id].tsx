@@ -6,6 +6,7 @@ import { Stack } from "@mantine/core";
 import React, { useEffect, useContext, useState } from "react";
 import { AuthContext } from "@/providers/AuthProvider";
 import { useRouter } from "next/router";
+import CreatePostModal from "@/components/Modals/CreatePost";
 
 type HubIntroductoryData = {
   assignments: any[];
@@ -29,8 +30,8 @@ type Post = {
   attachments_url: string[];
   created_at: string;
   description: string;
-  emoji_reactions: Record<string, any>; 
-  poll_options: any[]; 
+  emoji_reactions: Record<string, any>;
+  poll_options: any[];
   title: string;
   topic: string;
   type: string;
@@ -45,12 +46,12 @@ type HubsData = {
 const classroom = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id as string;
-  const { token } = useContext(AuthContext);
+  const { token, isCreatePostVisible, setIsCreatePostVisible } =
+    useContext(AuthContext);
   const [currentHubData, setCurrentHubData] = useState<HubsData | null>(null);
   useEffect(() => {
     const getHub = async () => {
-      if(!hub_id) return;
-      console.log(hub_id)
+      if (!hub_id) return;
       const encoded_base64 = btoa(hub_id);
       const response = await fetch(
         `http://127.0.0.1:5000/api/hub/${encoded_base64}`,
@@ -63,15 +64,21 @@ const classroom = () => {
         }
       );
       const data = await response.json();
+      console.log(data);
       const hubsData: HubsData = data.data;
-      console.log(hubsData);
       setCurrentHubData(hubsData);
-      console.log(currentHubData)
     };
     getHub();
   }, [router]);
   return (
     <ResizableFlex>
+      <CreatePostModal
+        opened={isCreatePostVisible}
+        close={() => {
+          setIsCreatePostVisible(false);
+        }}
+        id={hub_id}
+      />
       <Stack pl="2%" pr="2%" gap="xl">
         <Header />
         {currentHubData != null && (

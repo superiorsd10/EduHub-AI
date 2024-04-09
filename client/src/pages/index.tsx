@@ -62,7 +62,6 @@ const index: NextPage = () => {
 
       const data = await response.json();
       const hubs: Hubs = data.data[0];
-      console.log(hubs);
 
       setHubList(hubs);
       setIsClassroomEmpty(

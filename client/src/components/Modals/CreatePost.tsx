@@ -13,23 +13,46 @@ import { FileButton } from "@mantine/core";
 import { FaFile, FaGoogleDrive } from "react-icons/fa";
 import { AuthContext } from "@/providers/AuthProvider";
 
+const CreatePostModal: React.FC<{
+  opened: boolean;
+  close: () => void;
+  id: string;
+}> = ({ opened, close, id }) => {
+  const { isCreatePostVisible, setIsCreatePostVisible } =
+    useContext(AuthContext);
+  const encoded_base64 = btoa(id);
+  const [files, setFiles] = useState<File[]>([]);
+  const [title, setTitle] = useState<string>("");
+  const [topic, setTopic] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string | null>("first");
 
-const CreatePostModal: React.FC<{ opened: boolean; close: () => void }> = ({
-  opened,
-  close,
-}) => {
-  const {isCreatePostVisible,setIsCreatePostVisible}=useContext(AuthContext);
-  const [files, setFiles] = useState<File[]>([]); // State to store an array of files
+  const handleCreateHub = async () => {
+    const { token, setIsCreateHubVisible } = useContext(AuthContext);
+    try {
+      await fetch(`http://127.0.0.1:5000/api/${id}/create-post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          "type":activeTab=="first"?"announcement":"material",
+          "title":title,
+          "topic":topic,
+          "description":description
+        }),
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleFileChange = (newFile: File | null) => {
     if (newFile) {
       setFiles((prevFiles) => [...prevFiles, newFile]);
     }
   };
-
-  useEffect(() => {
-    console.log(files);
-  }, [files]);
 
   return (
     <Modal
@@ -38,16 +61,33 @@ const CreatePostModal: React.FC<{ opened: boolean; close: () => void }> = ({
       title="Create Post"
       centered
       radius="md"
+      zIndex={100001}
     >
-      <Tabs color="black" defaultValue="first">
+      <Tabs
+        color="black"
+        defaultValue="first"
+        value={activeTab}
+        onChange={setActiveTab}
+      >
         <Tabs.List>
           <Tabs.Tab value="first">Announcement</Tabs.Tab>
           <Tabs.Tab value="second">Material</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="first" pt="xs">
-          <Input placeholder="Title" value="Title" radius="md" />
-          <Input placeholder="Topic" value="Topic" mt="sm" radius="md" />
+          <Input
+            placeholder="Title"
+            value="Title"
+            radius="md"
+            onChange={(event) => setTitle(event.currentTarget.value)}
+          />
+          <Input
+            placeholder="Topic"
+            value="Topic"
+            mt="sm"
+            radius="md"
+            onChange={(event) => setTopic(event.currentTarget.value)}
+          />
           <Textarea
             placeholder="Description"
             value="Description"
@@ -57,6 +97,7 @@ const CreatePostModal: React.FC<{ opened: boolean; close: () => void }> = ({
             autosize
             minRows={4}
             maxRows={4}
+            onChange={(event) => setDescription(event.currentTarget.value)}
           />
         </Tabs.Panel>
 
