@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import NextLink from "@/utils/NextLink";
 import {
   Button,
@@ -11,11 +11,14 @@ import {
 } from "@mantine/core";
 import { FileButton } from "@mantine/core";
 import { FaFile, FaGoogleDrive } from "react-icons/fa";
+import { AuthContext } from "@/providers/AuthProvider";
+
 
 const CreatePostModal: React.FC<{ opened: boolean; close: () => void }> = ({
   opened,
   close,
 }) => {
+  const {isCreatePostVisible,setIsCreatePostVisible}=useContext(AuthContext);
   const [files, setFiles] = useState<File[]>([]); // State to store an array of files
 
   const handleFileChange = (newFile: File | null) => {
@@ -31,7 +34,7 @@ const CreatePostModal: React.FC<{ opened: boolean; close: () => void }> = ({
   return (
     <Modal
       opened={opened}
-      onClose={() => {}}
+      onClose={() => setIsCreatePostVisible(false)}
       title="Create Post"
       centered
       radius="md"
