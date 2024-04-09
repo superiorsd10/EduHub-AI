@@ -185,7 +185,6 @@ def create_post(hub_id):
 
     """
     try:
-
         schema = CreatePostSchema()
         data = schema.load(request.form)
 
@@ -197,7 +196,6 @@ def create_post(hub_id):
 
         uploaded_file_urls = []
         task_ids = []
-        print(hub_id)
         hub_object_id = decode_base64_to_objectid(str(hub_id))
         post_uuid = str(uuid.uuid4())
 
@@ -249,10 +247,12 @@ def create_post(hub_id):
 
         Hub.objects(id=hub_object_id).update_one(push__posts=post)
 
-        print(task_ids)
+        cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+        cache_introductory_key = f"hub_{hub_object_id}_introductory"
+
+        redis_client.delete(cache_paginated_key, cache_introductory_key)
 
         for task_id in task_ids:
-            print(task_id)
             redis_client.publish(f"{task_id}", "PENDING")
 
         return (

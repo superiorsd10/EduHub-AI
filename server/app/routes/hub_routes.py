@@ -507,9 +507,7 @@ def get_hub(hub_id):
     """
 
     try:
-        print(hub_id)
         hub_id = decode_base64_to_objectid(str(hub_id))
-        print(hub_id)
         if not ObjectId.is_valid(hub_id):
             return (
                 jsonify({"error": "Invalid hub ID", "success": False}),
