@@ -1,20 +1,21 @@
 import "@mantine/core/styles.css";
 
 import type { AppProps } from "next/app";
-import { HMSPrebuilt } from '@100mslive/roomkit-react';
+import { HMSPrebuilt } from "@100mslive/roomkit-react";
 import { createTheme, MantineProvider, rem } from "@mantine/core";
 import Layout from "@/layout/Layout";
 import localFont from "next/font/local";
 import "../firebase/clientApp";
-import { AuthProvider } from "@/providers/AuthProvider";
-import { ReactElement, ReactNode } from "react";
+import { AuthContext, AuthProvider } from "@/providers/AuthProvider";
+import { ReactElement, ReactNode, useContext } from "react";
 import { NextPage } from "next";
+import CreateHubModal from "@/components/Modals/CreateHubModal";
 const geistRegular = localFont({
   src: "../../public/font/Geist/Geist/Geist-Regular.woff2",
 });
 const geistBold = localFont({
-  src:"../../public/font/Geist/Geist/Geist-Bold.woff2",
-})
+  src: "../../public/font/Geist/Geist/Geist-Bold.woff2",
+});
 
 const theme = createTheme({
   /** Put your mantine theme override here */
@@ -54,6 +55,8 @@ type AppPropsWithLayout = AppProps & {
 };
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
+  const { componentHeight, isCreateHubVisible, setIsCreateHubVisible } =
+    useContext(AuthContext);
   const getLayout = Component.getLayout;
   if (getLayout === undefined)
     return (

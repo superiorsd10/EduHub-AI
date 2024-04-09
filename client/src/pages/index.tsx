@@ -103,13 +103,6 @@ const index: NextPage = () => {
         </>
       ) : (
         <ResizableFlex>
-          <CreateHubModal
-            opened={isCreateHubVisible}
-            close={() => {
-              setIsCreateHubVisible(false);
-            }}
-          />
-          {/* "frv-bqmf-msl" */}
           {isClassroomEmpty ? (
             <Stack w="100%" h={componentHeight} justify="center" align="center">
               <Image

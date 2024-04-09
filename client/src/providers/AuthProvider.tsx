@@ -17,6 +17,8 @@ interface AuthContextProps {
   isLoggedIn: boolean;
   isCreateHubVisible: boolean;
   setIsCreateHubVisible : (isCreateHubVisible: boolean) => void;
+  isCreatePostVisible:boolean,
+  setIsCreatePostVisible:(isCreatePostVisible: boolean) => void;
   token: string | null; 
 }
 
@@ -33,6 +35,8 @@ const AuthContext = createContext<AuthContextProps>({
   isLoggedIn: false,
   isCreateHubVisible:false,
   setIsCreateHubVisible: () => {},
+  isCreatePostVisible:false,
+  setIsCreatePostVisible:()=>{},
   token: null, 
 });
 
@@ -44,6 +48,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isDrawerTemporarilyOpen, setIsDrawerTemporarilyOpen] = useState<boolean>(false);
   const [isCreateHubVisible, setIsCreateHubVisible] = useState<boolean>(false);
+  const [isCreatePostVisible, setIsCreatePostVisible] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null); 
 
   useEffect(() => {
@@ -81,6 +86,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
         token, 
         isCreateHubVisible,
         setIsCreateHubVisible,
+        isCreatePostVisible,
+        setIsCreatePostVisible,
       }}
     >
       {children}

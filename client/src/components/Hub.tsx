@@ -29,7 +29,7 @@ const Hub = ({ creator_name, hub_id, name, photo_url }: Props) => {
   return (
     <Card
       shadow="sm"
-      padding="lg"
+      padding="0"
       radius="md"
       h="fit-content"
       w='18%'
@@ -46,13 +46,14 @@ const Hub = ({ creator_name, hub_id, name, photo_url }: Props) => {
             Math.floor(Math.random() * googleClassroomPalette.length)
           ]
         }
+        w='100%'
         withBorder
         pos="relative"
       >
-        <Group p="md">
-          <Stack>
-            <Group justify="space-between">
-              <Text color="white" size="xl">
+        <Group p="md" w='100%'>
+          <Stack w='100%'>
+            <Group justify="space-between" gap="lg" w='100%'>
+              <Text color="white" size="xl" w='85%' truncate="end">
                 {name}
               </Text>
               <FontAwesomeIcon

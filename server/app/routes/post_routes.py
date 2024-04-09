@@ -198,7 +198,6 @@ def create_post(hub_id):
         task_ids = []
         print(hub_id)
         hub_object_id = decode_base64_to_objectid(str(hub_id))
-        # hub_object_id = hub_id
         post_uuid = str(uuid.uuid4())
 
         redis_client = Config.redis_client
