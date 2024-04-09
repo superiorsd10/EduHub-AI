@@ -77,20 +77,20 @@ const CreatePostModal: React.FC<{
         <Tabs.Panel value="first" pt="xs">
           <Input
             placeholder="Title"
-            value="Title"
+            value={title}
             radius="md"
             onChange={(event) => setTitle(event.currentTarget.value)}
           />
           <Input
             placeholder="Topic"
-            value="Topic"
+            value={topic}
             mt="sm"
             radius="md"
             onChange={(event) => setTopic(event.currentTarget.value)}
           />
           <Textarea
             placeholder="Description"
-            value="Description"
+            value={description}
             mt="sm"
             mb="sm"
             radius="md"
@@ -103,11 +103,11 @@ const CreatePostModal: React.FC<{
 
         <Tabs.Panel value="second" pt="xs">
           {/* Material content */}
-          <Input placeholder="Title" value="Title" radius="md" />
-          <Input placeholder="Topic" value="Topic" mt="sm" radius="md" />
+          <Input placeholder={title} value="Title" radius="md" />
+          <Input placeholder={topic} value="Topic" mt="sm" radius="md" />
           <Textarea
             placeholder="Description"
-            value="Description"
+            value={description}
             mt="sm"
             mb="sm"
             radius="md"
