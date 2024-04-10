@@ -32,6 +32,7 @@ const UpgradePlan = ({
         withCloseButton={false}
         size="75%"
         centered
+        zIndex={10001}
       >
         <Title size="h4" mb="0">
           Upgrade your plan

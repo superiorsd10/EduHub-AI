@@ -81,7 +81,7 @@ const CreatePostModal: React.FC<{
       title="Create Post"
       centered
       radius="md"
-      zIndex={100001}
+      zIndex={10001}
     >
       <Tabs
         color="black"
