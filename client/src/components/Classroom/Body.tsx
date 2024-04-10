@@ -43,7 +43,7 @@ const Body = (props: HubsData) => {
   console.log(props.paginatedData)
   const { componentHeight } = useContext(AuthContext);
   return (
-    <Group pos="relative" w='100%' gap='xl' align="center">
+    <Group pos="relative" w='100%' gap='xl' align="flex-start">
       <LeftBar invite_code={props.introductory.invite_code} room_code={props.introductory.room_code_teacher}/>
       <Stack style={{ flex: 1 }}>
       {props.paginatedData.map((post,id)=><Content key={id} post={post.items}/>)}

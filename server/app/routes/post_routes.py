@@ -282,6 +282,42 @@ def create_post(hub_id):
         )
 
 
+@post_blueprint.route("/api/<hub_id>/get-post/<post_id>", methods=["GET"])
+def get_post(hub_id, post_id):
+    """
+    Retrieve a specific post within a hub.
+
+    This endpoint allows users to retrieve a specific post within the specified hub
+    identified by its unique ID and the post's UUID.
+
+    Args:
+        hub_id (str): The unique identifier of the hub where the post belongs.
+        post_id (str): The UUID of the post to retrieve.
+    """
+    try:
+        hub_object_id = decode_base64_to_objectid(hub_id)
+        post = (
+            Hub.objects(id=hub_object_id, posts__uuid=post_id).only("posts.$").first()
+        )
+
+        if post:
+            post_data = post.posts[0].to_mongo().to_dict()
+            return (
+                jsonify({"success": True, "data": post_data}),
+                StatusCode.SUCCESS.value,
+            )
+        return (
+            jsonify({"error": "Post not found", "success": False}),
+            StatusCode.NOT_FOUND.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
 @post_blueprint.route("/api/chat-with-material/<attachment_id>", methods=["POST"])
 @limiter.limit("5 per minute")
 @firebase_token_required

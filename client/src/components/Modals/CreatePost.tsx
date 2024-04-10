@@ -18,22 +18,28 @@ const CreatePostModal: React.FC<{
   close: () => void;
   id: string;
 }> = ({ opened, close, id }) => {
-  const { isCreatePostVisible, setIsCreatePostVisible } =
-    useContext(AuthContext);
+  const { setIsCreatePostVisible,token } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState<string | null>("first");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const encoded_base64 = btoa(id);
-  const [files, setFiles] = useState<File[]>([]);
   const [title, setTitle] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<string | null>("first");
+  const [files, setFiles] = useState<File[]>([]);
 
-  const { token, setIsCreateHubVisible } = useContext(AuthContext);
+
   const handleCreateHub = async () => {
+    setIsLoading(true);
     const formData = new FormData();
-  formData.append('type', activeTab === "first" ? "announcement" : "material");
-  formData.append('title', title);
-  formData.append('topic', topic);
-  formData.append('description', description);
+    formData.append(
+      "type",
+      activeTab === "first" ? "announcement" : "material"
+    );
+    formData.append("title", title);
+    formData.append("topic", topic);
+    formData.append("description", description);
+    
     try {
       await fetch(`http://127.0.0.1:5000/api/${encoded_base64}/create-post`, {
         method: "POST",
@@ -45,6 +51,8 @@ const CreatePostModal: React.FC<{
     } catch (error) {
       console.log(error);
     }
+    
+    setIsLoading(false);
   };
 
   const handleFileChange = (newFile: File | null) => {
@@ -102,11 +110,25 @@ const CreatePostModal: React.FC<{
 
         <Tabs.Panel value="second" pt="xs">
           {/* Material content */}
-          <Input placeholder={title} value="Title" radius="md" />
-          <Input placeholder={topic} value="Topic" mt="sm" radius="md" />
+          <Input
+            placeholder={title}
+            value={title}
+            onChange={(event) => setTitle(event.currentTarget.value)}
+            radius="md"
+          />
+          <Input
+            placeholder={topic}
+            value={topic}
+            onChange={(event) => setTopic(event.currentTarget.value)}
+            mt="sm"
+            radius="md"
+          />
           <Textarea
             placeholder="Description"
             value={description}
+            onChange={(event) => {
+              setDescription(event.target.value);
+            }}
             mt="sm"
             mb="sm"
             radius="md"
@@ -145,7 +167,6 @@ const CreatePostModal: React.FC<{
       </Tabs>
       <>
         <Group mt="md" justify="flex-end">
-          {/* Buttons */}
           <Button
             onClick={close}
             variant="default"
@@ -159,7 +180,12 @@ const CreatePostModal: React.FC<{
           >
             <NextLink href="#">Cancel</NextLink>
           </Button>
-          <Button loading={false} color="black" radius="md" onClick={handleCreateHub}>
+          <Button
+            loading={false}
+            color="black"
+            radius="md"
+            onClick={handleCreateHub}
+          >
             Post
           </Button>
         </Group>
