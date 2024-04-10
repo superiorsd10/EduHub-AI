@@ -7,13 +7,12 @@ import CreateHubModal from "@/components/Modals/CreateHubModal";
 import CreatePostModal from "@/components/Modals/CreatePost";
 
 const Layout = ({ children }: React.PropsWithChildren) => {
-  const { isLoggedIn, isCreateHubVisible, setIsCreateHubVisible,isCreatePostVisible,setIsCreatePostVisible } =
-    useContext(AppContext);
+  const { isLoggedIn, isCreateHubVisible, setIsCreateHubVisible,navbarHeight } = useContext(AppContext);
   return (
     <>
       <Head>Nikhil's Portfolio</Head>
       <NavBar />
-      {isLoggedIn && <Space h="10vh" />}
+      {isLoggedIn && <Space h={navbarHeight} />}
       {isLoggedIn && (
         <CreateHubModal
           opened={isCreateHubVisible}

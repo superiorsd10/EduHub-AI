@@ -32,9 +32,11 @@ const NavBar: React.FC = () => {
       align="center"
       maw="100%"
       w="100vw"
+      bg='white'
       pos={isLoggedIn ? "fixed" : "static"}
       style={{
-        borderBottom: isLoggedIn ? "1px solid #DEE2E6" : ""
+        borderBottom: isLoggedIn ? "1px solid #DEE2E6" : "",
+        zIndex:10000000000000000000
       }}
       gap="md"
 
