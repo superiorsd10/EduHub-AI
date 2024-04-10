@@ -10,7 +10,7 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { FileButton } from "@mantine/core";
-import { FaFile, FaGoogleDrive } from "react-icons/fa";
+import { FaFile } from "react-icons/fa";
 import { AppContext } from "@/providers/AppProvider";
 import { HubContext } from "@/providers/HubProvider";
 
