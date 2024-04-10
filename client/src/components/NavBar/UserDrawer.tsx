@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useHover } from "@mantine/hooks";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 import { Stack, AppShell } from "@mantine/core";
 
 import { MdOutlineHub } from "react-icons/md";
@@ -25,7 +25,7 @@ const UserDrawer = () => {
     setIsDrawerOpen,
     isDrawerTemporarilyOpen,
     setIsDrawerTemporarilyOpen,
-  } = useContext(AuthContext);
+  } = useContext(AppContext);
   const { hovered, ref } = useHover();
 
   useEffect(() => {

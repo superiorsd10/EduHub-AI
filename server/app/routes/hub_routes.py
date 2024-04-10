@@ -184,7 +184,6 @@ def create_hub():
     try:
         schema = CreateHubSchema()
         data = schema.load(request.get_json())
-        print(data)
         hub_name = data["hub_name"]
         section = data["section"]
         description = data["description"]
@@ -227,8 +226,6 @@ def create_hub():
 
         new_hub.save()
 
-        print(new_hub)
-
         new_hub_id = new_hub.id
 
         if "teacher" not in user.hubs:
@@ -236,11 +233,12 @@ def create_hub():
 
         user.hubs["teacher"].append(new_hub_id)
         user.save()
+        print(new_hub_id)
 
         redis_client.hset(user_cache_key, "hubs", json.dumps(["empty"], default=str))
 
         return (
-            jsonify({"hub": "Hub created successfully", "success": True}),
+            jsonify({"hub_id": str(new_hub_id)}),
             StatusCode.CREATED.value,
         )
 

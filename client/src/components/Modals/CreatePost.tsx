@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { FileButton } from "@mantine/core";
 import { FaFile, FaGoogleDrive } from "react-icons/fa";
-import { AuthContext } from "@/providers/AuthProvider";
+import { AppContext } from "@/providers/AppProvider";
 import { HubContext } from "@/providers/HubProvider";
 
 const CreatePostModal: React.FC<{
@@ -19,7 +19,7 @@ const CreatePostModal: React.FC<{
   close: () => void;
   id: string;
 }> = ({ opened, close, id }) => {
-  const { token } = useContext(AuthContext);
+  const { token } = useContext(AppContext);
   const { setIsCreatePostVisible,currentHubData,appendPost } = useContext(HubContext);
   const [activeTab, setActiveTab] = useState<string | null>("first");
   const [isLoading, setIsLoading] = useState<boolean>(false);

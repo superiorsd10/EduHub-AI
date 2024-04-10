@@ -22,12 +22,12 @@ import {
   faRightToBracket,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 import NextLink from "@/utils/NextLink";
 
 const MobileDrawer = () => {
   const [opened, { open, close }] = useDisclosure(false);
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn } = useContext(AppContext);
   const [signOut] = useSignOut(auth);
 
   return (

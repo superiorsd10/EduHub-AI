@@ -12,7 +12,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { FaLocationArrow } from "react-icons/fa";
 import Markdown from "markdown-to-jsx";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 import { useContext } from "react";
 
 type Chat = {
@@ -35,7 +35,7 @@ const ChatWithPDF = () => {
   useEffect(() => {
     scrollToBottom();
   }, [chats]);
-  const { token } = useContext(AuthContext);
+  const { token } = useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 

@@ -1,6 +1,6 @@
 import NextLink from "@/utils/NextLink";
 import { Button, Group, Input, Modal, Textarea } from "@mantine/core";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 import { useContext, useState } from "react";
 
 const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
@@ -11,7 +11,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   const [section, setSection] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { setIsCreateHubVisible } = useContext(AuthContext);
+  const { setIsCreateHubVisible,displayPhoto,userName,appendHub } = useContext(AppContext);
 
   const handleCreateHub = async () => {
     setLoading(true);
@@ -44,7 +44,15 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           room_code_student: redata.data[3].code,
         }),
       });
-      const print = await resp.json();
+      const {hub_id} = await resp.json();
+      const newHub = {
+        "creator_name":userName!,
+        "name":hubName!,
+        "hub_id":hub_id,
+        "photo_url":displayPhoto!
+      }
+      console.log(newHub);
+      appendHub(newHub);
       setIsCreateHubVisible(false);
     } catch (error) {
       console.log(error);

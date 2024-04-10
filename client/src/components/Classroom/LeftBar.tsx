@@ -6,7 +6,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdLiveTv } from "react-icons/md";
 import Link from "next/link";
 import NextLink from "@/utils/NextLink";
-import { AuthContext } from "@/providers/AuthProvider";
+import { AppContext } from "@/providers/AppProvider";
 import { HubContext } from "@/providers/HubProvider";
 
 const LeftBar = ({invite_code,room_code}:{invite_code:string,room_code:string}) => {

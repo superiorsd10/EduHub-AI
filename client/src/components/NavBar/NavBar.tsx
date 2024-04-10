@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import { useSignOut } from "react-firebase-hooks/auth";
 import { auth } from "@/firebase/clientApp";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 
 import { Avatar, Box, Button, Flex, Group, Image, Menu } from "@mantine/core";
 
@@ -20,7 +20,7 @@ import NextLink from "@/utils/NextLink";
 const NavBar: React.FC = () => {
   const router = useRouter();
   const { isLoggedIn, isDrawerOpen, setIsDrawerOpen, navbarHeight, isCreateHubVisible,setIsCreateHubVisible } =
-    useContext(AuthContext);
+    useContext(AppContext);
   const [signOut] = useSignOut(auth);
 
   return (

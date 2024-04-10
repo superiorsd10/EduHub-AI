@@ -2,7 +2,7 @@ import { Group, Stack } from "@mantine/core";
 import React, { useContext } from "react";
 import LeftBar from "./LeftBar";
 import Content from "./Content";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 
 type HubIntroductoryData = {
   auth_option: string;
@@ -38,7 +38,7 @@ type HubsData = {
 }
 
 const Body = (props: HubsData) => {
-  const { componentHeight } = useContext(AuthContext);
+  const { componentHeight } = useContext(AppContext);
   return (
     <Group pos="relative" w='100%' gap='xl' align="flex-start">
       <LeftBar invite_code={props.introductory.invite_code} room_code={props.introductory.room_code_teacher}/>

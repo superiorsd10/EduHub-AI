@@ -4,7 +4,7 @@ import Header from "@/components/Classroom/Header";
 import ResizableFlex from "@/utils/ResizableFlex";
 import { Stack } from "@mantine/core";
 import React, { useEffect, useContext } from "react";
-import { AuthContext } from "@/providers/AuthProvider";
+import { AppContext } from "@/providers/AppProvider";
 import { HubProvider, HubContext } from "@/providers/HubProvider";
 import { useRouter } from "next/router";
 import CreatePostModal from "@/components/Modals/CreatePost";
@@ -12,7 +12,7 @@ import CreatePostModal from "@/components/Modals/CreatePost";
 const HubWithoutContext = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id as string;
-  const { token } = useContext(AuthContext);
+  const { token } = useContext(AppContext);
   const { currentHubData, fetchHubData, isCreatePostVisible, setIsCreatePostVisible } = useContext(HubContext);
 
   useEffect(() => {

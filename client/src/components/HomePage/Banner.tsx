@@ -1,10 +1,10 @@
 import { Button, Flex, Group, Image, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
 import React, { useContext } from "react";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 
 const Banner:React.FC = () => {
-  const {componentHeight} = useContext(AuthContext);
+  const {componentHeight} = useContext(AppContext);
   return (
     <Flex
       direction={{ base:'column-reverse',sm: "column-reverse", md: "column-reverse", lg: "row" }}

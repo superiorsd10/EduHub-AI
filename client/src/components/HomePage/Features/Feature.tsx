@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { motion, Variants } from "framer-motion";
 import { Flex, Image, Stack, Text, Title } from "@mantine/core";
-import { AuthContext } from "@/providers/AuthProvider";
+import { AppContext } from "@/providers/AppProvider";
 
 type Props = {
   index: boolean;
@@ -27,7 +27,7 @@ const headingVariants: Variants = {
 };
 
 const Feature = ({ index, title, description, illustration }: Props) => {
-  const { componentHeight } =useContext(AuthContext);
+  const { componentHeight } =useContext(AppContext);
   return (
     <Flex
       direction={{

@@ -80,7 +80,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
 
   const appendPost = (newPost: Post) => {
     if (currentHubData) {
-      const updatedPosts = [{ items: newPost },...currentHubData.paginated];
+      const updatedPosts = [{ items: newPost }, ...currentHubData.paginated];
       const updatedHubData = {
         ...currentHubData,
         paginated: updatedPosts,

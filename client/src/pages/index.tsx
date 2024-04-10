@@ -1,75 +1,33 @@
 import React, { useContext, useEffect, useState } from "react";
 import { NextPage } from "next";
-import {
-  Anchor,
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Divider,
-  Flex,
-  Group,
-  Image,
-  Stack,
-  Text,
-  Textarea,
-} from "@mantine/core";
+import { Avatar, Button, Flex, Group, Image, Stack } from "@mantine/core";
 import Banner from "@/components/HomePage/Banner";
 import Faqs from "@/components/HomePage/FAQs/Faqs";
 import Footer from "@/components/HomePage/Footer";
-import CreateHubModal from "@/components/Modals/CreateHubModal";
 import Features from "@/components/HomePage/Features/Features";
-import { Variants, motion, useAnimationControls } from "framer-motion";
-import { AuthContext } from "@/providers/AuthProvider";
-import Link from "next/link";
+import { AppContext } from "@/providers/AppProvider";
 import { IoMdArrowDropup } from "react-icons/io";
 import NextLink from "@/utils/NextLink";
-import { useDisclosure } from "@mantine/hooks";
 import ResizableFlex from "@/utils/ResizableFlex";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import Hub from "@/components/Hub";
 
-type Hub = {
-  creator_name: string;
-  hub_id: string;
-  name: string;
-  photo_url: string;
-};
-
-type Hubs = {
-  student: Hub[];
-  teacher: Hub[];
-};
-
 const index: NextPage = () => {
-  const { componentHeight, isCreateHubVisible, setIsCreateHubVisible } =
-    useContext(AuthContext);
-  const { isLoggedIn, isDrawerOpen, token } = useContext(AuthContext);
-  const [opened, { open, close }] = useDisclosure(false);
-  const [hubList, setHubList] = useState<Hubs>();
+  const { componentHeight, setIsCreateHubVisible, fetchHubs, hubList } =
+    useContext(AppContext);
+  const { isLoggedIn, token } = useContext(AppContext);
   const [isClassroomEmpty, setIsClassroomEmpty] = useState<boolean>(true);
 
   useEffect(() => {
-    const getHubs = async () => {
-      const response = await fetch("http://127.0.0.1:5000/api/get-hubs", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${token}`,
-        },
-      });
-
-      const data = await response.json();
-      const hubs: Hubs = data.data[0];
-
-      setHubList(hubs);
-      setIsClassroomEmpty(
-        hubs.student.length + hubs.teacher.length > 0 ? false : true
-      );
-    };
-    if (isLoggedIn) getHubs();
+    if (isLoggedIn) {
+      fetchHubs();
+    }
   }, [isLoggedIn]);
+
+  useEffect(()=>{
+    setIsClassroomEmpty(
+      hubList.student.length + hubList.teacher.length > 0 ? false : true
+    );
+  },[hubList])
 
   return (
     <Flex

@@ -6,7 +6,7 @@ import { createTheme, MantineProvider, rem } from "@mantine/core";
 import Layout from "@/layout/Layout";
 import localFont from "next/font/local";
 import "../firebase/clientApp";
-import { AuthContext, AuthProvider } from "@/providers/AuthProvider";
+import { AppContext, AppProvider } from "@/providers/AppProvider";
 import { ReactElement, ReactNode, useContext } from "react";
 import { NextPage } from "next";
 import CreateHubModal from "@/components/Modals/CreateHubModal";
@@ -59,23 +59,23 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   if (getLayout === undefined)
     return (
       <main>
-        <AuthProvider>
+        <AppProvider>
           <MantineProvider theme={theme}>
             <Layout>
               <Component {...pageProps} />
             </Layout>
           </MantineProvider>
-        </AuthProvider>
+        </AppProvider>
       </main>
     );
   else
     return (
       <main>
-        <AuthProvider>
+        <AppProvider>
           <MantineProvider theme={theme}>
             <Component {...pageProps} />
           </MantineProvider>
-        </AuthProvider>
+        </AppProvider>
       </main>
     );
 }

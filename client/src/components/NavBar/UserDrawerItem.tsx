@@ -1,6 +1,6 @@
 import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AuthContext } from "../../providers/AuthProvider";
+import { AppContext } from "../../providers/AppProvider";
 import { IoMdArrowDropright, IoMdArrowDropdown } from "react-icons/io";
 import { useHover } from '@mantine/hooks';
 
@@ -23,7 +23,7 @@ const UserDrawerItem: React.FC<Props> = ({
   onClick
 }) => {
   const { hovered, ref } = useHover();
-  const { isDrawerOpen, isDrawerTemporarilyOpen } = useContext(AuthContext);
+  const { isDrawerOpen, isDrawerTemporarilyOpen } = useContext(AppContext);
   useEffect(() => {
     if (!isDrawerOpen && !isDrawerTemporarilyOpen) setIsDropDownVisible(false);
   }, [isDrawerOpen, isDrawerTemporarilyOpen]);
