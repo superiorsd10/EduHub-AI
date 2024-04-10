@@ -7,9 +7,10 @@ import { MdLiveTv } from "react-icons/md";
 import Link from "next/link";
 import NextLink from "@/utils/NextLink";
 import { AuthContext } from "@/providers/AuthProvider";
+import { HubContext } from "@/providers/HubProvider";
 
 const LeftBar = ({invite_code,room_code}:{invite_code:string,room_code:string}) => {
-  const {isCreatePostVisible,setIsCreatePostVisible}=useContext(AuthContext);
+  const {isCreatePostVisible,setIsCreatePostVisible}=useContext(HubContext);
   return (
     <Stack w="15%">
       <Stack gap='sm' w='100%' style={{borderRadius:'10px',border:'2px solid #CED4DA'}} p='sm'>

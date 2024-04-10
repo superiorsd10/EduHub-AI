@@ -258,9 +258,13 @@ def create_post(hub_id):
         return (
             jsonify(
                 {
-                    "message": "Post created successfully",
-                    "success": True,
-                    "task_ids": task_ids,
+                    "uuid": post.uuid,
+                    "type": post.type,
+                    "title": post.title,
+                    "description": post.description,
+                    "topic": post.topic,
+                    "attachments_url": post.attachments_url,
+                    "created_at": post.created_at.isoformat(),
                 }
             ),
             StatusCode.SUCCESS.value,
@@ -303,7 +307,7 @@ def get_post(hub_id, post_id):
         if post:
             post_data = post.posts[0].to_mongo().to_dict()
             return (
-                jsonify({"success": True, "data": post_data}),
+                jsonify(post_data),
                 StatusCode.SUCCESS.value,
             )
         return (

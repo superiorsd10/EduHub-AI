@@ -3,73 +3,22 @@ import Body from "@/components/Classroom/Body";
 import Header from "@/components/Classroom/Header";
 import ResizableFlex from "@/utils/ResizableFlex";
 import { Stack } from "@mantine/core";
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext } from "react";
 import { AuthContext } from "@/providers/AuthProvider";
+import { HubProvider, HubContext } from "@/providers/HubProvider";
 import { useRouter } from "next/router";
 import CreatePostModal from "@/components/Modals/CreatePost";
 
-type HubIntroductoryData = {
-  assignments: any[];
-  auth_option: string;
-  description: string;
-  invite_code: string;
-  members_id: { [key: string]: any };
-  messages: any[];
-  name: string;
-  posts: any[];
-  quizzes: any[];
-  recordings: any[];
-  section: string;
-  streaming_url: string;
-  room_code_teacher: string;
-  _id: string;
-};
-
-type Post = {
-  attachments_type: string[];
-  attachments_url: string[];
-  created_at: string;
-  description: string;
-  emoji_reactions: Record<string, any>;
-  poll_options: any[];
-  title: string;
-  topic: string;
-  type: string;
-  uuid: string;
-};
-
-type HubsData = {
-  introductory: HubIntroductoryData;
-  paginated: { items: Post }[];
-};
-
-const classroom = () => {
+const HubWithoutContext = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id as string;
-  const { token, isCreatePostVisible, setIsCreatePostVisible } =
-    useContext(AuthContext);
-  const [currentHubData, setCurrentHubData] = useState<HubsData | null>(null);
+  const { token } = useContext(AuthContext);
+  const { currentHubData, fetchHubData, isCreatePostVisible, setIsCreatePostVisible } = useContext(HubContext);
+
   useEffect(() => {
-    const getHub = async () => {
-      if (!hub_id) return;
-      const encoded_base64 = btoa(hub_id);
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/hub/${encoded_base64}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      const hubsData: HubsData = data.data;
-      setCurrentHubData(hubsData);
-    };
-    getHub();
-  }, [router]);
+    if (hub_id) fetchHubData(hub_id, token);
+  }, [router, hub_id]);
+
   return (
     <ResizableFlex>
       <CreatePostModal
@@ -84,7 +33,6 @@ const classroom = () => {
         {currentHubData != null && (
           <Banner title={currentHubData!.introductory.name} />
         )}
-
         {currentHubData != null && (
           <Body
             introductory={currentHubData!.introductory}
@@ -96,4 +44,12 @@ const classroom = () => {
   );
 };
 
-export default classroom;
+const Hub = () => {
+  return (
+    <HubProvider>
+      <HubWithoutContext />
+    </HubProvider>
+  );
+};
+
+export default Hub;

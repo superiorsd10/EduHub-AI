@@ -26,12 +26,12 @@ const post = () => {
         `http://127.0.0.1:5000/api/${base64hub_id}/get-post/${post_id}`
       );
       const data = await resp.json();
-      console.log(data)
+      console.log(data);
       setPostData({
-        title: data.data.title,
-        topic: data.data.topic,
-        description: data.data.description,
-        created_at:data.data.created_at
+        title: data.title,
+        topic: data.topic,
+        description: data.description,
+        created_at:data.created_at
       });
     };
     getPost();

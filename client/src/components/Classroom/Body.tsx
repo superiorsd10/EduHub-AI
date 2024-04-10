@@ -38,9 +38,6 @@ type HubsData = {
 }
 
 const Body = (props: HubsData) => {
-  console.log("here");
-  console.log(props.introductory)
-  console.log(props.paginatedData)
   const { componentHeight } = useContext(AuthContext);
   return (
     <Group pos="relative" w='100%' gap='xl' align="flex-start">

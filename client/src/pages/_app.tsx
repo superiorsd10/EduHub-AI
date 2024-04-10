@@ -55,8 +55,6 @@ type AppPropsWithLayout = AppProps & {
 };
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
-  const { componentHeight, isCreateHubVisible, setIsCreateHubVisible } =
-    useContext(AuthContext);
   const getLayout = Component.getLayout;
   if (getLayout === undefined)
     return (

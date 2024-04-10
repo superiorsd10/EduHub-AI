@@ -12,13 +12,15 @@ import {
 import { FileButton } from "@mantine/core";
 import { FaFile, FaGoogleDrive } from "react-icons/fa";
 import { AuthContext } from "@/providers/AuthProvider";
+import { HubContext } from "@/providers/HubProvider";
 
 const CreatePostModal: React.FC<{
   opened: boolean;
   close: () => void;
   id: string;
 }> = ({ opened, close, id }) => {
-  const { setIsCreatePostVisible,token } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
+  const { setIsCreatePostVisible,currentHubData,appendPost } = useContext(HubContext);
   const [activeTab, setActiveTab] = useState<string | null>("first");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -29,6 +31,9 @@ const CreatePostModal: React.FC<{
   const [files, setFiles] = useState<File[]>([]);
 
 
+  useEffect(()=>{
+    console.log(files);
+  },[files])
   const handleCreateHub = async () => {
     setIsLoading(true);
     const formData = new FormData();
@@ -39,15 +44,23 @@ const CreatePostModal: React.FC<{
     formData.append("title", title);
     formData.append("topic", topic);
     formData.append("description", description);
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
     
     try {
-      await fetch(`http://127.0.0.1:5000/api/${encoded_base64}/create-post`, {
+      const resp=await fetch(`http://127.0.0.1:5000/api/${encoded_base64}/create-post`, {
         method: "POST",
         headers: {
           Authorization: `${token}`,
         },
         body: formData,
       });
+      const data=await resp.json();
+      appendPost(data);
+      setIsCreatePostVisible(false);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -111,13 +124,13 @@ const CreatePostModal: React.FC<{
         <Tabs.Panel value="second" pt="xs">
           {/* Material content */}
           <Input
-            placeholder={title}
+            placeholder="Title"
             value={title}
             onChange={(event) => setTitle(event.currentTarget.value)}
             radius="md"
           />
           <Input
-            placeholder={topic}
+            placeholder="Topic"
             value={topic}
             onChange={(event) => setTopic(event.currentTarget.value)}
             mt="sm"
@@ -146,18 +159,6 @@ const CreatePostModal: React.FC<{
                   size="xl"
                   style={{ borderRadius: "50%" }}
                 >
-                  <FaGoogleDrive size="22px" />
-                </ActionIcon>
-              )}
-            </FileButton>
-            <FileButton onChange={(event) => handleFileChange(event)}>
-              {(props) => (
-                <ActionIcon
-                  {...props}
-                  color="gray.6"
-                  size="xl"
-                  style={{ borderRadius: "50%" }}
-                >
                   <FaFile size="22px" />
                 </ActionIcon>
               )}
@@ -168,6 +169,7 @@ const CreatePostModal: React.FC<{
       <>
         <Group mt="md" justify="flex-end">
           <Button
+          
             onClick={close}
             variant="default"
             radius="md"
@@ -181,7 +183,7 @@ const CreatePostModal: React.FC<{
             <NextLink href="#">Cancel</NextLink>
           </Button>
           <Button
-            loading={false}
+            loading={isLoading}
             color="black"
             radius="md"
             onClick={handleCreateHub}
