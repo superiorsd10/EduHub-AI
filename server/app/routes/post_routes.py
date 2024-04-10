@@ -216,7 +216,7 @@ def create_post(hub_id):
                     Key=file_key,
                     ContentType=mimetypes.guess_type(filename)[0],
                 )
-                file_url = f"https://eduhub-ai.s3.amazonaws.com/{file_key}"
+                file_url = f"https://d2zvmtskygrsot.cloudfront.net/{file_key}"
                 uploaded_file_urls.append(file_url)
                 task = process_uploaded_file.apply_async(
                     args=[
