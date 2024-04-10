@@ -505,12 +505,23 @@ def get_hub(hub_id):
     """
 
     try:
+        email = "nikhilranjan1103@gmail.com"
+        redis_client = Config.redis_client
+        user_cache_key = f"user:{email}"
+        cached_hubs_data = redis_client.hget(user_cache_key, "hubs").decode("utf-8")
+        hubs_data = json.loads(cached_hubs_data)
         hub_id = decode_base64_to_objectid(str(hub_id))
+        found = any(teacher["hub_id"] == hub_id for teacher in hubs_data[0]["teacher"])
+
         if not ObjectId.is_valid(hub_id):
             return (
                 jsonify({"error": "Invalid hub ID", "success": False}),
                 StatusCode.BAD_REQUEST,
             )
+
+        role = "student"
+        if found:
+            role = "teacher"
 
         page = request.args.get("page", 1, type=int)
 
@@ -531,6 +542,7 @@ def get_hub(hub_id):
                         "data": {
                             "introductory": json.loads(cached_introductory_data),
                             "paginated": json.loads(cached_paginated_data),
+                            "role": role,
                         },
                         "success": True,
                     }

@@ -1,8 +1,6 @@
 import { BackgroundImage, Flex, Text, Title } from "@mantine/core";
 import React from "react";
 
-type Props = {};
-
 const Banner = ({title}: {title:string}) => {
   return (
     <Flex

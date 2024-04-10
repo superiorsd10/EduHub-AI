@@ -37,6 +37,7 @@ const HubWithoutContext = () => {
           <Body
             introductory={currentHubData!.introductory}
             paginatedData={currentHubData!.paginated}
+            role={currentHubData.role}
           />
         )}
       </Stack>

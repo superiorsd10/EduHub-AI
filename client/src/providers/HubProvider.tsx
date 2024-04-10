@@ -14,6 +14,7 @@ type HubIntroductoryData = {
   section: string;
   streaming_url: string;
   room_code_teacher: string;
+  room_code_student: string;
   _id: string;
 };
 
@@ -33,6 +34,7 @@ type Post = {
 type HubsData = {
   introductory: HubIntroductoryData;
   paginated: { items: Post }[];
+  role: "teacher"|"student";
 };
 
 interface HubProviderProps {
@@ -74,6 +76,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
       }
     );
     const data = await response.json();
+    console.log(data);
     const hubsData: HubsData = data.data;
     setCurrentHubData(hubsData);
   };
