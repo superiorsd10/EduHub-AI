@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   useHMSStore,
   useHMSActions,
@@ -9,6 +9,9 @@ const LiveControls = () => {
   const hmsActions = useHMSActions();
   
   const hmsNotifications = useHMSNotifications();
+  useEffect(()=>{
+    console.log("notification",hmsNotifications?.type)
+  },[hmsNotifications])
   return <></>;
 };
 

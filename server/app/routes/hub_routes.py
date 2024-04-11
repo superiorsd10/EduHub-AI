@@ -511,7 +511,9 @@ def get_hub(hub_id):
         cached_hubs_data = redis_client.hget(user_cache_key, "hubs").decode("utf-8")
         hubs_data = json.loads(cached_hubs_data)
         hub_id = decode_base64_to_objectid(str(hub_id))
-        found = any(teacher["hub_id"] == hub_id for teacher in hubs_data[0]["teacher"])
+        found = any(
+            teacher["hub_id"] == str(hub_id) for teacher in hubs_data[0]["teacher"]
+        )
 
         if not ObjectId.is_valid(hub_id):
             return (

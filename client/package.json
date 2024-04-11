@@ -44,6 +44,7 @@
     "embla-carousel-react": "^7.1.0",
     "framer-motion": "^10.18.0",
     "geist": "^1.2.1",
+    "html2canvas": "^1.4.1",
     "markdown-to-jsx": "^7.4.1",
     "next": "14.0.4",
     "pdfjs-dist": "^3.4.120",

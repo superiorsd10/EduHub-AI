@@ -27,10 +27,16 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
       },
     });
     const data = await response.json();
+    let room_code_student,room_code_ta,room_code_teacher;
+    for (let codes of data.data) {
+      if(codes.role==="teacher") room_code_teacher=codes.code;
+      else if(codes.role==="student") room_code_student=codes.code;
+      else if(codes.role==="teaching-assistant") room_code_ta=codes.code;
+    }
     return {
-      room_code_teacher: data.data[0].code,
-      room_code_ta: data.data[1].code,
-      room_code_student: data.data[2].code,
+      room_code_teacher: room_code_teacher,
+      room_code_ta: room_code_ta,
+      room_code_student: room_code_student,
     };
   };
   const handleCreateHub = async () => {
