@@ -3,7 +3,7 @@ import Head from "next/head";
 import NavBar from "@/components/NavBar/NavBar";
 import { Space } from "@mantine/core";
 import { AppContext } from "@/providers/AppProvider";
-import CreateHubModal from "@/components/Modals/CreateHubModal";
+import CreateHubModal from "@/components/Modals/CreateHub";
 import CreatePostModal from "@/components/Modals/CreatePost";
 
 const Layout = ({ children }: React.PropsWithChildren) => {

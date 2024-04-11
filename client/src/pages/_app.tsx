@@ -9,7 +9,7 @@ import "../firebase/clientApp";
 import { AppContext, AppProvider } from "@/providers/AppProvider";
 import { ReactElement, ReactNode, useContext } from "react";
 import { NextPage } from "next";
-import CreateHubModal from "@/components/Modals/CreateHubModal";
+import CreateHubModal from "@/components/Modals/CreateHub";
 const geistRegular = localFont({
   src: "../../public/font/Geist/Geist/Geist-Regular.woff2",
 });

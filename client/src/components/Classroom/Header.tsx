@@ -1,11 +1,11 @@
-import NextLink from "@/utils/NextLink";
-import { Button, Divider, Group, Stack, Tabs } from "@mantine/core";
-import React from "react";
+import React, {useContext} from "react";
+import { Tabs } from "@mantine/core";
 import { SlSettings } from "react-icons/sl";
+import { MdEmojiPeople } from "react-icons/md";
+import { HubContext } from "@/providers/HubProvider";
 
-type Props = {};
-
-const Header = (props: Props) => {
+const Header = () => {
+  const { setIsAcceptRequestsVisible } = useContext(HubContext);
   return (
     <Tabs defaultValue="feed" variant="default" color="pink" w="100%"  pt='0.5%'>
       <Tabs.List>
@@ -14,6 +14,9 @@ const Header = (props: Props) => {
         <Tabs.Tab value="community">Community</Tabs.Tab>
         <Tabs.Tab value="progress" mr="auto">
           Progress
+        </Tabs.Tab>
+        <Tabs.Tab value="requests" onClick={()=>setIsAcceptRequestsVisible(true)}>
+          <MdEmojiPeople fontSize="20px" />
         </Tabs.Tab>
         <Tabs.Tab value="settings">
           <SlSettings fontSize="20px" />

@@ -7,27 +7,37 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   opened,
   close,
 }) => {
-  const [hubName, setHubName] = useState("");
-  const [section, setSection] = useState("");
-  const [description, setDescription] = useState("");
+  const [hubName, setHubName] = useState<string>("");
+  const [section, setSection] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { setIsCreateHubVisible,displayPhoto,userName,appendHub } = useContext(AppContext);
+  const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token } =
+    useContext(AppContext);
 
+  const handleGetRoomCode = async () => {
+    const URL =
+      "https://api.100ms.live/v2/room-codes/room/6610f313e4bed7263690583b";
+    const token =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTIzODY2NTUsImV4cCI6MTcxMjk5MTQ1NSwianRpIjoiZTZmOTU5YTUtZjBiZS00MDU1LTgyZWMtNDNiYTczODJhZmFlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTIzODY2NTUsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.v5rvaQdUfGk0Gp-ENFdqdc1lJ_Gq9JAPPqefTT1J3EQ";
+    const response = await fetch(URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await response.json();
+    return {
+      room_code_teacher: data.data[0].code,
+      room_code_ta: data.data[1].code,
+      room_code_student: data.data[2].code,
+    };
+  };
   const handleCreateHub = async () => {
     setLoading(true);
     try {
-      const URL =
-        "https://api.100ms.live/v2/room-codes/room/6610f313e4bed7263690583b";
-      const token =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTIzODY2NTUsImV4cCI6MTcxMjk5MTQ1NSwianRpIjoiZTZmOTU5YTUtZjBiZS00MDU1LTgyZWMtNDNiYTczODJhZmFlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTIzODY2NTUsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.v5rvaQdUfGk0Gp-ENFdqdc1lJ_Gq9JAPPqefTT1J3EQ";
-      const resp2 = await fetch(URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const redata = await resp2.json();
+      const { room_code_teacher, room_code_ta, room_code_student } =
+        await handleGetRoomCode();
       const resp = await fetch("http://127.0.0.1:5000/api/create-hub", {
         method: "POST",
         headers: {
@@ -39,19 +49,18 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           section: section,
           description: description,
           email: "nikhilranjan1103@gmail.com",
-          room_code_teacher: redata.data[0].code,
-          room_code_ta: redata.data[2].code,
-          room_code_student: redata.data[3].code,
+          room_code_teacher: room_code_teacher,
+          room_code_ta: room_code_ta,
+          room_code_student: room_code_student,
         }),
       });
-      const {hub_id} = await resp.json();
+      const { hub_id } = await resp.json();
       const newHub = {
-        "creator_name":userName!,
-        "name":hubName!,
-        "hub_id":hub_id,
-        "photo_url":displayPhoto!
-      }
-      console.log(newHub);
+        creator_name: userName!,
+        name: hubName!,
+        hub_id: hub_id,
+        photo_url: displayPhoto!,
+      };
       appendHub(newHub);
       setIsCreateHubVisible(false);
     } catch (error) {

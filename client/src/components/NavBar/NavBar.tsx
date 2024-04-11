@@ -35,7 +35,8 @@ const NavBar: React.FC = () => {
       bg='white'
       pos={isLoggedIn ? "fixed" : "static"}
       style={{
-        borderBottom: isLoggedIn ? "1px solid #DEE2E6" : ""
+        borderBottom: isLoggedIn ? "1px solid #DEE2E6" : "",
+        zIndex:999
       }}
       gap="md"
 
@@ -127,7 +128,7 @@ const NavBar: React.FC = () => {
                 ></Avatar>
               </Menu.Target>
 
-              <Menu.Dropdown>
+              <Menu.Dropdown style={{zIndex:1000}}>
                 <Menu.Item
                   color="red"
                   leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}

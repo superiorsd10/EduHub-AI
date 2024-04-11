@@ -42,6 +42,8 @@ interface HubProviderProps {
 }
 interface HubContextProps {
   isCreatePostVisible: boolean;
+  setIsAcceptRequestsVisible: (isCreatePostVisible: boolean) => void;
+  isAcceptRequestsVisible: boolean;
   setIsCreatePostVisible: (isCreatePostVisible: boolean) => void;
   currentHubData: HubsData | null;
   appendPost: (newPost: Post) => void;
@@ -51,6 +53,8 @@ interface HubContextProps {
 const HubContext = createContext<HubContextProps>({
   isCreatePostVisible: false,
   setIsCreatePostVisible: () => {},
+  isAcceptRequestsVisible: false,
+  setIsAcceptRequestsVisible: () => {},
   appendPost: () => {},
   currentHubData: null,
   fetchHubData: () => {},
@@ -62,6 +66,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
   const [currentHubData, setCurrentHubData] = useState<HubsData | null>(null);
   const [isCreatePostVisible, setIsCreatePostVisible] =
     useState<boolean>(false);
+  const [isAcceptRequestsVisible, setIsAcceptRequestsVisible] = useState<boolean>(false);
 
   const fetchHubData = async (hubId: string, token: string | null) => {
     const encodedBase64 = btoa(hubId);
@@ -97,6 +102,8 @@ const HubProvider: React.FC<HubProviderProps> = ({
       value={{
         isCreatePostVisible,
         setIsCreatePostVisible,
+        isAcceptRequestsVisible,
+        setIsAcceptRequestsVisible,
         fetchHubData,
         currentHubData,
         appendPost,

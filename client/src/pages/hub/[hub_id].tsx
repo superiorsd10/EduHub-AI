@@ -8,6 +8,7 @@ import { AppContext } from "@/providers/AppProvider";
 import { HubProvider, HubContext } from "@/providers/HubProvider";
 import { useRouter } from "next/router";
 import CreatePostModal from "@/components/Modals/CreatePost";
+import AcceptRequests from "@/components/Modals/AcceptRequests";
 
 const HubWithoutContext = () => {
   const router = useRouter();
@@ -28,6 +29,7 @@ const HubWithoutContext = () => {
         }}
         id={hub_id}
       />
+      <AcceptRequests id={hub_id}/>
       <Stack pl="2%" pr="2%" gap="xl">
         <Header />
         {currentHubData != null && (

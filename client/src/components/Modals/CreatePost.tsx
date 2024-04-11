@@ -20,7 +20,7 @@ const CreatePostModal: React.FC<{
   id: string;
 }> = ({ opened, close, id }) => {
   const { token } = useContext(AppContext);
-  const { setIsCreatePostVisible,currentHubData,appendPost } = useContext(HubContext);
+  const { setIsCreatePostVisible,appendPost } = useContext(HubContext);
   const [activeTab, setActiveTab] = useState<string | null>("first");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -30,10 +30,6 @@ const CreatePostModal: React.FC<{
   const [description, setDescription] = useState<string>("");
   const [files, setFiles] = useState<File[]>([]);
 
-
-  useEffect(()=>{
-    console.log(files);
-  },[files])
   const handleCreateHub = async () => {
     setIsLoading(true);
     const formData = new FormData();
@@ -122,7 +118,6 @@ const CreatePostModal: React.FC<{
         </Tabs.Panel>
 
         <Tabs.Panel value="second" pt="xs">
-          {/* Material content */}
           <Input
             placeholder="Title"
             value={title}
@@ -150,7 +145,6 @@ const CreatePostModal: React.FC<{
             maxRows={4}
           />
           <Group justify="flex-end">
-            {/* File buttons */}
             <FileButton onChange={(event) => handleFileChange(event)}>
               {(props) => (
                 <ActionIcon
