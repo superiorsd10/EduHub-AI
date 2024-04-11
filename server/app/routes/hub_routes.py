@@ -558,6 +558,7 @@ def get_hub(hub_id):
                     {
                         "data": {
                             "paginated": json.loads(cached_paginated_data),
+                            "role": role,
                         },
                         "success": True,
                     }
@@ -633,6 +634,7 @@ def get_hub(hub_id):
                         "data": {
                             "introductory": json.loads(introductory_data),
                             "paginated": json.loads(paginated_data),
+                            "role": role,
                         },
                         "success": True,
                     }
@@ -645,6 +647,7 @@ def get_hub(hub_id):
                 {
                     "data": {
                         "paginated": json.loads(paginated_data),
+                        "role": role,
                     },
                     "success": True,
                 }
