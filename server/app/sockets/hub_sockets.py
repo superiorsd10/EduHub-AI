@@ -2,83 +2,145 @@
 Hub sockets for the Flask application.
 """
 
-from flask_socketio import emit, close_room
+from flask_socketio import emit
 from app.app import socketio
 from app.models.hub import Hub
+from config.config import Config
+from bson.objectid import ObjectId
+from app.models.user import User
+
+
+@socketio.on("invite-sent")
+def handle_invite_sent(data):
+    """
+    Handle the event when a student sends an invitation.
+
+    Args:
+        data (dict): A dictionary containing the invite code and email.
+
+    Emits:
+        - "error": If the invite code is invalid or an error occurs.
+        - "invite-sent-success": If the invitation is sent successfully.
+
+    Raises:
+        Exception: If an unexpected error occurs during the process.
+    """
+    try:
+        invite_code = data.get("invite_code")
+        email = data.get("email")
+
+        hub_data = Hub.objects(invite_code=invite_code).first()
+
+        if not hub_data:
+            emit(
+                "error",
+                {"message": "Invalid invite code"},
+            )
+            return
+
+        redis_client = Config.redis_client
+
+        hub_invitation_list_key = f"hub_{str(hub_data.id)}_invitation_list"
+        redis_client.rpush(hub_invitation_list_key, email)
+
+        emit(
+            "invite-sent-success",
+            {
+                "message": "Invite sent successfully",
+                "hub_id": hub_data.id,
+                "email": email,
+            },
+        )
+
+    except Exception as error:
+        emit(
+            "error",
+            {"message": f"An error occurred: {error}"},
+        )
 
 
 @socketio.on("accept-request")
 def handle_accept_request(data):
     """
-    Handles accepting a join request for a hub.
-
-    This event handler updates the members_id dictionary of the Hub model
-    to add the user ID to the "student" list,
-    emits a notification to the accepted user, and then closes
-    the WebSocket connection between the two parties.
+    Handle the event when a teacher accepts a student's join request for a hub.
 
     Args:
-        data (dict): A dictionary containing the following keys:
-            - user_id (ObjectID): The ID of the user whose join
-            request is being accepted.
-            - hub_id (ObjectID): The ID of the hub to which the user is being joined.
-            - room_id (str): The ID of the WebSocket room representing
-            the connection between the two parties.
-
-    Raises:
-        Exception: If an unexpected error occurs during the
-        handling of the accept request.
+        data (dict): A dictionary containing the email of the student and the ID of the hub.
 
     Emits:
-        join_request_accepted (dict): An event emitted to the accepted
-        user containing the following data:
-            - hub_id (ObjectID): The ID of the hub to which the user is being joined.
+        - "join-request-accepted": If the request is accepted successfully.
+        - "error": If an error occurs during the process.
 
-        error (dict): An event emitted if an error occurs during the handling of the accept request,
-            containing the following data:
-            - message (str): A message indicating the error that occurred.
-
-
+    Raises:
+        Exception: If an unexpected error occurs during the process.
     """
     try:
-        user_id = data.get("user_id")
+        email = data.get("email")
         hub_id = data.get("hub_id")
-        room_id = data.get("room_id")
+
+        user_cache_key = f"user:{email}"
+        redis_client = Config.redis_client
+        user_object_id = redis_client.hget(user_cache_key, "user_object_id")
+        user_object_id = ObjectId(user_object_id.decode("utf-8"))
+
+        user = User.objects(id=user_object_id).first()
+        user_id = user.id
 
         Hub.objects(id=hub_id).update_one(push__members_id__student=user_id)
 
-        emit("join_request_accepted", {"hub_id": hub_id}, room=room_id)
-        close_room(room_id)
+        hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
+        redis_client.lrem(hub_invitation_list_key, 0, email)
+
+        emit(
+            "join-request-accepted",
+            {
+                "message": "Join request accepted",
+                "hub_id": hub_id,
+                "email": email,
+            },
+        )
+
     except Exception as error:
-        emit("error", {"message": f"An error occurred: {error}"}, room=room_id)
+        emit(
+            "error",
+            {"message": f"An error occurred: {error}"},
+        )
 
 
-@socketio.on("reject_request")
+@socketio.on("reject-request")
 def handle_reject_request(data):
     """
-    Handles rejecting a join request for a hub.
-
-    This event handler closes the WebSocket connection between the
-    two parties.
+    Handle the event when a teacher rejects a student's join request for a hub.
 
     Args:
-        data (dict): A dictionary containing the following key:
-            - room_id (str): The ID of the WebSocket room representing
-            the connection between the two parties.
-
-    Raises:
-        Exception: If an unexpected error occurs during the handling of the reject request.
+        data (dict): A dictionary containing the email of the student and the ID of the hub.
 
     Emits:
-        error (dict): An event emitted if an error occurs during the handling of the reject request,
-            containing the following data:
-            - message (str): A message indicating the error that occurred.
+        - "join-request-rejected": If the request is rejected successfully.
+        - "error": If an error occurs during the process.
 
-
+    Raises:
+        Exception: If an unexpected error occurs during the process.
     """
     try:
-        room_id = data.get("room_id")
-        close_room(room_id)
+        email = data.get("email")
+        hub_id = data.get("hub_id")
+
+        redis_client = Config.redis_client
+        hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
+        redis_client.lrem(hub_invitation_list_key, 0, email)
+
+        emit(
+            "join-request-rejected",
+            {
+                "message": "Join request rejected",
+                "hub_id": hub_id,
+                "email": email,
+            },
+        )
 
     except Exception as error:
-        emit("error", {"message": f"An error occurred: {error}"}, room=room_id)
+        emit(
+            "error",
+            {"message": f"An error occurred: {error}"},
+        )
