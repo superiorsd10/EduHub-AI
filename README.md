@@ -172,6 +172,8 @@ We use [pre-commit](https://pre-commit.com/) to manage and run various hooks to 
 
 Now, every time you commit changes (excluding client directory), pre-commit hooks will automatically run. If any issues are found, the hooks will prevent the commit and provide guidance on fixing them.
 
+---
+
 #### Celery Guide
 
 Celery is a distributed task queue framework for Python that allows you to run asynchronous tasks in the background. It's especially useful for executing long-running or resource-intensive tasks outside of the main application flow, improving application responsiveness and scalability.
@@ -193,3 +195,5 @@ Once Celery is installed, you can start the Celery worker process by running the
 ```bash
 celery -A app.celery.celery worker --loglevel=INFO -E
 ```
+
+---
