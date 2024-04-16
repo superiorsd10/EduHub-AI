@@ -15,8 +15,8 @@ user_blueprint = Blueprint("user", __name__)
 
 
 @user_blueprint.route("/api/sign-up", methods=["POST"])
-# @limiter.limit("5 per minute")
-# @firebase_token_required
+@limiter.limit("5 per minute")
+@firebase_token_required
 def create_user():
     """
     Create a new user.
@@ -54,7 +54,7 @@ def create_user():
         if not redis_client.exists(user_cache_key):
             new_user.save()
 
-            # session["email"] = new_user.email
+            session["email"] = new_user.email
 
             user_object_id = new_user.id
 
@@ -126,6 +126,46 @@ def sign_in():
             StatusCode.SUCCESS.value,
         )
 
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@user_blueprint.route("/api/log-out", methods=["POST"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def log_out():
+    """
+    Logs out the user by removing their email from the session.
+
+    This endpoint requires a POST request with a valid Firebase token in the Authorization header.
+
+    Returns:
+        A JSON response indicating the success or failure of the logout operation.
+
+        If successful, the response contains:
+        - "message": A success message indicating that the user has been logged out successfully.
+        - "success": A boolean value indicating the success of the operation (True).
+
+        If an error occurs, the response contains:
+        - "error": A string describing the encountered error.
+        - "success": A boolean value indicating the failure of the operation (False).
+
+    Status Codes:
+        - 200 OK: If the user is logged out successfully.
+        - 429 Too Many Requests: If the rate limit is exceeded.
+        - 500 Internal Server Error: If an unexpected error occurs during the logout process.
+    """
+    try:
+        if "email" in session:
+            session.pop("email")
+
+        return (
+            jsonify({"message": "Logged out successfully.", "success": True}),
+            StatusCode.SUCCESS.value,
+        )
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
