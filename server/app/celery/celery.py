@@ -13,7 +13,7 @@ celery_instance = Celery(
     __name__,
     broker=os.getenv("CELERY_BROKER_URL"),
     backend=os.getenv("CELERY_RESULT_BACKEND"),
-    include=["app.celery.tasks.post_tasks"],
+    include=["app.celery.tasks.post_tasks", "app.celery.tasks.recording_tasks"],
 )
 
 
