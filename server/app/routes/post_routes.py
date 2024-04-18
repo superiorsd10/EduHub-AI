@@ -140,8 +140,8 @@ class ChatWithMaterialSchema(Schema):
 
 
 @post_blueprint.route("/api/<hub_id>/create-post", methods=["POST"])
-# @limiter.limit("5 per minute")
-# @firebase_token_required
+@limiter.limit("5 per minute")
+@firebase_token_required
 def create_post(hub_id):
     """
     Create a post within a specified hub.
