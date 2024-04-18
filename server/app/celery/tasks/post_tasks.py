@@ -30,6 +30,8 @@ from app.models.embedding import Embedding
 from mongoengine import connect
 from dotenv import load_dotenv
 from config.config import Config
+from pptx import Presentation
+from docx import Document
 
 redis_client = Config.redis_client
 
@@ -61,6 +63,98 @@ def extract_text_from_pdf(file_data: bytes) -> str:
             text += page.get_text()
 
         return text
+
+    except Exception as error:
+        print(f"Error: {error}")
+        raise
+
+
+def extract_text_from_ppt(file_data: bytes) -> str:
+    """
+    Extract text from a PowerPoint (PPT) file given its byte data.
+
+    This function reads a PowerPoint (PPT) file from the provided byte data and
+    extracts all available text content from each slide. It iterates through each
+    slide in the presentation, examining each shape on the slide. If a shape contains
+    text, the text content is extracted and concatenated into a single string.
+
+    Args:
+        file_data (bytes): Byte data representing the PowerPoint (PPT) file.
+
+    Returns:
+        str: The extracted text content from the PowerPoint (PPT) file.
+
+    Raises:
+        Exception: If an error occurs during the extraction process.
+
+    Note:
+        - The function uses the python-pptx library to handle PowerPoint file parsing
+          and text extraction.
+        - The provided byte data should represent a valid PowerPoint file (.pptx).
+        - Shapes that contain text, such as text boxes or shapes with textual content,
+          are considered when extracting text.
+        - Any non-textual shapes, such as images or graphical elements without text
+          content, are not considered for text extraction.
+        - If an error occurs during the extraction process, an exception is raised
+          with details about the error.
+    """
+    try:
+        ppt_stream = io.BytesIO(file_data)
+        presentation = Presentation(ppt_stream)
+
+        extracted_text = ""
+
+        for slide in presentation.slides:
+            for shape in slide.shapes:
+                if hasattr(shape, "text"):
+                    extracted_text += shape.text + "\n"
+
+        return extracted_text
+
+    except Exception as error:
+        print(f"Error: {error}")
+        raise
+
+
+def extract_text_from_docx(file_data: bytes) -> str:
+    """
+    Extract text from a Word document (docx file) given its byte data.
+
+    This function reads a Word document (docx file) from the provided byte data and
+    extracts all available text content. It iterates through each paragraph in the
+    document and extracts the text content from each paragraph. The extracted text
+    includes content from paragraphs, headings, titles, and lists.
+
+    Args:
+        file_data (bytes): Byte data representing the Word document (docx file).
+
+    Returns:
+        str: The extracted text content from the Word document (docx file).
+
+    Raises:
+        Exception: If an error occurs during the extraction process.
+
+    Note:
+        - The function uses the python-docx library to handle Word document parsing
+          and text extraction.
+        - The provided byte data should represent a valid Word document file (.docx).
+        - The extracted text includes content from paragraphs, headings, titles, and
+          lists present in the document.
+        - Each paragraph in the document is separated by a newline character ('\n') in
+          the extracted text.
+        - If an error occurs during the extraction process, an exception is raised with
+          details about the error.
+    """
+    try:
+        docx_stream = io.BytesIO(file_data)
+        doc = Document(docx_stream)
+
+        extracted_text = ""
+
+        for paragraph in doc.paragraphs:
+            extracted_text += paragraph.text + "\n"
+
+        return extracted_text
 
     except Exception as error:
         print(f"Error: {error}")
