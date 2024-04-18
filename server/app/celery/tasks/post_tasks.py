@@ -224,39 +224,52 @@ def process_uploaded_file(
         print("Connected to MongoDB successfully!")
 
         file_type = mimetypes.guess_type(filename)[0]
+        extracted_text = ""
 
         if file_type == "application/pdf":
             extracted_text = extract_text_from_pdf(file_data)
-
-            embedding_docs = []
-
-            num_chunks = len(extracted_text)
-            counter = 0
-
-            for i in range(0, num_chunks, 1000):
-                chunk = extracted_text[i : i + 1000]
-                embedding = extract_text_embedding(chunk)
-                counter += 1
-                embedding_doc = Embedding(
-                    hub_id=hub_id,
-                    post_id=post_id,
-                    attachment_id=attachment_id,
-                    batch_no=counter,
-                    text_content=chunk,
-                    embeddings=embedding,
-                )
-                embedding_docs.append(embedding_doc)
-
-            Embedding.objects.insert(embedding_docs, load_bulk=False)
-            attachment_number_of_embeddings_key = (
-                f"attachment_id_{attachment_id}_number_of_embeddings"
-            )
-
-            redis_client.set(
-                attachment_number_of_embeddings_key, math.ceil(num_chunks / 1000)
-            )
+        elif (
+            file_type
+            == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        ):
+            extracted_text = extract_text_from_ppt(file_data)
+        elif (
+            file_type
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ):
+            extracted_text = extract_text_from_docx(file_data)
         else:
-            print("Unsupported File Type")
+            raise ValueError(
+                "Invalid file format. Only PDF, PPT, and DOCX formats are supported."
+            )
+
+        embedding_docs = []
+
+        num_chunks = len(extracted_text)
+        counter = 0
+
+        for i in range(0, num_chunks, 1000):
+            chunk = extracted_text[i : i + 1000]
+            embedding = extract_text_embedding(chunk)
+            counter += 1
+            embedding_doc = Embedding(
+                hub_id=hub_id,
+                post_id=post_id,
+                attachment_id=attachment_id,
+                batch_no=counter,
+                text_content=chunk,
+                embeddings=embedding,
+            )
+            embedding_docs.append(embedding_doc)
+
+        Embedding.objects.insert(embedding_docs, load_bulk=False)
+        attachment_number_of_embeddings_key = (
+            f"attachment_id_{attachment_id}_number_of_embeddings"
+        )
+
+        redis_client.set(
+            attachment_number_of_embeddings_key, math.ceil(num_chunks / 1000)
+        )
 
     except Exception as error:
         print(f"error: {error}")
