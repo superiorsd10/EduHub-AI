@@ -8,6 +8,7 @@ from flask_jwt_extended import JWTManager
 from app.routes.user_routes import user_blueprint
 from app.routes.hub_routes import hub_blueprint
 from app.routes.post_routes import post_blueprint
+from app.routes.recording_routes import recording_blueprint
 from app.sockets.hub_sockets import (
     handle_accept_request,
     handle_reject_request,
@@ -24,6 +25,7 @@ jwt = JWTManager(app)
 app.register_blueprint(user_blueprint)
 app.register_blueprint(hub_blueprint)
 app.register_blueprint(post_blueprint)
+app.register_blueprint(recording_blueprint)
 
 socketio.on_event("invite-sent", handle_invite_sent)
 socketio.on_event("accept-request", handle_accept_request)

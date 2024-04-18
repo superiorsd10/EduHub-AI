@@ -135,8 +135,8 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
 
 
 @hub_blueprint.route("/api/create-hub", methods=["POST"])
-# @limiter.limit("5 per minute")
-# @firebase_token_required
+@limiter.limit("5 per minute")
+@firebase_token_required
 def create_hub():
     """
     Creates a new hub for a user.
