@@ -7,7 +7,12 @@ from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.core import limiter
 from app.celery.tasks.recording_tasks import process_image_files
+from app.models.recording_embedding import RecordingEmbedding
+from config.config import Config
 from marshmallow import Schema, fields
+import smart_open
+import google.generativeai as genai
+import redis
 
 recording_blueprint = Blueprint("recording", __name__)
 
@@ -30,6 +35,32 @@ class ProcessImageFilesSchema(Schema):
 
     room_id = fields.String(required=True)
     image_files = fields.List(fields.Field())
+
+
+def extract_text_embedding(chunk: str) -> list:
+    """
+    Generate text embeddings for a text chunk using a pre-trained model.
+
+    Args:
+        chunk (str): The text chunk for which embeddings are to be generated.
+
+    Returns:
+        list: A list of embedding vectors representing the text chunk.
+
+    Raises:
+        Exception: If an error occurs during the embedding generation process.
+
+    """
+    try:
+        result = genai.embed_content(
+            model="models/embedding-001",
+            content=chunk,
+            task_type="semantic_similarity",
+        )
+        return result["embedding"]
+    except Exception as error:
+        print(f"Error: {error}")
+        raise
 
 
 @recording_blueprint.route("/api/recording-webhook", methods=["POST"])
@@ -61,21 +92,71 @@ def recording_webhook_listener():
 
             if webhook_data.get("type") == "transcription.success":
                 transcription_data = webhook_data.get("data")
-                print(transcription_data)
+
+                room_id = transcription_data.get("room_id")
+                transcript_txt_presigned_url = transcription_data.get(
+                    "transcript_txt_presigned_url"
+                )
+                text_content = None
+
+                with smart_open.open(
+                    transcript_txt_presigned_url, "rb"
+                ) as transcript_file:
+                    text_content = transcript_file.read().decode("utf-8")
+
+                embedding_docs = []
+
+                num_chunks = len(text_content)
+                counter = 0
+
+                for i in range(0, num_chunks, 1000):
+                    chunk = text_content[i : i + 1000]
+                    embedding = extract_text_embedding(chunk)
+                    counter += 1
+                    embedding_doc = RecordingEmbedding(
+                        room_id=room_id,
+                        text_content=chunk,
+                        embeddings=embedding,
+                    )
+                    embedding_docs.append(embedding_doc)
+
+                RecordingEmbedding.objects.insert(embedding_docs, load_bulk=False)
+
+                recording_number_of_embeddings_key = (
+                    f"room_id_{room_id}_number_of_recording_embeddings"
+                )
+
+                redis_client = Config.redis_client
+
+                with redis_client.pipeline() as pipe:
+                    try:
+                        existing_value = pipe.get(recording_number_of_embeddings_key)
+                        if existing_value:
+                            pipe.incrby(recording_number_of_embeddings_key, counter)
+                        else:
+                            pipe.set(recording_number_of_embeddings_key, counter)
+
+                        pipe.execute()
+                    except redis.exceptions.RedisError as error:
+                        print(f"Error updating recording embeddings count: {error}")
+                    else:
+                        print(
+                            f"Recording embeddings count updated for room_id: {room_id}"
+                        )
 
             return (
                 jsonify({"message": "Webhook received successfully", "success": True}),
-                StatusCode.SUCCESS.value,
+                200,
             )
 
         return (
             jsonify({"error": "Invalid JSON data in request", "success": False}),
-            StatusCode.BAD_REQUEST.value,
+            400,
         )
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
-            StatusCode.INTERNAL_SERVER_ERROR.value,
+            500,
         )
 
 
