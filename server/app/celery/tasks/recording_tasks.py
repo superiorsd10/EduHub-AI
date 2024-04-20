@@ -45,6 +45,7 @@ from mongoengine import connect
 import numpy as np
 import requests
 import google.generativeai as genai
+import redis
 
 
 def calculate_frame_difference(image_bytes1: bytes, image_bytes2: bytes) -> float:
@@ -258,7 +259,27 @@ def process_image_files(image_files: List[bytes], room_id: str) -> None:
             f"room_id_{room_id}_number_of_recording_embeddings"
         )
 
-        redis_client.set(recording_number_of_embeddings_key, len(different_image_files))
+        number_of_recording_embeddings = len(different_image_files)
+
+        with redis_client.pipeline() as pipe:
+            try:
+                existing_value = pipe.get(recording_number_of_embeddings_key)
+                if existing_value:
+                    pipe.incrby(
+                        recording_number_of_embeddings_key,
+                        number_of_recording_embeddings,
+                    )
+                else:
+                    pipe.set(
+                        recording_number_of_embeddings_key,
+                        number_of_recording_embeddings,
+                    )
+
+                pipe.execute()
+            except redis.exceptions.RedisError as error:
+                print(f"Error updating recording embeddings count: {error}")
+            else:
+                print(f"Recording embeddings count updated for room_id: {room_id}")
 
     except Exception as error:
         print(f"error: {error}")
