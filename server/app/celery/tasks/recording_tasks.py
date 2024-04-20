@@ -178,7 +178,7 @@ def extract_text_embedding(chunk: str) -> list:
 
 
 @celery_instance.task(soft_time_limit=60, time_limit=120)
-def process_image_files(image_files: List[bytes], room_id: str, hub_id: str) -> None:
+def process_image_files(image_files: List[bytes], room_id: str) -> None:
     """
     Process a list of image files to identify and store different frames as recording embeddings.
 
@@ -244,7 +244,6 @@ def process_image_files(image_files: List[bytes], room_id: str, hub_id: str) -> 
 
             recording_embedding = RecordingEmbedding(
                 room_id=room_id,
-                hub_id=hub_id,
                 text_content=image_context,
                 embeddings=image_context_embedding,
             )

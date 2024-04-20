@@ -19,7 +19,7 @@ class RecordingEmbedding(Document):
 
     This class is designed to facilitate the storage and retrieval
     of recording embeddings for analysis
-    and machine learning purposes. The `room_id` and `hub_id` fields
+    and machine learning purposes. The `room_id` field
     provide contextual information about
     the recording, while the `text_content` field stores the textual
     content extracted from the recording.
@@ -33,7 +33,6 @@ class RecordingEmbedding(Document):
 
     Class Attributes:
         room_id (StringField): The unique identifier of the room. Required field.
-        hub_id (StringField): The unique identifier of the hub. Required field.
         text_content (StringField): The textual content extracted from
         the recording. Required field.
         embeddings (ListField of FloatField): The embeddings generated from
@@ -48,7 +47,6 @@ class RecordingEmbedding(Document):
     """
 
     room_id = StringField(required=True)
-    hub_id = StringField(required=True)
     text_content = StringField(required=True)
     embeddings = ListField(FloatField(), required=True)
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))

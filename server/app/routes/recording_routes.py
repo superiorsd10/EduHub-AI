@@ -24,14 +24,11 @@ class ProcessImageFilesSchema(Schema):
     Attributes:
         room_id (fields.String): A string field representing the unique identifier of the room.
             This field is required.
-        hub_id (fields.String): A string field representing the unique identifier of the hub.
-            This field is required.
         image_files (fields.List): A list field containing individual image files.
             This field is optional and can contain any type of data.
     """
 
     room_id = fields.String(required=True)
-    hub_id = fields.String(required=True)
     image_files = fields.List(fields.Field())
 
 
@@ -97,7 +94,6 @@ def process_image_files_endpoint():
 
     Request Parameters:
         - room_id (str): The unique identifier of the room associated with the images.
-        - hub_id (str): The unique identifier of the hub associated with the images.
         - image_files (FileStorage): The image files to be processed.
 
     Returns:
@@ -121,7 +117,6 @@ def process_image_files_endpoint():
         data = schema.load(request.form)
 
         room_id = data.get("room_id")
-        hub_id = data.get("hub_id")
 
         if "image_files" not in request.files:
             return (
@@ -133,7 +128,7 @@ def process_image_files_endpoint():
         image_files_bytes = [image_file.read() for image_file in image_files]
 
         process_image_files.apply_async(
-            args=[image_files_bytes, room_id, hub_id],
+            args=[image_files_bytes, room_id],
             retry_policy={
                 "max_retries": 3,
                 "interval_start": 2,
