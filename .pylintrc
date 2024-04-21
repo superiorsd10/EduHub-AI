@@ -436,6 +436,7 @@ disable=raw-checker-failed,
         redefined-outer-name,
         protected-access,
         not-callable,
+        duplicate-code,
       ;   use-implicit-booleaness-not-comparison-to-string,
       ;   use-implicit-booleaness-not-comparison-to-zero,
 

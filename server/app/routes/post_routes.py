@@ -267,7 +267,7 @@ def create_post(hub_id):
                     "created_at": post.created_at.isoformat(),
                 }
             ),
-            StatusCode.SUCCESS.value,
+            StatusCode.CREATED.value,
         )
     except ValidationError as error:
         return (

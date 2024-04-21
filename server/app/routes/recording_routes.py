@@ -2,12 +2,16 @@
 Recording routes for the Flask application.
 """
 
+import base64
 import math
+import uuid
+from bson import ObjectId
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.core import limiter
 from app.celery.tasks.recording_tasks import process_image_files
+from app.models.hub import Hub, Recording
 from app.models.recording_embedding import RecordingEmbedding
 from config.config import Config
 from marshmallow import Schema, fields
@@ -16,6 +20,23 @@ import google.generativeai as genai
 import redis
 
 recording_blueprint = Blueprint("recording", __name__)
+
+
+class CreateRecordingSchema(Schema):
+    """
+    Schema for validating data when creating a new recording.
+
+    Attributes:
+        title (str): The title or name of the recording. Required field.
+        description (str, optional): A brief description or summary of the recording.
+        topic (str, optional): The topic or subject matter associated with the recording.
+        room_id (str): The unique identifier of the room where the recording took place.
+    """
+
+    title = fields.String(required=True)
+    description = fields.String()
+    topic = fields.String()
+    room_id = fields.String()
 
 
 class ProcessImageFilesSchema(Schema):
@@ -49,6 +70,22 @@ class ChatWithRecordingSchema(Schema):
     query = fields.String(required=True)
 
 
+def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
+    """
+    Decodes a base64 encoded string and converts it to an ObjectId.
+
+    Args:
+        base64_encoded (str): The base64 encoded string to decode.
+
+    Returns:
+        ObjectId: The decoded ObjectId.
+    """
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
+    object_id = ObjectId(hex_string)
+    return object_id
+
+
 def extract_text_embedding(chunk: str) -> list:
     """
     Generate text embeddings for a text chunk using a pre-trained model.
@@ -73,6 +110,90 @@ def extract_text_embedding(chunk: str) -> list:
     except Exception as error:
         print(f"Error: {error}")
         raise
+
+
+@recording_blueprint.route("/api/<hub_id>/create-recording", methods=["POST"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def create_recording(hub_id):
+    """
+    Create a new recording associated with a hub.
+
+    This endpoint allows users to create a new recording and associate it with a specific hub.
+    The provided data is validated using the CreateRecordingSchema before
+    creating the recording instance.
+    After creating the recording, it is added to the recordings list of the corresponding hub.
+    Additionally, cached data related to the hub is cleared to reflect the recent changes.
+
+    Args:
+        hub_id (str): The unique identifier of the hub where the recording will be associated.
+
+    Returns:
+        tuple: A tuple containing JSON response data and HTTP status code.
+            The JSON response contains details of the created recording, including its
+            UUID, title, description, topic, room ID, and creation timestamp.
+            If successful, the HTTP status code
+            indicates success (201 - Created). If an error occurs during the process,
+            the status code indicates an internal server error (500).
+
+    Raises:
+        Exception: If an error occurs during the creation or update of the recording.
+
+    Notes:
+        - This endpoint requires a valid Firebase authentication token for authorization.
+        - The provided hub ID in the URL path specifies the hub where the recording will
+        be associated.
+        - Cached data related to the hub, such as paginated pages and introductory information,
+        is cleared after creating the recording to ensure the cache reflects the recent changes.
+
+    """
+    try:
+        schema = CreateRecordingSchema()
+        data = schema.load(request.get_json())
+
+        recording_uuid = str(uuid.uuid4())
+        title = data.get("title")
+        description = data.get("description")
+        topic = data.get("topic")
+        room_id = data.get("room_id")
+
+        hub_object_id = decode_base64_to_objectid(base64_encoded=str(hub_id))
+
+        recording = Recording(
+            uuid=recording_uuid,
+            title=title,
+            description=description,
+            topic=topic,
+            room_id=room_id,
+        )
+
+        Hub.objects(id=hub_object_id).update_one(push__recordings=recording)
+
+        redis_client = Config.redis_client
+        cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+        cache_introductory_key = f"hub_{hub_object_id}_introductory"
+
+        redis_client.delete(cache_paginated_key, cache_introductory_key)
+
+        return (
+            jsonify(
+                {
+                    "uuid": recording.uuid,
+                    "title": recording.title,
+                    "description": recording.description,
+                    "topic": recording.topic,
+                    "room_id": recording.room_id,
+                    "created_at": recording.created_at.isoformat(),
+                }
+            ),
+            StatusCode.CREATED.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            500,
+        )
 
 
 @recording_blueprint.route("/api/recording-webhook", methods=["POST"])
