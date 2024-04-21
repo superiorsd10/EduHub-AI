@@ -46,6 +46,7 @@ import numpy as np
 import requests
 import google.generativeai as genai
 import redis
+import smart_open
 
 
 def calculate_frame_difference(image_bytes1: bytes, image_bytes2: bytes) -> float:
@@ -274,6 +275,96 @@ def process_image_files(image_files: List[bytes], room_id: str) -> None:
                         recording_number_of_embeddings_key,
                         number_of_recording_embeddings,
                     )
+
+                pipe.execute()
+            except redis.exceptions.RedisError as error:
+                print(f"Error updating recording embeddings count: {error}")
+            else:
+                print(f"Recording embeddings count updated for room_id: {room_id}")
+
+    except Exception as error:
+        print(f"error: {error}")
+
+
+@celery_instance.task(soft_time_limit=60, time_limit=120)
+def process_recording_webhook(transcript_txt_presigned_url: str, room_id: str) -> None:
+    """
+    Process transcript text data from a webhook and store embeddings in the database.
+
+    This Celery task retrieves transcript text data from a presigned URL provided by a webhook.
+    The transcript text is divided into chunks, and embeddings are generated for each chunk.
+    These embeddings are then stored as RecordingEmbedding documents in the database, associated
+    with the corresponding room ID. Additionally, the count of recording embeddings for the
+    specified room ID is updated in Redis for tracking purposes.
+
+    Args:
+        transcript_txt_presigned_url (str): The presigned URL containing the transcript text data.
+        room_id (str): The unique identifier of the room associated with the transcript text.
+
+    Returns:
+        None: This task does not return any value.
+
+    Raises:
+        Exception: An error occurred during the processing or storage of the transcript text data.
+
+    Notes:
+        - The transcript text is retrieved from the presigned URL using the smart_open library.
+        - The text content is divided into chunks, each containing up to 1000 characters,
+        for embedding generation.
+        - Embeddings are generated for each chunk using the extract_text_embedding function.
+        - The RecordingEmbedding documents, containing text content and corresponding embeddings,
+        are inserted
+          into the database using a bulk insertion operation.
+        - The count of recording embeddings for the specified room ID is updated in Redis for
+        monitoring purposes.
+
+    """
+    try:
+        load_dotenv()
+        connect(
+            db=os.getenv("MONGO_DB"),
+            host=os.getenv("MONGO_URI"),
+            username=os.getenv("MONGO_USERNAME"),
+            password=os.getenv("MONGO_PASSWORD"),
+            alias="default",
+        )
+
+        text_content = None
+
+        with smart_open.open(transcript_txt_presigned_url, "rb") as transcript_file:
+            text_content = transcript_file.read().decode("utf-8")
+
+        embedding_docs = []
+
+        num_chunks = len(text_content)
+        counter = 0
+
+        for i in range(0, num_chunks, 1000):
+            chunk = text_content[i : i + 1000]
+            embedding = extract_text_embedding(chunk)
+            counter += 1
+            embedding_doc = RecordingEmbedding(
+                room_id=room_id,
+                text_content=chunk,
+                embeddings=embedding,
+            )
+            embedding_docs.append(embedding_doc)
+
+        RecordingEmbedding.objects.insert(embedding_docs, load_bulk=False)
+
+        recording_number_of_embeddings_key = (
+            f"room_id_{room_id}_number_of_recording_embeddings"
+        )
+
+        redis_client = Config.redis_client
+
+        with redis_client.pipeline() as pipe:
+            try:
+                existing_value = pipe.get(recording_number_of_embeddings_key)
+                if existing_value:
+                    pipe.incrby(recording_number_of_embeddings_key, counter)
+                else:
+                    pipe.set(recording_number_of_embeddings_key, counter)
 
                 pipe.execute()
             except redis.exceptions.RedisError as error:

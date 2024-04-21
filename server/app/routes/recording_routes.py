@@ -10,14 +10,15 @@ from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.core import limiter
-from app.celery.tasks.recording_tasks import process_image_files
+from app.celery.tasks.recording_tasks import (
+    process_image_files,
+    process_recording_webhook,
+)
 from app.models.hub import Hub, Recording
 from app.models.recording_embedding import RecordingEmbedding
 from config.config import Config
 from marshmallow import Schema, fields
-import smart_open
 import google.generativeai as genai
-import redis
 
 recording_blueprint = Blueprint("recording", __name__)
 
@@ -230,52 +231,16 @@ def recording_webhook_listener():
                 transcript_txt_presigned_url = transcription_data.get(
                     "transcript_txt_presigned_url"
                 )
-                text_content = None
 
-                with smart_open.open(
-                    transcript_txt_presigned_url, "rb"
-                ) as transcript_file:
-                    text_content = transcript_file.read().decode("utf-8")
-
-                embedding_docs = []
-
-                num_chunks = len(text_content)
-                counter = 0
-
-                for i in range(0, num_chunks, 1000):
-                    chunk = text_content[i : i + 1000]
-                    embedding = extract_text_embedding(chunk)
-                    counter += 1
-                    embedding_doc = RecordingEmbedding(
-                        room_id=room_id,
-                        text_content=chunk,
-                        embeddings=embedding,
-                    )
-                    embedding_docs.append(embedding_doc)
-
-                RecordingEmbedding.objects.insert(embedding_docs, load_bulk=False)
-
-                recording_number_of_embeddings_key = (
-                    f"room_id_{room_id}_number_of_recording_embeddings"
+                process_recording_webhook.apply_async(
+                    args=[transcript_txt_presigned_url, room_id],
+                    retry_policy={
+                        "max_retries": 3,
+                        "interval_start": 2,
+                        "interval_step": 2,
+                        "interval_max": 10,
+                    },
                 )
-
-                redis_client = Config.redis_client
-
-                with redis_client.pipeline() as pipe:
-                    try:
-                        existing_value = pipe.get(recording_number_of_embeddings_key)
-                        if existing_value:
-                            pipe.incrby(recording_number_of_embeddings_key, counter)
-                        else:
-                            pipe.set(recording_number_of_embeddings_key, counter)
-
-                        pipe.execute()
-                    except redis.exceptions.RedisError as error:
-                        print(f"Error updating recording embeddings count: {error}")
-                    else:
-                        print(
-                            f"Recording embeddings count updated for room_id: {room_id}"
-                        )
 
             return (
                 jsonify({"message": "Webhook received successfully", "success": True}),

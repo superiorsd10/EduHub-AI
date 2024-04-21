@@ -15,7 +15,10 @@ from app.sockets.hub_sockets import (
     handle_invite_sent,
 )
 from app.celery.tasks.post_tasks import process_uploaded_file
-from app.celery.tasks.recording_tasks import process_image_files
+from app.celery.tasks.recording_tasks import (
+    process_image_files,
+    process_recording_webhook,
+)
 
 
 app, celery_instance = create_app(Config)
@@ -34,6 +37,7 @@ socketio.on_event("reject-request", handle_reject_request)
 
 celery_instance.register_task(process_uploaded_file)
 celery_instance.register_task(process_image_files)
+celery_instance.register_task(process_recording_webhook)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
