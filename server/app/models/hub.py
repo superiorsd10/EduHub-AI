@@ -2,6 +2,7 @@
 Module containing the Hub model for the application.
 """
 
+import datetime
 from mongoengine import (
     Document,
     StringField,
@@ -18,16 +19,23 @@ from mongoengine import (
 
 class Recording(EmbeddedDocument):
     """
-    Represents a recording in the Hub.
+    Represents a recording of a conversation or event within a room.
 
     Attributes:
-    - url: URLField
-    - summary: StringField
+        uuid (str): The universally unique identifier (UUID) of the recording.
+        title (str): The title or name of the recording.
+        description (str, optional): A brief description or summary of the recording.
+        topic (str, optional): The topic or subject matter associated with the recording.
+        room_id (str): The unique identifier of the room where the recording took place.
+        created_at (datetime): The date and time when the recording was created.
     """
 
-    url = URLField(required=True)
-    summary = StringField()
-    created_at = DateTimeField()
+    uuid = StringField()
+    title = StringField(required=True)
+    description = StringField()
+    topic = StringField()
+    room_id = StringField(required=True)
+    created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
 
 class Quiz(EmbeddedDocument):
