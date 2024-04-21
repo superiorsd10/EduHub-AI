@@ -2,6 +2,7 @@
 Recording routes for the Flask application.
 """
 
+import math
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
@@ -35,6 +36,17 @@ class ProcessImageFilesSchema(Schema):
 
     room_id = fields.String(required=True)
     image_files = fields.List(fields.Field())
+
+
+class ChatWithRecordingSchema(Schema):
+    """
+    Represents a schema for handling chat data with recording.
+
+    Attributes:
+        query (str): The query string associated with the chat.
+    """
+
+    query = fields.String(required=True)
 
 
 def extract_text_embedding(chunk: str) -> list:
@@ -220,6 +232,143 @@ def process_image_files_endpoint():
 
         return (
             jsonify({"message": "Successfully processed the images", "success": True}),
+            StatusCode.SUCCESS.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@recording_blueprint.route("/api/chat-with-recording/<room_id>", methods=["POST"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def chat_with_recording(room_id):
+    """
+    Chat with a recording in a specified room, using a conversational AI model.
+
+    This endpoint allows users to engage in a conversation related to a recording
+    in a specified room.
+    Users provide a query/question, and the endpoint generates an informative response based on the
+    context of the recording, previous conversation, and the query itself.
+
+    Args:
+        room_id (str): The unique identifier of the room associated with the recording.
+
+    Returns:
+        tuple: A tuple containing a JSON response and an HTTP status code.
+            - JSON response: A JSON object containing the success status and
+            the generated answer/message.
+            - HTTP status code: An integer representing the HTTP status of the response.
+
+    Raises:
+        Exception: An error occurred during the conversation processing or model generation.
+
+    Note:
+        - The endpoint expects a JSON payload containing the user's query.
+        - The conversation context includes the retrieved context from the
+        recording and any previous conversation.
+        - The model used for generating responses is a Generative AI model capable
+        of generating human-like text.
+        - The generated answer/message is returned as part of the JSON response.
+        - If the model is unable to generate a satisfactory answer, the user is provided
+        with instructions.
+
+    """
+    try:
+        schema = ChatWithRecordingSchema()
+        data = schema.load(request.get_json())
+
+        query = data.get("query")
+
+        query_embeddings = extract_text_embedding(query)
+
+        redis_client = Config.redis_client
+        recording_number_of_embeddings_key = (
+            f"room_id_{room_id}_number_of_recording_embeddings"
+        )
+        recording_previous_conversation_key = f"room_id_{room_id}_previous_conversation"
+        recording_cached_data = redis_client.mget(
+            recording_number_of_embeddings_key, recording_previous_conversation_key
+        )
+
+        number_of_embeddings = recording_cached_data[0]
+        number_of_embeddings = int(number_of_embeddings.decode("utf-8"))
+        limit_results = math.ceil(math.sqrt(number_of_embeddings))
+
+        previous_conversation = recording_cached_data[1]
+
+        results = RecordingEmbedding.objects.aggregate(
+            [
+                {
+                    "$vectorSearch": {
+                        "index": "recordingEmbeddedVectorIndex",
+                        "path": "embeddings",
+                        "queryVector": query_embeddings,
+                        "filter": {"room_id": str(room_id)},
+                        "numCandidates": number_of_embeddings,
+                        "limit": limit_results,
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "text_content": 1,
+                    }
+                },
+            ]
+        )
+
+        retrieved_context = ""
+
+        for result in list(results):
+            retrieved_context += result["text_content"]
+
+        if previous_conversation is not None:
+            previous_conversation = previous_conversation.decode("utf-8")
+        else:
+            previous_conversation = "No previous conversation found!"
+
+        if len(previous_conversation) > 10000:
+            previous_conversation = previous_conversation[-10000:]
+
+        prompt = f"""
+        Instruction: Please provide an informative response to the following question with the help of your knowledge, the Retrieved Context and the Previous Conversation in Markdown format.
+
+        Question: {query}
+
+        Retrieved Context: {retrieved_context}
+
+        Previous Conversation: {previous_conversation}
+
+        Note: If the model is unable to generate an answer based on the retrieved context or previous conversation, please follow these instructions:
+
+        1. Notify the user that the generated answer is based on the model's own knowledge.
+        2. Provide an answer using the model's own knowledge.
+        3. If possible, prompt something related to the topic to continue the conversation.
+        """
+
+        if len(prompt) > 25000:
+            prompt = prompt[:25000]
+
+        model = genai.GenerativeModel("gemini-pro")
+
+        answer = model.generate_content(prompt)
+
+        previous_conversation += f"user: {query}\nmodel: {answer.text}\n"
+        redis_client.set(
+            recording_previous_conversation_key, previous_conversation, ex=3600
+        )
+
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": answer.text,
+                }
+            ),
             StatusCode.SUCCESS.value,
         )
 
