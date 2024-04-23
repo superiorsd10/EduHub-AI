@@ -2,7 +2,7 @@
 Module containing the Hub model for the application.
 """
 
-import datetime
+from datetime import datetime
 from mongoengine import (
     Document,
     StringField,
