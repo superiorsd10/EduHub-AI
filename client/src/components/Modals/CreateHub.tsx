@@ -11,14 +11,14 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   const [section, setSection] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token } =
+  const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token,email } =
     useContext(AppContext);
 
   const handleGetRoomCode = async () => {
     const URL =
       "https://api.100ms.live/v2/room-codes/room/6610f313e4bed7263690583b";
     const token =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTIzODY2NTUsImV4cCI6MTcxMjk5MTQ1NSwianRpIjoiZTZmOTU5YTUtZjBiZS00MDU1LTgyZWMtNDNiYTczODJhZmFlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTIzODY2NTUsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.v5rvaQdUfGk0Gp-ENFdqdc1lJ_Gq9JAPPqefTT1J3EQ";
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTM4NzkwMjAsImV4cCI6MTcxNTAwMjIyMCwianRpIjoiNmI4NzIyNjYtYWZhOS00NGNmLWFhNDUtMTA4MDc3ZGUzM2E5IiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTM4NzkwMjAsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.dt-vsXtZnw6YwRnNkflmLT3oqPMrH1T9WMgNEfynwxA";
     const response = await fetch(URL, {
       method: "POST",
       headers: {
@@ -54,7 +54,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           hub_name: hubName,
           section: section,
           description: description,
-          email: "nikhilranjan1103@gmail.com",
+          email: email,
           room_code_teacher: room_code_teacher,
           room_code_ta: room_code_ta,
           room_code_student: room_code_student,

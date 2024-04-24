@@ -78,7 +78,7 @@ const AppProvider: React.FC<AppProviderProps> = ({
   const [token, setToken] = useState<string | null>(null);
 
   const fetchHubs = async () => {
-    const response = await fetch("http://127.0.0.1:5000/api/get-hubs", {
+    const response = await fetch(`http://127.0.0.1:5000/api/get-hubs?email=sachin@gmail.com`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
