@@ -55,7 +55,7 @@ class Quiz(EmbeddedDocument):
     total_points = IntField()
     topic = StringField()
     due_datetime = DateTimeField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
 
 class Assignment(EmbeddedDocument):
@@ -75,7 +75,7 @@ class Assignment(EmbeddedDocument):
     total_points = IntField()
     topic = StringField()
     due_datetime = DateTimeField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
 
 class Post(EmbeddedDocument):
@@ -108,7 +108,7 @@ class Post(EmbeddedDocument):
     attachments_url = ListField(URLField())
     attachments_type = ListField(StringField())
     topic = StringField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
     poll_options = ListField(StringField())
     emoji_reactions = DictField(field=IntField())
 
@@ -180,10 +180,10 @@ class Hub(Document):
     room_code_ta = StringField()
     recordings = ListField(EmbeddedDocumentField(Recording))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
-    assignments = ListField(EmbeddedDocumentField(Assignment))
+    assignments = ListField(DictField(field=EmbeddedDocumentField(Assignment)))
     posts = ListField(EmbeddedDocumentField(Post))
     messages = ListField(EmbeddedDocumentField(Message))
-    created_at = DateTimeField(required=True)
+    created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
     meta = {
         "collection": "hubs",
