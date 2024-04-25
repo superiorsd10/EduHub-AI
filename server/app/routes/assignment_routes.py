@@ -2,6 +2,8 @@
 Assignment routes for the Flask application.
 """
 
+import base64
+from bson import ObjectId
 from flask import Blueprint
 from marshmallow import Schema, fields
 
@@ -57,3 +59,19 @@ class GenerateAssignmentSchema(Schema):
         keys=fields.String(),
         values=fields.List(fields.Integer()),
     )
+
+
+def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
+    """
+    Decodes a base64 encoded string and converts it to an ObjectId.
+
+    Args:
+        base64_encoded (str): The base64 encoded string to decode.
+
+    Returns:
+        ObjectId: The decoded ObjectId.
+    """
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
+    object_id = ObjectId(hex_string)
+    return object_id
