@@ -6,6 +6,7 @@ import os
 import uuid
 import mimetypes
 import math
+import pickle
 from datetime import datetime
 import base64
 from flask import Blueprint, request, current_app, jsonify
@@ -447,3 +448,23 @@ def chat_with_material(attachment_id):
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+
+def predict(features):
+    """
+         features is a list of assignment marks with last index storing the latest assignment.
+    """
+    # Model is not to be loaded every time the function is called.
+    model = pickle.load(open("model.pkl","rb"))
+
+    while len(features) < 5:
+        features.insert(0,10)
+    sum = 0
+    numberOfAssignments = len(features)
+    while len(features) >= 5:
+        sum += features[0]
+        features.pop(0)
+    average = round(sum/(numberOfAssignments-4))
+    features.insert(0,average)
+    
+    prediction = model.predict(features)
+    return prediction
