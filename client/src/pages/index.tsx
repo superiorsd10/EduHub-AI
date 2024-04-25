@@ -12,7 +12,7 @@ import ResizableFlex from "@/utils/ResizableFlex";
 import Hub from "@/components/Hub";
 
 const index: NextPage = () => {
-  const { componentHeight, setIsCreateHubVisible, fetchHubs, hubList } =
+  const { componentHeight, setIsCreateHubVisible, fetchHubs, hubList,email } =
     useContext(AppContext);
   const { email, token } = useContext(AppContext);
   const [isClassroomEmpty, setIsClassroomEmpty] = useState<boolean>(true);

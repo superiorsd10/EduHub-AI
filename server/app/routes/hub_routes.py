@@ -8,7 +8,7 @@ import secrets
 import base64
 from datetime import datetime
 import mongoengine
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.hub import Hub
@@ -268,8 +268,8 @@ def create_hub():
 
 
 @hub_blueprint.route("/api/get-hubs", methods=["GET"])
-# @limiter.limit("5 per minute")
-# @firebase_token_required
+@limiter.limit("5 per minute")
+@firebase_token_required
 def get_hubs():
     """
     Retrieves a user's associated hubs.
@@ -309,6 +309,7 @@ def get_hubs():
     """
     try:
         email = request.args.get("email")
+        print(email)
 
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"
@@ -447,8 +448,8 @@ def get_hubs():
 
 
 @hub_blueprint.route("/api/hub/<hub_id>", methods=["GET"])
-# @limiter.limit("5 per minute")
-# @firebase_token_required
+@limiter.limit("5 per minute")
+@firebase_token_required
 def get_hub(hub_id):
     """
     Retrieves hub data including introductory information and paginated content.
@@ -505,15 +506,19 @@ def get_hub(hub_id):
     """
 
     try:
-        email = session.get("email")
+        email = request.args.get("email")
         redis_client = Config.redis_client
         user_cache_key = f"user:{email}"
         cached_hubs_data = redis_client.hget(user_cache_key, "hubs").decode("utf-8")
         hubs_data = json.loads(cached_hubs_data)
         hub_id = decode_base64_to_objectid(str(hub_id))
-        found = any(
-            teacher["hub_id"] == str(hub_id) for teacher in hubs_data[0]["teacher"]
-        )
+
+        found = False
+
+        if hubs_data != ["empty"]:
+            found = any(
+                teacher["hub_id"] == str(hub_id) for teacher in hubs_data[0]["teacher"]
+            )
 
         if not ObjectId.is_valid(hub_id):
             return (

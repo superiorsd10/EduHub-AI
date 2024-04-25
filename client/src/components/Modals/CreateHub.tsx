@@ -11,7 +11,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   const [section, setSection] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token, email } =
+  const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token,email } =
     useContext(AppContext);
 
   const handleGetRoomCode = async () => {
@@ -54,7 +54,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           hub_name: hubName,
           section: section,
           description: description,
-          email: "sad@sad.sad",
+          email: "nikhilranjan1103@gmail.com",
           room_code_teacher: room_code_teacher,
           room_code_ta: room_code_ta,
           room_code_student: room_code_student,
