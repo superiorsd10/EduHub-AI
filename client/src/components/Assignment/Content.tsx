@@ -1,4 +1,8 @@
 import {
+  AssignmentContext,
+  AssignmentProvider,
+} from "@/providers/AssignmentProvider";
+import {
   Input,
   Stack,
   Textarea,
@@ -8,14 +12,26 @@ import {
   Button,
   Box,
 } from "@mantine/core";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
 const Content = () => {
+  const { setIsPreviewAssignmentVisible } = useContext(AssignmentContext);
   const [value, setValue] = useState<string | null>("");
   return (
-    <Stack h="100%" w="60%" pl="5%" pr="5%" style={{borderRight:'1px solid #ADB5BD'}} pt='lg'>
-      <Input placeholder="Title" style={{border:'black'}}></Input>
-      <Textarea placeholder="Instructions (optional)" minRows={5} autosize></Textarea>
+    <Stack
+      h="100%"
+      w="60%"
+      pl="5%"
+      pr="5%"
+      style={{ borderRight: "1px solid #ADB5BD" }}
+      pt="lg"
+    >
+      <Input placeholder="Title" style={{ border: "black" }}></Input>
+      <Textarea
+        placeholder="Instructions (optional)"
+        minRows={5}
+        autosize
+      ></Textarea>
       <Stack>
         <Radio
           checked={true}
@@ -34,7 +50,11 @@ const Content = () => {
               transitionProps: { transition: "pop", duration: 200 },
             }}
           ></MultiSelect>
-          <Textarea placeholder="Any specific syllabus/topic you wanna mention (optional)" minRows={5} autosize></Textarea>
+          <Textarea
+            placeholder="Any specific syllabus/topic you wanna mention (optional)"
+            minRows={5}
+            autosize
+          ></Textarea>
           <Input placeholder="Any specific instruction for AI (optional)"></Input>
           <Group gap="0">
             <Button
@@ -75,7 +95,16 @@ const Content = () => {
             </Button>
           </Group>
         </Stack>
-        <Button ml="auto" size="sm" w="fit-content" bg="black">
+        <Button
+          ml="auto"
+          size="sm"
+          w="fit-content"
+          bg="black"
+          onClick={() => {
+            setIsPreviewAssignmentVisible(true)
+            console.log("ff")
+          }}
+        >
           Preview
         </Button>
       </Stack>
