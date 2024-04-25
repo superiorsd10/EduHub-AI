@@ -30,17 +30,18 @@ def predict(features):
                     with the model.
     """
     try:
-        while len(features) < 5:
-            features.insert(0, 10)
-        sum_of_marks = 0
-        number_of_assignments = len(features)
-        while len(features) >= 5:
-            sum_of_marks += features[0]
-            features.pop(0)
-        average = round(sum_of_marks / (number_of_assignments - 4))
-        features.insert(0, average)
+        for feature in features:
+            while len(feature) < 5:
+                feature.insert(0, 10)
+            sum_of_marks = 0
+            number_of_assignments = len(feature)
+            while len(feature) >= 5:
+                sum_of_marks += feature[0]
+                feature.pop(0)
+            average = round(sum_of_marks / (number_of_assignments - 4))
+            feature.insert(0, average)
 
-        prediction = model.predict(features)
+            prediction.append(model.predict(feature))
         return prediction
 
     except Exception as error:
