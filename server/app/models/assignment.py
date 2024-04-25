@@ -9,6 +9,7 @@ from mongoengine import (
     URLField,
     IntField,
     ObjectIdField,
+    ListField,
 )
 
 
@@ -23,9 +24,11 @@ class Assignment(Document):
     - instructions: StringField
     - attachments_url: URLField
     - total_points: IntField
+    - question = StringField, required
+    - answer = StringField
+    - question_points = ListField(field=IntField())
     - due_datetime: DateTimeField
     - topic: StringField
-    - scheduled_datetime: DateTimeField
     - created_at: DateTimeField
 
     Meta:
@@ -42,9 +45,11 @@ class Assignment(Document):
     instructions = StringField()
     attachments_url = URLField()
     total_points = IntField()
+    question = StringField(required=True)
+    answer = StringField()
+    question_points = ListField(field=IntField())
     due_datetime = DateTimeField()
     topic = StringField()
-    scheduled_datetime = DateTimeField()
     created_at = DateTimeField()
 
     meta = {
