@@ -14,14 +14,14 @@ import Hub from "@/components/Hub";
 const index: NextPage = () => {
   const { componentHeight, setIsCreateHubVisible, fetchHubs, hubList } =
     useContext(AppContext);
-  const { isLoggedIn, token } = useContext(AppContext);
+  const { email, token } = useContext(AppContext);
   const [isClassroomEmpty, setIsClassroomEmpty] = useState<boolean>(true);
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (email!=null) {
       fetchHubs();
     }
-  }, [isLoggedIn]);
+  }, [email]);
 
   useEffect(()=>{
     setIsClassroomEmpty(
@@ -36,7 +36,7 @@ const index: NextPage = () => {
       justify="center"
       mih={componentHeight}
     >
-      {!isLoggedIn ? (
+      {!email ? (
         <>
           <Banner />
           <Features />

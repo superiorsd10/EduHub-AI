@@ -13,12 +13,12 @@ import AcceptRequests from "@/components/Modals/AcceptRequests";
 const HubWithoutContext = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id as string;
-  const { token } = useContext(AppContext);
+  const { token,email } = useContext(AppContext);
   const { currentHubData, fetchHubData, isCreatePostVisible, setIsCreatePostVisible } = useContext(HubContext);
 
   useEffect(() => {
-    if (hub_id) fetchHubData(hub_id, token);
-  }, [router, hub_id]);
+    if (hub_id && email) fetchHubData(hub_id, token);
+  }, [router, hub_id,email]);
 
   return (
     <ResizableFlex>

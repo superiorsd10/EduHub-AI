@@ -18,6 +18,8 @@ const post = () => {
   const hub_id = router.query.hub_id as string;
   const post_id = router.query.post_id as string;
   const attachment_id = router.query.attachment_id as string;
+  console.log("attachment id... ")
+  console.log(attachment_id);
   const base64hub_id = btoa(hub_id);
 
   useEffect(() => {
@@ -28,10 +30,10 @@ const post = () => {
       );
       const data = await resp.json();
       setPostData({
-        title: data.data.title,
-        topic: data.data.topic,
-        description: data.data.description,
-        created_at:data.data.created_at
+        title: data.title,
+        topic: data.topic,
+        description: data.description,
+        created_at:data.created_at
       });
     };
     getPost();

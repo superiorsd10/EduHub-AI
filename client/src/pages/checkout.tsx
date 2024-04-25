@@ -31,7 +31,7 @@ const checkout: NextPageWithLayout = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: "nikhilranjan1103@gmail.com",
+            email: "session.get("email") ",
           }),
         }
       );

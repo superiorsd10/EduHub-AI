@@ -25,8 +25,11 @@ const LeftBar = ({
   invite_code: string;
   room_code: string;
 }) => {
-  const { isCreatePostVisible, setIsCreatePostVisible } =
+  const { isCreatePostVisible, setIsCreatePostVisible,currentHubData } =
     useContext(HubContext);
+  const {introductory} = currentHubData!;
+  const {_id}= introductory!;
+
   return (
     <Stack w="15%">
       <Stack
@@ -77,7 +80,7 @@ const LeftBar = ({
         leftSection={<MdLiveTv />}
         justify="flex-start"
       >
-        <NextLink href={`http://localhost:3000/class/${room_code}`}>
+        <NextLink href={`http://localhost:3000/hub/${_id}/live/${room_code}`}>
           Start Live Class
         </NextLink>
       </Button>

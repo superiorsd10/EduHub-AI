@@ -1,4 +1,5 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useContext } from "react";
+import { AppContext } from "./AppProvider";
 
 type HubIntroductoryData = {
   assignments: any[];
@@ -63,6 +64,7 @@ const HubContext = createContext<HubContextProps>({
 const HubProvider: React.FC<HubProviderProps> = ({
   children,
 }: HubProviderProps) => {
+  const {email} = useContext(AppContext);
   const [currentHubData, setCurrentHubData] = useState<HubsData | null>(null);
   const [isCreatePostVisible, setIsCreatePostVisible] =
     useState<boolean>(false);
@@ -71,7 +73,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
   const fetchHubData = async (hubId: string, token: string | null) => {
     const encodedBase64 = btoa(hubId);
     const response = await fetch(
-      `http://127.0.0.1:5000/api/hub/${encodedBase64}`,
+      `http://127.0.0.1:5000/api/hub/${encodedBase64}?email=${email}`,
       {
         method: "GET",
         headers: {

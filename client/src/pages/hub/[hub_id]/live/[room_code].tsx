@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
-import { NextPageWithLayout } from "../_app";
+import { NextPageWithLayout } from "../../../_app";
 import EmptyLayout from "@/components/EmptyLayout";
 import LiveControls from "@/components/Live/LiveControls";
 import html2canvas from "html2canvas";
@@ -10,6 +10,7 @@ const Live: NextPageWithLayout = () => {
   const router = useRouter();
   const room_code = router.query.room_code as string;
   const [HMSPrebuilt, setHMSPrebuilt] = useState<any | null>(null);
+  const [HMSActions, setHMSActions] = useState<any | null>(null);
 
   useEffect(() => {
     import("@100mslive/roomkit-react")

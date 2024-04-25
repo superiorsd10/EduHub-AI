@@ -21,7 +21,7 @@ type Post = {
 
 const Content = ({ post }: { post: Post }) => {
   let attachment_id = "";
-  if (post.attachments_url.entries.length > 0) {
+  if (post.attachments_url.length > 0) {
     let url = post.attachments_url[0];
     let str = url.split("/");
     attachment_id = str[str.length - 1].replace(".pdf", "");
