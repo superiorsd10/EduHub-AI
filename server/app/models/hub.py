@@ -15,7 +15,28 @@ from mongoengine import (
     IntField,
     DateTimeField,
     MapField,
+    ValidationError,
 )
+
+
+def unique_list_items(value):
+    """
+    Validate that the elements of a list are unique.
+
+    This validation function checks whether all elements in a given list are unique.
+    It compares the length of the list to the length of a set created from the list.
+    If the lengths are different, it indicates that there are duplicate elements in
+    the list, and a ValidationError is raised.
+
+    Args:
+        value (list): The list to validate for uniqueness.
+
+    Raises:
+        ValidationError: If duplicate elements are found in the list.
+
+    """
+    if len(value) != len(set(value)):
+        raise ValidationError("List elements must be unique.")
 
 
 class Recording(EmbeddedDocument):
@@ -167,6 +188,7 @@ class Hub(Document):
     name = StringField(required=True, max_length=100, min_length=1)
     section = StringField()
     description = StringField(max_length=280)
+    topics = ListField(StringField(), validation=unique_list_items)
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
