@@ -167,7 +167,10 @@ def create_recording(hub_id):
             room_id=room_id,
         )
 
-        Hub.objects(id=hub_object_id).update_one(push__recordings=recording)
+        Hub.objects(id=hub_object_id).update_one(
+            push__recordings=recording,
+            push__topics=topic,
+        )
 
         redis_client = current_app.redis_client
         cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
