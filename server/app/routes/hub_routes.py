@@ -611,6 +611,7 @@ def get_hub(hub_id):
                         "name",
                         "section",
                         "description",
+                        "topics",
                         "theme_color",
                         "photo_url",
                         "invite_code",
