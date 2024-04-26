@@ -196,6 +196,58 @@ def create_recording(hub_id):
         )
 
 
+@recording_blueprint.route(
+    "/api/<hub_id>/get-recording/<recording_id>", methods=["GET"]
+)
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_recording(hub_id, recording_id):
+    """
+    Retrieve a recording for a given hub.
+
+    This endpoint retrieves a specific recording from the specified hub based on the provided
+    hub ID and recording ID. It first decodes the hub ID from base64 format and then queries
+    the MongoDB database to find the matching hub document containing the specified recording.
+    If the recording is found, its data is extracted and returned in JSON format.
+
+    Args:
+        hub_id (str): The ID of the hub where the recording is stored.
+        recording_id (str): The ID of the recording to retrieve.
+
+    Returns:
+        tuple: A tuple containing the JSON response and HTTP status code.
+
+    Raises:
+        Exception: If an error occurs during the retrieval process.
+
+    """
+    try:
+        hub_object_id = decode_base64_to_objectid(hub_id)
+        recording = (
+            Hub.objects(id=hub_object_id, recordings__uuid=recording_id)
+            .only("recordings.$")
+            .first()
+        )
+
+        if recording:
+            recording_data = recording.recordings[0].to_mongo().to_dict()
+            return (
+                jsonify({"message": jsonify(recording_data), "success": True}),
+                StatusCode.SUCCESS.value,
+            )
+
+        return (
+            jsonify({"error": "Recording not found", "success": False}),
+            StatusCode.NOT_FOUND.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
 @recording_blueprint.route("/api/recording-webhook", methods=["POST"])
 def recording_webhook_listener():
     """

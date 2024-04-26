@@ -286,6 +286,8 @@ def create_post(hub_id):
 
 
 @post_blueprint.route("/api/<hub_id>/get-post/<post_id>", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
 def get_post(hub_id, post_id):
     """
     Retrieve a specific post within a hub.
@@ -306,7 +308,7 @@ def get_post(hub_id, post_id):
         if post:
             post_data = post.posts[0].to_mongo().to_dict()
             return (
-                jsonify(post_data),
+                jsonify({"message": jsonify(post_data), "success": True}),
                 StatusCode.SUCCESS.value,
             )
         return (
