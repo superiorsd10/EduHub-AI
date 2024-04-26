@@ -13,7 +13,11 @@ celery_instance = Celery(
     __name__,
     broker=os.getenv("CELERY_BROKER_URL"),
     backend=os.getenv("CELERY_RESULT_BACKEND"),
-    include=["app.celery.tasks.post_tasks", "app.celery.tasks.recording_tasks"],
+    include=[
+        "app.celery.tasks.post_tasks",
+        "app.celery.tasks.recording_tasks",
+        "app.celery.tasks.assignment_tasks",
+    ],
 )
 
 
@@ -30,3 +34,4 @@ def init_celery(app: Flask) -> None:
     celery_instance.conf.update(app.config)
     celery_instance.conf.broker_url = app.config["CELERY_BROKER_URL"]
     celery_instance.conf.result_backend = app.config["CELERY_RESULT_BACKEND"]
+    celery_instance.redis_client = app.redis_client

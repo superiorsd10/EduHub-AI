@@ -19,7 +19,6 @@ from app.models.embedding import Embedding
 from bson import ObjectId
 from app.celery.tasks.post_tasks import process_uploaded_file
 import google.generativeai as genai
-from config.config import Config
 
 
 post_blueprint = Blueprint("post", __name__)
@@ -199,7 +198,7 @@ def create_post(hub_id):
         hub_object_id = decode_base64_to_objectid(str(hub_id))
         post_uuid = str(uuid.uuid4())
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
 
         for file in files:
             if file and allowed_file(file.filename):
@@ -353,7 +352,7 @@ def chat_with_material(attachment_id):
 
         query_embeddings = extract_text_embedding(query)
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         attachment_number_of_embeddings_key = (
             f"attachment_id_{attachment_id}_number_of_embeddings"
         )

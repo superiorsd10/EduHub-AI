@@ -8,13 +8,12 @@ import secrets
 import base64
 from datetime import datetime
 import mongoengine
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.hub import Hub
 from app.models.user import User
 from app.core import limiter
-from config.config import Config
 from marshmallow import Schema, fields, ValidationError
 from bson.objectid import ObjectId
 from redis import RedisError
@@ -193,7 +192,7 @@ def create_hub():
         room_code_student = data["room_code_student"]
 
         user_cache_key = f"user:{email}"
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         user_object_id = redis_client.hget(user_cache_key, "user_object_id")
         user_object_id = ObjectId(user_object_id.decode("utf-8"))
 
@@ -311,7 +310,7 @@ def get_hubs():
         email = request.args.get("email")
         print(email)
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         user_cache_key = f"user:{email}"
         cached_hubs_data = redis_client.hget(user_cache_key, "hubs")
 
@@ -507,7 +506,7 @@ def get_hub(hub_id):
 
     try:
         email = request.args.get("email")
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         user_cache_key = f"user:{email}"
         cached_hubs_data = redis_client.hget(user_cache_key, "hubs").decode("utf-8")
         hubs_data = json.loads(cached_hubs_data)
@@ -532,7 +531,7 @@ def get_hub(hub_id):
 
         page = request.args.get("page", 1, type=int)
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
 
         cache_paginated_key = f"hub_{hub_id}_paginated_page_{page}"
         cache_introductory_key = f"hub_{hub_id}_introductory"
@@ -756,7 +755,7 @@ def join_hub(invite_code):
         creator_id = hub_data_dict.get("creator_id")
         members_id = hub_data_dict.get("members_id")
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         user_cache_key = f"user:{email}"
         user_object_id = redis_client.hget(user_cache_key, "user_object_id")
         user_object_id = ObjectId(user_object_id.decode("utf-8"))

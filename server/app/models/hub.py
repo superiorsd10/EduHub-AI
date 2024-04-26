@@ -14,6 +14,7 @@ from mongoengine import (
     URLField,
     IntField,
     DateTimeField,
+    MapField,
 )
 
 
@@ -180,8 +181,8 @@ class Hub(Document):
     room_code_ta = StringField()
     recordings = ListField(EmbeddedDocumentField(Recording))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
-    assignments = ListField(DictField(field=EmbeddedDocumentField(Assignment)))
-    assignments_difficulty_level = ListField(field=StringField())
+    assignments = ListField(MapField(EmbeddedDocumentField(Assignment)))
+    assignments_difficulty_level = ListField(StringField())
     posts = ListField(EmbeddedDocumentField(Post))
     messages = ListField(EmbeddedDocumentField(Message))
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))

@@ -22,6 +22,8 @@ import io
 import os
 import math
 from uuid import UUID
+
+from flask import current_app
 import fitz
 from app.celery.celery import celery_instance
 from celery.signals import task_success, task_failure
@@ -29,11 +31,8 @@ import google.generativeai as genai
 from app.models.embedding import Embedding
 from mongoengine import connect
 from dotenv import load_dotenv
-from config.config import Config
 from pptx import Presentation
 from docx import Document
-
-redis_client = Config.redis_client
 
 
 def extract_text_from_pdf(file_data: bytes) -> str:
@@ -267,6 +266,8 @@ def process_uploaded_file(
             f"attachment_id_{attachment_id}_number_of_embeddings"
         )
 
+        redis_client = current_app.redis_client
+
         redis_client.set(
             attachment_number_of_embeddings_key, math.ceil(num_chunks / 1000)
         )
@@ -291,6 +292,7 @@ def task_success_handler(sender=None, result=None, **kwargs):
     """
     task_id = sender.request.id
     print("SUCCESS")
+    redis_client = current_app.redis_client
     redis_client.publish(f"{task_id}", "SUCCESS")
 
 
@@ -311,4 +313,5 @@ def task_failure_handler(sender=None, exception=None, traceback=None, **kwargs):
     """
     task_id = sender.request.id
     print("FAILURE")
+    redis_client = current_app.redis_client
     redis_client.publish(f"{task_id}", "FAILURE")

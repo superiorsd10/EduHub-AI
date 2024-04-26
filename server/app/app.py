@@ -16,6 +16,7 @@ from flask_session import Session
 import boto3
 from app.celery.celery import celery_instance, init_celery
 import google.generativeai as genai
+import redis
 
 socketio = SocketIO()
 sess = Session()
@@ -64,6 +65,12 @@ def create_app(config=None):
         region_name="ap-south-1",
         aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
+    )
+
+    app.redis_client = redis.StrictRedis(
+        host="localhost",
+        port=6379,
+        db=0,
     )
 
     init_celery(app)

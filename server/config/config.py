@@ -30,13 +30,9 @@ class Config:
         "password": os.environ.get("MONGO_PASSWORD"),
         "alias": "default",
     }
+    REDIS_CLIENT = redis.from_url("redis://localhost:6379/0")
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
-    REDIS_URL = os.environ.get("REDIS_URL")
-    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
-    REDIS_PORT = os.environ.get("REDIS_PORT")
-    REDIS_HOST = os.environ.get("REDIS_HOST")
-    redis_client = redis.from_url(REDIS_URL)
     SECRET_KEY = os.getenv("CRYPTO_SECRET_KEY")
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -44,7 +40,6 @@ class Config:
     CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
     SESSION_TYPE = os.getenv("SESSION_TYPE")
-    SESSION_REDIS = redis_client
 
 
 class TestConfig:
@@ -70,6 +65,3 @@ class TestConfig:
     }
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
-    REDIS_URL = os.environ.get("REDIS_URL")
-    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
-    REDIS_PORT = os.environ.get("REDIS_PORT")

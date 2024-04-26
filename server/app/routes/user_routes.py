@@ -4,12 +4,11 @@ User routes for the Flask application.
 
 import os
 import stripe
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, current_app, request, jsonify, session
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.user import User
 from app.core import limiter
-from config.config import Config
 
 user_blueprint = Blueprint("user", __name__)
 
@@ -46,7 +45,7 @@ def create_user():
             quizzes=[],
         )
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
 
         user_cache_key = f"user:{data['email']}"
         print(user_cache_key)
@@ -105,7 +104,7 @@ def sign_in():
                 StatusCode.BAD_REQUEST.value,
             )
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
 
         user_cache_key = f"user:{data['email']}"
 

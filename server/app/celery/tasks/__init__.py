@@ -12,3 +12,4 @@ Tasks:
 
 from .post_tasks import process_uploaded_file
 from .recording_tasks import process_image_files, process_recording_webhook
+from .assignment_tasks import process_assignment_generation

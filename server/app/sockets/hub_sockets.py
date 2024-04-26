@@ -2,10 +2,10 @@
 Hub sockets for the Flask application.
 """
 
+from flask import current_app
 from flask_socketio import emit
 from app.app import socketio
 from app.models.hub import Hub
-from config.config import Config
 from bson.objectid import ObjectId
 from app.models.user import User
 
@@ -38,7 +38,7 @@ def handle_invite_sent(data):
             )
             return
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
 
         hub_invitation_list_key = f"hub_{str(hub_data.id)}_invitation_list"
         redis_client.rpush(hub_invitation_list_key, email)
@@ -79,7 +79,7 @@ def handle_accept_request(data):
         hub_id = data.get("hub_id")
 
         user_cache_key = f"user:{email}"
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         user_object_id = redis_client.hget(user_cache_key, "user_object_id")
         user_object_id = ObjectId(user_object_id.decode("utf-8"))
 
@@ -126,7 +126,7 @@ def handle_reject_request(data):
         email = data.get("email")
         hub_id = data.get("hub_id")
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
         redis_client.lrem(hub_invitation_list_key, 0, email)
 

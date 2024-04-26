@@ -6,7 +6,7 @@ import base64
 import math
 import uuid
 from bson import ObjectId
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.core import limiter
@@ -16,7 +16,6 @@ from app.celery.tasks.recording_tasks import (
 )
 from app.models.hub import Hub, Recording
 from app.models.recording_embedding import RecordingEmbedding
-from config.config import Config
 from marshmallow import Schema, fields
 import google.generativeai as genai
 
@@ -170,7 +169,7 @@ def create_recording(hub_id):
 
         Hub.objects(id=hub_object_id).update_one(push__recordings=recording)
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
         cache_introductory_key = f"hub_{hub_object_id}_introductory"
 
@@ -371,7 +370,7 @@ def chat_with_recording(room_id):
 
         query_embeddings = extract_text_embedding(query)
 
-        redis_client = Config.redis_client
+        redis_client = current_app.redis_client
         recording_number_of_embeddings_key = (
             f"room_id_{room_id}_number_of_recording_embeddings"
         )
