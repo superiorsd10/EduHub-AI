@@ -15,28 +15,25 @@ from mongoengine import (
     IntField,
     DateTimeField,
     MapField,
-    ValidationError,
 )
 
 
-def unique_list_items(value):
+def remove_duplicates(value):
     """
-    Validate that the elements of a list are unique.
+    Remove duplicate elements from a list.
 
-    This validation function checks whether all elements in a given list are unique.
-    It compares the length of the list to the length of a set created from the list.
-    If the lengths are different, it indicates that there are duplicate elements in
-    the list, and a ValidationError is raised.
+    This function takes a list as input and returns a new list containing only unique elements.
+    It achieves this by converting the input list to a set, which automatically removes duplicate
+    elements due to the set's unique property, and then converting the set back to a list.
 
     Args:
-        value (list): The list to validate for uniqueness.
+        value (list): The list from which duplicate elements should be removed.
 
-    Raises:
-        ValidationError: If duplicate elements are found in the list.
+    Returns:
+        list: A new list containing only unique elements from the input list.
 
     """
-    if len(value) != len(set(value)):
-        raise ValidationError("List elements must be unique.")
+    return list(set(value))
 
 
 class Recording(EmbeddedDocument):
@@ -188,7 +185,7 @@ class Hub(Document):
     name = StringField(required=True, max_length=100, min_length=1)
     section = StringField()
     description = StringField(max_length=280)
-    topics = ListField(StringField(), validation=unique_list_items)
+    topics = ListField(StringField(), validation=remove_duplicates)
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
