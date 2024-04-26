@@ -20,6 +20,7 @@ from app.celery.tasks.recording_tasks import (
     process_image_files,
     process_recording_webhook,
 )
+from app.celery.tasks.assignment_tasks import process_assignment_generation
 
 
 app, celery_instance = create_app(Config)
@@ -40,6 +41,7 @@ socketio.on_event("reject-request", handle_reject_request)
 celery_instance.register_task(process_uploaded_file)
 celery_instance.register_task(process_image_files)
 celery_instance.register_task(process_recording_webhook)
+celery_instance.register_task(process_assignment_generation)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
