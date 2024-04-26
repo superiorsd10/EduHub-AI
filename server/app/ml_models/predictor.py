@@ -30,6 +30,7 @@ def predict(features):
                     with the model.
     """
     try:
+        prediction = []
         for feature in features:
             while len(feature) < 5:
                 feature.insert(0, 10)
