@@ -789,3 +789,62 @@ def join_hub(invite_code):
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+
+
+@hub_blueprint.route("/api/<hub_id>/get-topics", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_topics(hub_id):
+    """
+    Fetches the topics associated with a hub.
+
+    This endpoint retrieves the topics associated with a hub identified by the provided hub ID.
+    It first checks if the topics data is available in the Redis cache.
+    If found, it returns the cached data.
+    If not found in the cache, it queries the database for the topics,
+    caches the result in Redis, and returns it.
+
+    Args:
+        hub_id (str): The base64-encoded ID of the hub whose topics are to be fetched.
+
+    Returns:
+        flask.Response: A JSON response containing the topics data.
+            If successful, the response contains the topics data and a success message.
+            If the hub or topics data is not found, the response contains
+            an error message and a failure status code.
+
+    """
+    try:
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+        redis_client = current_app.redis_client
+        hub_topics_key = f"hub_topics_hub_id_{hub_object_id}"
+        topics_data = redis_client.get(hub_topics_key)
+
+        if topics_data:
+            return (
+                jsonify({"message": jsonify(topics_data), "success": True}),
+                StatusCode.SUCCESS.value,
+            )
+
+        topics = Hub.objects(id=hub_object_id).only("topics").first()
+
+        if topics:
+            topics_data = topics.to_mongo().to_dict()
+            json_topics_data = json.dumps(topics_data)
+            redis_client.set(hub_topics_key, json_topics_data)
+            return (
+                jsonify({"message": jsonify(topics_data), "success": True}),
+                StatusCode.SUCCESS.value,
+            )
+
+        return (
+            jsonify({"error": "Recording not found", "success": False}),
+            StatusCode.NOT_FOUND.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
