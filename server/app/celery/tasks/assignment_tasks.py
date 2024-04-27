@@ -79,7 +79,7 @@ def generate_assignment_llama(
         The assigment format is going to be:
         Topics (h1 heading)
         Question Type (h3 heading)
-        Questions
+        Questions (mentioning the number of points with each question at the end)
 
         Questions should follow a numbered ordered list.
 
