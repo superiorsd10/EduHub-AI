@@ -73,6 +73,16 @@ def generate_assignment_llama(
 
         When generating the assignment, please format it in Markdown and use LaTeX equations for any mathematical equations.
 
+        If any question includes a diagram, write mermaid code for it inside markdown
+        code blocks specifying the mermaid language.
+
+        The assigment format is going to be:
+        Topics (h1 heading)
+        Question Type (h3 heading)
+        Questions
+
+        Questions should follow a numbered ordered list.
+
         Create a comprehensive and challenging assignment that assesses the student's understanding of the topics. Ensure the questions are clear, concise, and relevant to the topics.
         """
 
