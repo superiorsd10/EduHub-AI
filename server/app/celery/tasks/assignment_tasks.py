@@ -21,6 +21,74 @@ from dotenv import load_dotenv
 import requests
 
 
+def generate_response_llama(
+    system_prompt: str,
+    user_prompt: str,
+) -> str:
+    """
+    Generate a response using the Meta-Llama-3-70B-Instruct model.
+
+    This function sends a request to the Llama API to generate a response based on
+    the provided system and user prompts using the Meta-Llama-3-70B-Instruct model.
+
+    Args:
+        system_prompt (str): The system prompt to provide context for the response.
+        user_prompt (str): The user prompt to generate a response for.
+
+    Returns:
+        str: The generated response based on the provided prompts.
+
+    Raises:
+        Exception: If an error occurs during the request or response processing.
+
+    Note:
+        Ensure that the LLAMA_AUTH_HEADER environment variable is properly configured
+        with the authorization header required to access the Llama API.
+
+        The 'model' parameter in llama_data specifies the model to use for generating
+        the response. Adjust it accordingly if a different model is desired.
+
+        The 'stream', 'penalty', and 'max_tokens' parameters control various aspects
+        of the response generation process. Modify them as needed based on specific
+        requirements or performance considerations.
+    """
+    try:
+        load_dotenv()
+
+        llama_data = {
+            "temperature": 0.8,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "model": "rohan/Meta-Llama-3-70B-Instruct",
+            "stream": False,
+            "penalty": 0,
+            "max_tokens": 900,
+        }
+
+        llama_auth_header = os.environ.get("LLAMA_AUTH_HEADER")
+        llama_url = "https://proxy.tune.app/chat/completions"
+        llama_headers = {
+            "Authorization": llama_auth_header,
+            "Content-Type": "application/json",
+        }
+
+        response = requests.post(
+            llama_url,
+            headers=llama_headers,
+            json=llama_data,
+        )
+
+        response_json = response.json()
+        response_content = response_json["choices"][0]["message"]["content"]
+        return response_content
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
 def generate_assignment_llama(
     title: str,
     topics_string: str,
@@ -59,8 +127,6 @@ def generate_assignment_llama(
 
     """
     try:
-        load_dotenv()
-
         user_prompt = f"""
         Generate a comprehensive assignment in Markdown format with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
 
@@ -86,34 +152,9 @@ def generate_assignment_llama(
         Create a comprehensive and challenging assignment that assesses the student's understanding of the topics. Ensure the questions are clear, concise, and relevant to the topics.
         """
 
-        llama_data = {
-            "temperature": 0.8,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "model": "rohan/Meta-Llama-3-70B-Instruct",
-            "stream": False,
-            "penalty": 0,
-            "max_tokens": 900,
-        }
-
-        llama_auth_header = os.environ.get("LLAMA_AUTH_HEADER")
-        llama_url = "https://proxy.tune.app/chat/completions"
-        llama_headers = {
-            "Authorization": llama_auth_header,
-            "Content-Type": "application/json",
-        }
-
-        response = requests.post(
-            llama_url,
-            headers=llama_headers,
-            json=llama_data,
+        generated_assignment_string = generate_response_llama(
+            system_prompt, user_prompt
         )
-
-        response_json = response.json()
-        generated_assignment_string = response_json["choices"][0]["message"]["content"]
-
         return difficulty, generated_assignment_string
 
     except Exception as error:
@@ -147,8 +188,6 @@ def modify_assignment_llama(
 
     """
     try:
-        load_dotenv()
-
         system_prompt = """
         Modify the existing assignment to incorporate the user's requested changes.
 
@@ -169,34 +208,8 @@ def modify_assignment_llama(
         maintaining the overall format and {assignment_difficulty} assignment difficulty level.
         """
 
-        llama_data = {
-            "temperature": 0.8,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "model": "rohan/Meta-Llama-3-70B-Instruct",
-            "stream": False,
-            "penalty": 0,
-            "max_tokens": 900,
-        }
-
-        llama_auth_header = os.environ.get("LLAMA_AUTH_HEADER")
-        llama_url = "https://proxy.tune.app/chat/completions"
-        llama_headers = {
-            "Authorization": llama_auth_header,
-            "Content-Type": "application/json",
-        }
-
-        response = requests.post(
-            llama_url,
-            headers=llama_headers,
-            json=llama_data,
-        )
-
-        response_json = response.json()
-        generated_assignment_string = response_json["choices"][0]["message"]["content"]
-        return generated_assignment_string
+        modified_assignment_string = generate_response_llama(system_prompt, user_prompt)
+        return modified_assignment_string
 
     except Exception as error:
         print(f"error: {error}")
