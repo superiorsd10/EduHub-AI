@@ -2,14 +2,15 @@
 Module containing the Assignment model for the application.
 """
 
+from datetime import datetime
 from mongoengine import (
     Document,
     StringField,
     DateTimeField,
-    URLField,
     IntField,
     ObjectIdField,
     ListField,
+    BooleanField,
 )
 
 
@@ -22,7 +23,6 @@ class Assignment(Document):
     - title: StringField, required
     - difficulty: StringField, choices=("easy", "medium", "hard"), default="medium"
     - instructions: StringField
-    - attachments_url: URLField
     - total_points: IntField
     - question = StringField, required
     - answer = StringField
@@ -43,14 +43,16 @@ class Assignment(Document):
     title = StringField(required=True)
     difficulty = StringField(choices=("easy", "medium", "hard"), default="medium")
     instructions = StringField()
-    attachments_url = URLField()
     total_points = IntField()
     question = StringField(required=True)
     answer = StringField()
     question_points = ListField(field=IntField())
     due_datetime = DateTimeField()
     topic = StringField()
-    created_at = DateTimeField()
+    automatic_grading_enabled = BooleanField()
+    automatic_feedback_enabled = BooleanField()
+    plagiarism_checker_enabled = BooleanField()
+    created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
     meta = {
         "collection": "assignments",
