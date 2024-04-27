@@ -17,23 +17,42 @@ from mongoengine import (
     MapField,
 )
 
+from mongoengine.base import BaseField
 
-def remove_duplicates(value):
+
+class SetField(BaseField):
     """
-    Remove duplicate elements from a list.
+    A custom field to represent a set that allows duplicate values during insertion."""
 
-    This function takes a list as input and returns a new list containing only unique elements.
-    It achieves this by converting the input list to a set, which automatically removes duplicate
-    elements due to the set's unique property, and then converting the set back to a list.
+    def __init__(self, field=None, **kwargs):
+        """
+        Initializes the field
+        """
+        self.field = field or ListField(field=str)
+        super().__init__(**kwargs)
 
-    Args:
-        value (list): The list from which duplicate elements should be removed.
+    def to_python(self, value):
+        """
+        Converts the value to a Python set during retrieval.
+        """
+        if value is None:
+            return set()
+        return set(value)
 
-    Returns:
-        list: A new list containing only unique elements from the input list.
+    def to_mongo(self, value):
+        """
+        Converts the value to a list during storage.
+        """
+        if not isinstance(value, (set, list, tuple)):
+            self.error("Value must be a set, list, or tuple.")
+        return list(value)
 
-    """
-    return list(set(value))
+    def validate(self, value):
+        """
+        Performs validation on the value.
+        """
+        if not isinstance(value, (set, list, tuple)):
+            self.error("Value must be a set, list, or tuple.")
 
 
 class Recording(EmbeddedDocument):
@@ -185,7 +204,7 @@ class Hub(Document):
     name = StringField(required=True, max_length=100, min_length=1)
     section = StringField()
     description = StringField(max_length=280)
-    topics = ListField(StringField(), validation=remove_duplicates)
+    topics = SetField()
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
