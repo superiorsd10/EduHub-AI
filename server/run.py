@@ -23,6 +23,7 @@ from app.celery.tasks.recording_tasks import (
 from app.celery.tasks.assignment_tasks import (
     process_assignment_generation,
     process_assignment_changes,
+    process_create_assignment_using_ai,
 )
 
 
@@ -46,6 +47,7 @@ celery_instance.register_task(process_image_files)
 celery_instance.register_task(process_recording_webhook)
 celery_instance.register_task(process_assignment_generation)
 celery_instance.register_task(process_assignment_changes)
+celery_instance.register_task(process_create_assignment_using_ai)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
