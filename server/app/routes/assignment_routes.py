@@ -90,6 +90,37 @@ class MakeChangesToAssignmentSchema(Schema):
     assignment_difficulty = fields.String(required=True)
 
 
+class CreateAssignmentUsingAISchema(Schema):
+    """
+    Schema for validating data when creating an assignment using AI.
+
+    Attributes:
+        hub_id (str): The ID of the hub where the assignment is created.
+        title (str): The title of the assignment.
+        instructions (str, optional): Instructions for the assignment.
+        total_points (int, optional): Total points for the assignment.
+        question_points (list of int, optional): List of points for each question.
+        due_datetime (datetime, optional): Due date and time for the assignment.
+        topic (str, optional): Topic of the assignment.
+        automatic_grading_enabled (bool, optional): Flag indicating if automatic grading is enabled.
+        automatic_feedback_enabled (bool, optional): Flag indicating if automatic feedback is
+        enabled.
+        plagiarism_checker_enabled (bool, optional): Flag indicating if plagiarism checker is
+        enabled.
+    """
+
+    hub_id = fields.String(required=True)
+    title = fields.String(required=True)
+    instructions = fields.String()
+    total_points = fields.Integer()
+    question_points = fields.List(fields.Integer())
+    due_datetime = fields.DateTime()
+    topic = fields.String()
+    automatic_grading_enabled = fields.Boolean()
+    automatic_feedback_enabled = fields.Boolean()
+    plagiarism_checker_enabled = fields.Boolean()
+
+
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     """
     Decodes a base64 encoded string and converts it to an ObjectId.
