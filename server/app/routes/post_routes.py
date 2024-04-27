@@ -244,10 +244,10 @@ def create_post(hub_id):
             created_at=datetime.now().replace(microsecond=0),
         )
 
-        Hub.objects(id=hub_object_id).update_one(
-            push__posts=post,
-            push__topics=data.get("topic"),
-        )
+        Hub.objects(id=hub_object_id).update_one(push__posts=post)
+
+        if data.get("type") == "material":
+            Hub.objects(id=hub_object_id).update_one(push__topics=data.get("topic"))
 
         cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
         cache_introductory_key = f"hub_{hub_object_id}_introductory"
