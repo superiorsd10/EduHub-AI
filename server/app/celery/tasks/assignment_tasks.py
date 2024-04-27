@@ -12,10 +12,15 @@ Functions:
     - process_assignment_generation: Processes assignment generation tasks asynchronously.
 """
 
+import base64
+from datetime import datetime
 import os
 import json
 from typing import List
 from app.celery.celery import celery_instance
+from app.models.assignment import Assignment
+from app.models.hub import Hub, Assignment as EmbeddedAssignment
+from bson import ObjectId
 from config.config import Config
 from dotenv import load_dotenv
 import requests
@@ -275,6 +280,22 @@ def generate_assignment_answer_llama(assignment: str) -> str:
         raise
 
 
+def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
+    """
+    Decodes a base64 encoded string and converts it to an ObjectId.
+
+    Args:
+        base64_encoded (str): The base64 encoded string to decode.
+
+    Returns:
+        ObjectId: The decoded ObjectId.
+    """
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
+    object_id = ObjectId(hex_string)
+    return object_id
+
+
 @celery_instance.task(soft_time_limit=120, time_limit=180)
 def process_assignment_generation(
     title: str,
@@ -416,6 +437,108 @@ def process_assignment_changes(
         else:
             print("Assignment data not found!")
 
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
+@celery_instance.task(soft_time_limit=120, time_limit=180)
+def process_create_assignment_using_ai(
+    generate_assignment_id: str,
+    hub_id: str,
+    title: str,
+    instructions: str,
+    total_points: int,
+    question_points: List,
+    due_datetime: datetime,
+    topic: str,
+    automatic_grading_enabled: bool,
+    automatic_feedback_enabled: bool,
+    plagiarism_checker_enabled: bool,
+) -> None:
+    """
+    Process to create assignments using an AI model.
+
+    Args:
+        generate_assignment_id (str): The ID associated with generating the assignment.
+        hub_id (str): The ID of the hub where the assignment will be created.
+        title (str): The title of the assignment.
+        instructions (str): The instructions for the assignment.
+        total_points (int): The total points of the assignment.
+        question_points (List): The points associated with each question in the assignment.
+        due_datetime (datetime): The due date and time for the assignment.
+        topic (str): The topic of the assignment.
+        automatic_grading_enabled (bool): Indicates whether automatic grading is enabled.
+        automatic_feedback_enabled (bool): Indicates whether automatic feedback is enabled.
+        plagiarism_checker_enabled (bool): Indicates whether plagiarism checker is enabled.
+
+    Returns:
+        None: This function does not return anything.
+
+    Raises:
+        Exception: If any error occurs during the execution of the task.
+
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+        generate_assignment_key = f"generate_assignment_id_{generate_assignment_id}"
+        assignments_dict_data = redis_client.get(generate_assignment_key)
+
+        if assignments_dict_data:
+            assignments_dict = json.loads(assignments_dict_data)
+            embedded_assignment_dict = {}
+            hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+            for difficulty_level, assignment in assignments_dict.items():
+                assignment_answer = generate_assignment_answer_llama(assignment)
+
+                new_assignment = Assignment(
+                    hub_id=hub_object_id,
+                    title=title,
+                    difficulty=difficulty_level,
+                    instructions=instructions,
+                    total_points=total_points,
+                    question=assignment,
+                    answer=assignment_answer,
+                    question_points=question_points,
+                    due_datetime=due_datetime,
+                    topic=topic,
+                    automatic_grading_enabled=automatic_grading_enabled,
+                    automatic_feedback_enabled=automatic_feedback_enabled,
+                    plagiarism_checker_enabled=plagiarism_checker_enabled,
+                )
+                new_assignment.save()
+                Hub.objects(id=hub_object_id).update_one(push__topics=topic)
+
+                embedded_assignment = EmbeddedAssignment(
+                    assignment_id=new_assignment.id,
+                    title=title,
+                    total_points=total_points,
+                    topic=topic,
+                    due_datetime=due_datetime,
+                )
+                embedded_assignment_dict[difficulty_level] = embedded_assignment
+
+            Hub.objects(id=hub_object_id).update_one(
+                push__assignments=embedded_assignment_dict
+            )
+
+            cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+            redis_client.delete(cache_paginated_key)
+
+            # students_assignment_marks = (
+            #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
+            # )
+
+            # integrate ml model
+            predicted_difficulty_level = ["easy", "medium", "hard"]
+
+            Hub.objects(id=hub_id).update_one(
+                set__assignments_difficulty_level=predicted_difficulty_level
+            )
+
+        else:
+            print("Assignment data not found!")
     except Exception as error:
         print(f"error: {error}")
         raise
