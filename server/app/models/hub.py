@@ -15,6 +15,7 @@ from mongoengine import (
     IntField,
     DateTimeField,
     MapField,
+    FloatField,
 )
 
 from mongoengine.base import BaseField
@@ -221,6 +222,7 @@ class Hub(Document):
     quizzes = ListField(EmbeddedDocumentField(Quiz))
     assignments = ListField(MapField(EmbeddedDocumentField(Assignment)))
     assignments_difficulty_level = ListField(StringField())
+    students_assignment_marks = ListField(ListField(FloatField()))
     posts = ListField(EmbeddedDocumentField(Post))
     messages = ListField(EmbeddedDocumentField(Message))
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
