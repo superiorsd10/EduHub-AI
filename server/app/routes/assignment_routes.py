@@ -13,6 +13,7 @@ from app.models.hub import Hub
 from app.celery.tasks.assignment_tasks import (
     process_assignment_generation,
     process_assignment_changes,
+    process_create_assignment_using_ai,
 )
 from marshmallow import Schema, fields
 
@@ -276,6 +277,85 @@ def make_changes_to_assignment(generate_assignment_id):
             StatusCode.SUCCESS.value,
         )
 
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@assignment_blueprint.route(
+    "/api/<generate_assignment_id>/create-assignment-using-ai", methods=["POST"]
+)
+@limiter.limit("5 per minute")
+@firebase_token_required
+def create_assignment_using_ai(generate_assignment_id):
+    """
+    Create Assignment Using AI.
+
+    This endpoint creates an assignment using AI-assisted generation.
+    The function receives POST requests containing assignment data in JSON format
+    and processes them asynchronously.
+
+    Args:
+        generate_assignment_id (str): The unique identifier for generating the assignment.
+
+    Returns:
+        tuple: A tuple containing JSON response and HTTP status code.
+            The JSON response contains a message indicating whether the assignment creation
+            is in process and its success status.
+            The HTTP status code indicates the success or failure of the request.
+
+    Raises:
+        StatusCode.INTERNAL_SERVER_ERROR: If an unexpected error occurs during assignment creation.
+
+    """
+    try:
+        schema = CreateAssignmentUsingAISchema()
+        data = schema.load(request.get_json())
+
+        hub_id = data.get("hub_id")
+        title = data.get("title")
+        instructions = data.get("instructions")
+        total_points = data.get("total_points")
+        question_points = data.get("question_points")
+        due_datetime = data.get("due_datetime")
+        topic = data.get("topic")
+        automatic_grading_enabled = data.get("automatic_grading_enabled")
+        automatic_feedback_enabled = data.get("automatic_feedback_enabled")
+        plagiarism_checker_enabled = data.get("plagiarism_checker_enabled")
+
+        process_create_assignment_using_ai.apply_async(
+            args=[
+                generate_assignment_id,
+                hub_id,
+                title,
+                instructions,
+                total_points,
+                question_points,
+                due_datetime,
+                topic,
+                automatic_grading_enabled,
+                automatic_feedback_enabled,
+                plagiarism_checker_enabled,
+            ],
+            retry_policy={
+                "max_retries": 3,
+                "interval_start": 2,
+                "interval_step": 2,
+                "interval_max": 10,
+            },
+        )
+
+        return (
+            jsonify(
+                {
+                    "message": "Assignment creation in process",
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
