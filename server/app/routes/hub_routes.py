@@ -593,9 +593,9 @@ def get_hub(hub_id):
 
         result = list(Hub.objects.aggregate(pipeline))
 
-        paginated_data = json.dumps(["empty"])
+        paginated_data = b"[]"
 
-        if result != b'["empty"]':
+        if result:
             paginated_data = json.dumps(result, cls=DateTimeEncoder)
             redis_client.set(cache_paginated_key, paginated_data)
 
