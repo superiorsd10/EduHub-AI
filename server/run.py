@@ -20,7 +20,10 @@ from app.celery.tasks.recording_tasks import (
     process_image_files,
     process_recording_webhook,
 )
-from app.celery.tasks.assignment_tasks import process_assignment_generation
+from app.celery.tasks.assignment_tasks import (
+    process_assignment_generation,
+    process_assignment_changes,
+)
 
 
 app, celery_instance = create_app(Config)
@@ -42,6 +45,7 @@ celery_instance.register_task(process_uploaded_file)
 celery_instance.register_task(process_image_files)
 celery_instance.register_task(process_recording_webhook)
 celery_instance.register_task(process_assignment_generation)
+celery_instance.register_task(process_assignment_changes)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
