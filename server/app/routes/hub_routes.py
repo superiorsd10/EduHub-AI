@@ -531,8 +531,6 @@ def get_hub(hub_id):
 
         page = request.args.get("page", 1, type=int)
 
-        redis_client = current_app.redis_client
-
         cache_paginated_key = f"hub_{hub_id}_paginated_page_{page}"
         cache_introductory_key = f"hub_{hub_id}_introductory"
 
@@ -595,9 +593,11 @@ def get_hub(hub_id):
 
         result = list(Hub.objects.aggregate(pipeline))
 
-        paginated_data = json.dumps(result, cls=DateTimeEncoder)
+        paginated_data = json.dumps(["empty"])
 
-        redis_client.set(cache_paginated_key, paginated_data)
+        if result != b'["empty"]':
+            paginated_data = json.dumps(result, cls=DateTimeEncoder)
+            redis_client.set(cache_paginated_key, paginated_data)
 
         if page == 1:
             introductory_data = {}
@@ -626,7 +626,10 @@ def get_hub(hub_id):
 
                 introductory_data["_id"] = str(introductory_data.get("_id"))
 
-                introductory_data = json.dumps(introductory_data)
+                introductory_data = json.dumps(
+                    introductory_data,
+                    cls=DateTimeEncoder,
+                )
 
                 redis_client.set(
                     cache_introductory_key,
