@@ -216,6 +216,65 @@ def modify_assignment_llama(
         raise
 
 
+def generate_assignment_answer_llama(assignment: str) -> str:
+    """
+    Generate answers for assignment questions using the Meta-Llama-3-70B-Instruct model.
+
+    This function generates answers for assignment questions by providing system and user
+    prompts to the Meta-Llama-3-70B-Instruct model. The system prompt provides context
+    about the task, while the user prompt contains the assignment questions formatted in
+    markdown, latex, and mermaid (for diagrams). The generated answers maintain the same
+    formatting as the input questions.
+
+    Args:
+        assignment (str): The assignment questions formatted in markdown, latex, and mermaid.
+
+    Returns:
+        str: The generated answers to the assignment questions, maintaining the same format.
+
+    Raises:
+        Exception: If an error occurs during the response generation process.
+
+    Note:
+        Ensure that the generate_response_llama function is properly configured to handle
+        the system and user prompts and interact with the Meta-Llama-3-70B-Instruct model.
+        Adjust the system prompt and user prompt to provide appropriate context and input
+        for the response generation.
+
+        The assignment questions should be formatted correctly to ensure accurate responses.
+        The generated answers will maintain the same formatting as the input questions,
+        including markdown, latex, and mermaid syntax.
+    """
+    try:
+        system_prompt = """
+        This system is designed to assist with answering assignment questions.
+        The assignment questions are formatted in markdown, latex, and mermaid (for diagrams).
+        The system should provide clear and concise answers to each question.
+
+        For single correct choice type questions, provide the correct option with the answer.
+        For multiple correct choice type questions, provide all correct options with answers.
+        For numerical type questions, provide the correct answer without explanation.
+        For descriptive type questions, provide a detailed answer.
+        """
+
+        user_prompt = f"""
+        Please answer the following assignment questions:
+
+        {assignment}
+
+        Note: The assignment questions will be provided, and the system should respond
+        with the answers to each question in the format specified above maintaining
+        the markdown, latex and mermaid format.
+        """
+
+        assignment_answer = generate_response_llama(system_prompt, user_prompt)
+        return assignment_answer
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
 @celery_instance.task(soft_time_limit=120, time_limit=180)
 def process_assignment_generation(
     title: str,
