@@ -3,6 +3,7 @@ Assignment routes for the Flask application.
 """
 
 import base64
+import uuid
 from bson import ObjectId
 from flask import Blueprint, request, jsonify
 from app.auth.firebase_auth import firebase_token_required
@@ -121,9 +122,7 @@ def generate_assignment(hub_id):
         types_of_questions = data.get("types_of_questions")
 
         hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
-        print(hub_object_id)
         hub_data = Hub.objects(id=hub_object_id).first()
-        print(hub_data)
 
         if not hub_data:
             return (
@@ -132,7 +131,7 @@ def generate_assignment(hub_id):
             )
 
         assignments_count = len(hub_data.assignments)
-        print(assignments_count)
+        generate_assigment_id = str(uuid.uuid4())
 
         process_assignment_generation.apply_async(
             args=[
@@ -141,7 +140,7 @@ def generate_assignment(hub_id):
                 specific_topics,
                 instructions_for_ai,
                 types_of_questions,
-                hub_id,
+                generate_assigment_id,
                 assignments_count,
             ],
             retry_policy={
@@ -153,7 +152,12 @@ def generate_assignment(hub_id):
         )
 
         return (
-            jsonify({"message": "Generating the assignment", "success": True}),
+            jsonify(
+                {
+                    "message": f"Generate Assignment ID: {generate_assigment_id}",
+                    "success": True,
+                }
+            ),
             StatusCode.SUCCESS.value,
         )
 

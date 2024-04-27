@@ -9,16 +9,13 @@ using Celery.
 
 Functions:
     - generate_assignment_llama: Generates an assignment using the Llama AI model.
-    - decode_base64_to_objectid: Decodes a base64 encoded string to MongoDB ObjectId.
     - process_assignment_generation: Processes assignment generation tasks asynchronously.
 """
 
-import base64
 import os
 import json
 from typing import List
 from app.celery.celery import celery_instance
-from bson import ObjectId
 from config.config import Config
 from dotenv import load_dotenv
 import requests
@@ -114,22 +111,6 @@ def generate_assignment_llama(
         raise
 
 
-def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
-    """
-    Decodes a base64 encoded string and converts it to an ObjectId.
-
-    Args:
-        base64_encoded (str): The base64 encoded string to decode.
-
-    Returns:
-        ObjectId: The decoded ObjectId.
-    """
-    decoded_bytes = base64.b64decode(base64_encoded)
-    hex_string = decoded_bytes.decode("utf-8")
-    object_id = ObjectId(hex_string)
-    return object_id
-
-
 @celery_instance.task(soft_time_limit=120, time_limit=180)
 def process_assignment_generation(
     title: str,
@@ -137,7 +118,7 @@ def process_assignment_generation(
     specific_topics: str,
     instructions_for_ai: str,
     types_of_questions: dict,
-    hub_id: str,
+    generate_assignment_id: str,
     assignments_count: int,
 ) -> None:
     """
@@ -163,7 +144,6 @@ def process_assignment_generation(
     """
     try:
         assignments_dict = {}
-        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
 
         system_prompt = """
         Generate a Markdown-formatted assignment based on the provided variables.
@@ -216,10 +196,10 @@ def process_assignment_generation(
 
         if assignments_dict:
             redis_client = Config.REDIS_CLIENT
-            assignments_dict_key = f"assignment_dict_hub_id_{hub_object_id}"
+            generate_assignment_key = f"generate_assignment_id_{generate_assignment_id}"
             assignments_dict_data = json.dumps(assignments_dict)
-            redis_client.set(assignments_dict_key, assignments_dict_data)
-            redis_client.publish(assignments_dict_key, assignments_dict_data)
+            redis_client.set(generate_assignment_key, assignments_dict_data)
+            redis_client.publish(generate_assignment_key, assignments_dict_data)
         else:
             print("assignments_dict is None or empty, skipping Redis operations.")
 
