@@ -164,6 +164,17 @@ class CreateAssignmentManuallySchema(Schema):
     plagiarism_checker_enabled = fields.Boolean()
 
 
+class SubmitAssignmentSchema(Schema):
+    """Schema for validating submission of an assignment response.
+
+    Attributes:
+        response (fields.String): A string field representing the response to the assignment,
+            required for submission.
+    """
+
+    response = fields.String(required=True)
+
+
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     """
     Decodes a base64 encoded string and converts it to an ObjectId.
