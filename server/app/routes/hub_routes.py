@@ -741,3 +741,42 @@ def get_topics(hub_id):
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+
+
+@hub_blueprint.route("/api/<hub_id>/get-invitation-list", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_invitation_list(hub_id):
+    """Retrieve the invitation list for a hub.
+
+    Args:
+        hub_id (str): The base64 encoded ID of the hub.
+
+    Returns:
+        tuple: A tuple containing a JSON response with the invitation list and success status code.
+
+    Raises:
+        Exception: If an error occurs while retrieving the invitation list.
+    """
+    try:
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+        redis_client = current_app.redis_client
+        hub_invitation_list_key = f"hub_{hub_object_id}_invitation_list"
+        hub_invitation_list = redis_client.zrange(
+            hub_invitation_list_key, 0, -1, withscores=False
+        )
+        hub_invitation_list_decoded = [
+            item.decode("utf-8") for item in hub_invitation_list
+        ]
+
+        return (
+            jsonify({"message": hub_invitation_list_decoded, "success": True}),
+            StatusCode.SUCCESS.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
