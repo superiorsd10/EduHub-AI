@@ -235,7 +235,7 @@ def get_recording(hub_id, recording_id):
         if recording:
             recording_data = recording.recordings[0].to_mongo().to_dict()
             return (
-                jsonify({"message": jsonify(recording_data), "success": True}),
+                jsonify({"message": recording_data, "success": True}),
                 StatusCode.SUCCESS.value,
             )
 

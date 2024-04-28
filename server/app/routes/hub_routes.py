@@ -838,7 +838,7 @@ def get_topics(hub_id):
             json_topics_data = json.dumps(topics_data)
             redis_client.set(hub_topics_key, json_topics_data)
             return (
-                jsonify({"message": jsonify(topics_data), "success": True}),
+                jsonify({"message": topics_data, "success": True}),
                 StatusCode.SUCCESS.value,
             )
 
