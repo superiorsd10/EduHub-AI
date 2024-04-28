@@ -38,14 +38,15 @@ def handle_invite_sent(data):
 
         redis_client = current_app.redis_client
 
-        hub_invitation_list_key = f"hub_{str(hub_data.id)}_invitation_list"
+        hub_object_id = hub_data.id
+        hub_invitation_list_key = f"hub_{hub_object_id}_invitation_list"
         redis_client.rpush(hub_invitation_list_key, email)
 
         emit(
             "invite-sent-success",
             {
                 "message": "Invite sent successfully",
-                "hub_id": hub_data.id,
+                "hub_id": str(hub_object_id),
                 "email": email,
             },
         )
