@@ -107,7 +107,6 @@ def generate_assignment_llama(
     instructions_for_ai: str,
     types_of_questions_string: str,
     difficulty: str,
-    system_prompt: str,
 ) -> tuple:
     """
     Generate an assignment using the Llama AI model.
@@ -152,33 +151,33 @@ def generate_assignment_llama(
         You have to return assignment in JSON format. Follow these example:
 
         {
-        "title": "{title}",
-        "single-correct-questions": [
-            {
-            "question": "{question}",
-            "options": ["option1", "option2", "option3", "option4"],
-            "points": "{points}"
-            }
-        ],
-        "multiple-correct-questions": [
-            {
-            "question": "{question}",
-            "options": ["option1", "option2", "option3", "option4"],
-            "points": "{points}"
-            }
-        ],
-        "numerical-questions": [
-            {
-            "question": "{question}",
-            "points": "{points}"
-            }
-        ],
-        "descriptive-questions": [
-            {
-            "question": "{question}",
-            "points": "{points}"
-            }
-        ]
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ]
         }
 
         The {question} and {options} should be in the Markdown format and any mathematical equations in them should be in LaTeX format using Markdown.
@@ -304,23 +303,87 @@ def generate_assignment_answer_llama(assignment: str) -> str:
     try:
         system_prompt = """
         This system is designed to assist with answering assignment questions.
-        The assignment questions are formatted in markdown, latex, and mermaid (for diagrams).
+        The assignment questions are formatted in the below format:
+
+        {
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ]
+        }
+
         The system should provide clear and concise answers to each question.
 
-        For single correct choice type questions, provide the correct option with the answer.
-        For multiple correct choice type questions, provide all correct options with answers.
-        For numerical type questions, provide the correct answer without explanation.
-        For descriptive type questions, provide a detailed answer.
+        The format of the answer response should be as follows:
+
+        {
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}",
+                    "correct-option": "{correct-option}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}",
+                    "correct-options": ["option1", "option3", "option4"]
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}",
+                    "answer": "{answer}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}",
+                    "answer": "{answer}"
+                }
+            ]
+        }
+
+        The {question}, {options}, {answer}, {correct-option} and {correct-options} should be in the Markdown format and any mathematical equations in them should be in LaTeX format using Markdown.
+
+        If the {question} or {answer} contains any diagram then use Mermaid code in Markdown format and if it included any code block then use Markdown formatting.
+
+        Note that you have to append "JSON START" before beginning of JSON code block and "JSON END" after the end of JSON code block.
         """
 
         user_prompt = f"""
         Please answer the following assignment questions:
 
         {assignment}
-
-        Note: The assignment questions will be provided, and the system should respond
-        with the answers to each question in the format specified above maintaining
-        the markdown, latex and mermaid format.
         """
 
         assignment_answer = generate_response_llama(system_prompt, user_prompt)
@@ -381,21 +444,6 @@ def process_assignment_generation(
     try:
         assignments_dict = {}
 
-        system_prompt = """
-        Generate a Markdown-formatted assignment based on the provided variables.
-        The assignment should have a clear title, cover the specified topics,
-        and include a mix of question types with varying point values.
-
-        Follow the teacher's instructions and give special attention
-        to the specific topics.
-
-        Ensure the assignment is at the specified difficulty level
-        and format any mathematical equations using LaTeX in Markdown.
-
-        Create a comprehensive and challenging assignment that
-        assesses the student's understanding of the topics.
-        """
-
         topics_string = ", ".join(topics)
         types_of_questions_string = ", ".join(
             [
@@ -412,7 +460,6 @@ def process_assignment_generation(
                 instructions_for_ai=instructions_for_ai,
                 types_of_questions_string=types_of_questions_string,
                 difficulty="medium",
-                system_prompt=system_prompt,
             )
             assignments_dict[generated_assignment[0]] = generated_assignment[1]
 
@@ -426,7 +473,6 @@ def process_assignment_generation(
                     instructions_for_ai=instructions_for_ai,
                     types_of_questions_string=types_of_questions_string,
                     difficulty=difficulty_level,
-                    system_prompt=system_prompt,
                 )
                 assignments_dict[generated_assignment[0]] = generated_assignment[1]
 
