@@ -113,6 +113,7 @@ class Assignment(EmbeddedDocument):
     title = StringField(required=True)
     total_points = IntField()
     topic = StringField()
+    predicted_difficulty_level = ListField(StringField())
     due_datetime = DateTimeField()
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
@@ -221,7 +222,6 @@ class Hub(Document):
     recordings = ListField(EmbeddedDocumentField(Recording))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
     assignments = ListField(EmbeddedDocumentField(Assignment))
-    assignments_difficulty_level = ListField(StringField())
     students_assignment_marks = ListField(ListField(FloatField()))
     posts = ListField(EmbeddedDocumentField(Post))
     messages = ListField(EmbeddedDocumentField(Message))
