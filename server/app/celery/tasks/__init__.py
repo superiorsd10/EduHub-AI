@@ -16,4 +16,5 @@ from .assignment_tasks import (
     process_assignment_generation,
     process_assignment_changes,
     process_create_assignment_using_ai,
+    process_create_assignment_manually,
 )
