@@ -10,6 +10,7 @@ from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.core import limiter
 from app.models.hub import Hub
+from app.models.assignment import Assignment
 from app.celery.tasks.assignment_tasks import (
     process_assignment_generation,
     process_assignment_changes,
@@ -477,6 +478,172 @@ def create_assignment_manually(hub_id):
                 }
             ),
             StatusCode.SUCCESS.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@assignment_blueprint.route(
+    "/api/<hub_id>/get-assignment/<assignment_uuid>", methods=["GET"]
+)
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_assignment(hub_id, assignment_uuid):
+    """
+    Get Assignment.
+
+    This endpoint retrieves the assignment corresponding to the provided hub ID and assignment UUID.
+    It also checks the authorization of the requesting user based on their email and role in hub.
+
+    Args:
+        hub_id (str): The ID of the hub to which the assignment belongs.
+        assignment_uuid (str): The UUID of the assignment to retrieve.
+
+    Returns:
+        tuple: A tuple containing JSON response and HTTP status code.
+            The JSON response contains the retrieved assignment or an error message,
+            depending on the outcome of the request.
+            The HTTP status code indicates the success or failure of the request.
+
+    Raises:
+        StatusCode.NOT_FOUND: If the assignment or user is not found.
+        StatusCode.INTERNAL_SERVER_ERROR: If an unexpected error occurs during the process.
+
+    """
+    try:
+        email = request.args.get("email")
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+        pipeline = [
+            {"$match": {"_id": hub_object_id}},
+            {
+                "$addFields": {
+                    "member_position": {
+                        "$map": {
+                            "input": {"$objectToArray": "$members_id"},
+                            "as": "member",
+                            "in": {
+                                "key": "$$member.k",
+                                "value": {
+                                    "$map": {
+                                        "input": "$$member.v",
+                                        "as": "member_email",
+                                        "in": {
+                                            "$cond": [
+                                                {"$eq": ["$$member_email", email]},
+                                                {
+                                                    "$indexOfArray": [
+                                                        "$$member.v",
+                                                        "$$member_email",
+                                                    ]
+                                                },
+                                                -1,
+                                            ]
+                                        },
+                                    },
+                                    "member_index": {
+                                        "$indexOfArray": ["$$member.v", email]
+                                    },
+                                },
+                            },
+                        }
+                    }
+                }
+            },
+            {
+                "$unwind": {
+                    "path": "$assignments",
+                    "preserveNullAndEmptyArrays": True,
+                }
+            },
+            {
+                "$match": {
+                    "assignments.uuid": assignment_uuid,
+                }
+            },
+            {
+                "$replaceRoot": {
+                    "newRoot": {
+                        "assignment": "$assignments",
+                        "member_position": "$member_position",
+                    }
+                }
+            },
+        ]
+
+        results = list(Hub.objects.aggregate(pipeline))
+
+        if results:
+            result = results[0]
+            assignment = result["assignment"]
+            member_position = result["member_position"][0]
+
+            if not member_position:
+                return (
+                    jsonify({"error": "User not found", "success": False}),
+                    StatusCode.NOT_FOUND.value,
+                )
+
+            member_role = member_position["key"]
+            member_index = member_position["value"]
+
+            if member_role in ("teacher", "teaching_assistant"):
+                assignment_ids = assignment.assignment_ids
+                assignments = Assignment.objects(id__in=assignment_ids)
+
+                return (
+                    jsonify(
+                        {
+                            "message": jsonify(
+                                [assignment.to_mongo() for assignment in assignments]
+                            ),
+                            "success": True,
+                        }
+                    ),
+                    StatusCode.SUCCESS.value,
+                )
+
+            if member_role == "student":
+                predicted_difficulty_level = assignment.predicted_difficulty_level
+                difficulty_level = predicted_difficulty_level[member_index]
+                difficulty_mapping = {
+                    "easy": 0,
+                    "medium": 1,
+                    "hard": 2,
+                }
+                assignment_id = assignment_ids[difficulty_mapping[difficulty_level]]
+                retrieved_assignment = (
+                    Assignment.objects(id=assignment_id).first().to_mongo()
+                )
+
+                if retrieved_assignment:
+                    return (
+                        jsonify(
+                            {
+                                "message": jsonify(retrieved_assignment),
+                                "success": True,
+                            }
+                        ),
+                        StatusCode.SUCCESS.value,
+                    )
+
+                return (
+                    jsonify({"error": "Assignment not found", "success": False}),
+                    StatusCode.NOT_FOUND.value,
+                )
+
+            return (
+                jsonify({"error": "User not found", "success": False}),
+                StatusCode.NOT_FOUND.value,
+            )
+
+        return (
+            jsonify({"error": "Hub not found", "success": False}),
+            StatusCode.NOT_FOUND.value,
         )
 
     except Exception as error:
