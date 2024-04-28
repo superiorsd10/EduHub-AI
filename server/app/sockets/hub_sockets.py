@@ -6,8 +6,6 @@ from flask import current_app
 from flask_socketio import emit
 from app.app import socketio
 from app.models.hub import Hub
-from bson.objectid import ObjectId
-from app.models.user import User
 
 
 @socketio.on("invite-sent")
@@ -78,16 +76,9 @@ def handle_accept_request(data):
         email = data.get("email")
         hub_id = data.get("hub_id")
 
-        user_cache_key = f"user:{email}"
+        Hub.objects(id=hub_id).update_one(push__members_email__student=email)
+
         redis_client = current_app.redis_client
-        user_object_id = redis_client.hget(user_cache_key, "user_object_id")
-        user_object_id = ObjectId(user_object_id.decode("utf-8"))
-
-        user = User.objects(id=user_object_id).first()
-        user_id = user.id
-
-        Hub.objects(id=hub_id).update_one(push__members_id__student=user_id)
-
         hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
         redis_client.lrem(hub_invitation_list_key, 0, email)
 
