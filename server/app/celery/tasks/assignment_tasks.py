@@ -511,17 +511,17 @@ def process_create_assignment_using_ai(
 
                 assignments_to_save.append(new_assignment)
 
-            saved_assignments_ids = Assignment.objects.insert(
-                assignments_to_save,
-                load_bulk=False,
-            )
-
             # students_assignment_marks = (
             #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
             # )
 
             # integrate ml model
             predicted_difficulty_level = ["easy", "medium", "hard"]
+
+            saved_assignments_ids = Assignment.objects.insert(
+                assignments_to_save,
+                load_bulk=False,
+            )
 
             embedded_assignment = EmbeddedAssignment(
                 uuid=str(uuid.uuid4()),
