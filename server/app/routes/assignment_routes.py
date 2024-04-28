@@ -122,6 +122,41 @@ class CreateAssignmentUsingAISchema(Schema):
     plagiarism_checker_enabled = fields.Boolean()
 
 
+class CreateAssignmentManuallySchema(Schema):
+    """
+    Schema for validating and deserializing data when creating an assignment manually.
+
+    Attributes:
+        title (str): The title of the assignment. Required.
+        instructions (str, optional): Instructions for the assignment.
+        total_points (int, optional): Total points for the assignment.
+        question_points (List[int], optional): List of points for each question.
+        due_datetime (datetime, optional): Due date and time for the assignment.
+        topic (str, optional): Topic of the assignment.
+        questions (str, optional): The questions for the assignment.
+        answers (str, optional): The answers to the questions.
+        automatic_grading_enabled (bool, optional): Indicates if automatic grading is enabled.
+        automatic_feedback_enabled (bool, optional): Indicates if automatic feedback is enabled.
+        plagiarism_checker_enabled (bool, optional): Indicates if plagiarism checker is enabled.
+
+    Raises:
+        ValidationError: If validation fails for any of the attributes.
+
+    """
+
+    title = fields.String(required=True)
+    instructions = fields.String()
+    total_points = fields.Integer()
+    question_points = fields.List(fields.Integer())
+    due_datetime = fields.DateTime()
+    topic = fields.String()
+    questions = fields.String()
+    answers = fields.String()
+    automatic_grading_enabled = fields.Boolean()
+    automatic_feedback_enabled = fields.Boolean()
+    plagiarism_checker_enabled = fields.Boolean()
+
+
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     """
     Decodes a base64 encoded string and converts it to an ObjectId.
