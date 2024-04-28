@@ -133,8 +133,61 @@ def generate_assignment_llama(
 
     """
     try:
+        system_prompt = """
+        Generate a JSON-formatted assignment based on the provided variables.
+        The assignment should have a clear title, cover the specified topics,
+        and include a mix of question types with varying point values.
+
+        Follow the teacher's instructions and give special attention
+        to the specific topics.
+
+        Ensure the assignment is at the specified difficulty level
+        and format any mathematical equations using LaTeX in Markdown.
+
+        You have to return assignment in JSON format. Follow these example:
+
+        {
+        "title": "{title}",
+        "single-correct-questions": [
+            {
+            "question": "{question}",
+            "options": ["option1", "option2", "option3", "option4"],
+            "points": "{points}"
+            }
+        ],
+        "multiple-correct-questions": [
+            {
+            "question": "{question}",
+            "options": ["option1", "option2", "option3", "option4"],
+            "points": "{points}"
+            }
+        ],
+        "numerical-questions": [
+            {
+            "question": "{question}",
+            "points": "{points}"
+            }
+        ],
+        "descriptive-questions": [
+            {
+            "question": "{question}",
+            "points": "{points}"
+            }
+        ]
+        }
+
+        The {question} and {options} should be in the Markdown format and any mathematical equations in them should be in LaTeX format using Markdown.
+
+        If the {question} contains any diagram then use Mermaid code in Markdown format and if it included any code block then use Markdown formatting.
+
+        Note that you have to append "JSON START" before beginning of JSON code block and "JSON END" after the end of JSON code block.
+
+        Create a comprehensive and challenging assignment that
+        assesses the student's understanding of the topics.
+        """
+
         user_prompt = f"""
-        Generate a comprehensive assignment in Markdown format with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
+        Generate a comprehensive assignment with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
 
         Follow the special instructions provided by the teacher: {"no special instruction is given by teacher" if instructions_for_ai is None else instructions_for_ai}.
 
@@ -142,18 +195,6 @@ def generate_assignment_llama(
         {types_of_questions_string}
 
         Ensure the assignment is at {difficulty} difficulty level.
-
-        When generating the assignment, please format it in Markdown and use LaTeX equations for any mathematical equations.
-
-        If any question includes a diagram, write mermaid code for it inside markdown
-        code blocks specifying the mermaid language.
-
-        The assigment format is going to be:
-        Topics (h1 heading)
-        Question Type (h3 heading)
-        Questions (mentioning the number of points with each question at the end)
-
-        Questions should follow a numbered ordered list.
 
         Create a comprehensive and challenging assignment that assesses the student's understanding of the topics. Ensure the questions are clear, concise, and relevant to the topics.
         """
@@ -201,6 +242,8 @@ def modify_assignment_llama(
 
         Maintain the whole assignment format and difficulty as well as before.
         Just make changes in the questions as per user's instructions.
+        Make sure to maintain the JSON format and update the changes in the value of
+        the particular keys to be updated according to user's instructions.
         """
 
         user_prompt = f"""
