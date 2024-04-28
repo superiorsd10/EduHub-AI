@@ -111,7 +111,6 @@ class CreateAssignmentUsingAISchema(Schema):
         enabled.
     """
 
-    hub_id = fields.String(required=True)
     title = fields.String(required=True)
     instructions = fields.String()
     total_points = fields.Integer()
@@ -327,11 +326,12 @@ def make_changes_to_assignment(generate_assignment_id):
 
 
 @assignment_blueprint.route(
-    "/api/<generate_assignment_id>/create-assignment-using-ai", methods=["POST"]
+    "/api/<hub_id>/create-assignment-using-ai/<generate_assignment_id>",
+    methods=["POST"],
 )
 @limiter.limit("5 per minute")
 @firebase_token_required
-def create_assignment_using_ai(generate_assignment_id):
+def create_assignment_using_ai(hub_id, generate_assignment_id):
     """
     Create Assignment Using AI.
 
@@ -356,7 +356,6 @@ def create_assignment_using_ai(generate_assignment_id):
         schema = CreateAssignmentUsingAISchema()
         data = schema.load(request.get_json())
 
-        hub_id = data.get("hub_id")
         title = data.get("title")
         instructions = data.get("instructions")
         total_points = data.get("total_points")
