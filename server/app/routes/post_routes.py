@@ -311,7 +311,7 @@ def get_post(hub_id, post_id):
         if post:
             post_data = post.posts[0].to_mongo().to_dict()
             return (
-                jsonify({"message": jsonify(post_data), "success": True}),
+                jsonify({"message": post_data, "success": True}),
                 StatusCode.SUCCESS.value,
             )
         return (
