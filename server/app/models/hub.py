@@ -14,7 +14,6 @@ from mongoengine import (
     URLField,
     IntField,
     DateTimeField,
-    MapField,
     FloatField,
 )
 
@@ -109,7 +108,8 @@ class Assignment(EmbeddedDocument):
     - due_datetime: DateTimeField
     """
 
-    assignment_id = ObjectIdField(required=True)
+    uuid = StringField()
+    assignment_ids = ListField(ObjectIdField())
     title = StringField(required=True)
     total_points = IntField()
     topic = StringField()
@@ -220,7 +220,7 @@ class Hub(Document):
     room_code_ta = StringField()
     recordings = ListField(EmbeddedDocumentField(Recording))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
-    assignments = ListField(MapField(EmbeddedDocumentField(Assignment)))
+    assignments = ListField(EmbeddedDocumentField(Assignment))
     assignments_difficulty_level = ListField(StringField())
     students_assignment_marks = ListField(ListField(FloatField()))
     posts = ListField(EmbeddedDocumentField(Post))
