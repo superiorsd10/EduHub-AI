@@ -16,6 +16,7 @@ import base64
 from datetime import datetime
 import os
 import json
+import re
 from typing import List
 import uuid
 from app.celery.celery import celery_instance
@@ -88,7 +89,11 @@ def generate_response_llama(
 
         response_json = response.json()
         response_content = response_json["choices"][0]["message"]["content"]
-        return response_content
+        response_content_json = re.search(
+            r"JSON START\n(.*?)JSON END", response_content, re.DOTALL
+        ).group(1)
+
+        return response_content_json if response_content_json else response_content
 
     except Exception as error:
         print(f"error: {error}")
@@ -244,6 +249,8 @@ def modify_assignment_llama(
         Just make changes in the questions as per user's instructions.
         Make sure to maintain the JSON format and update the changes in the value of
         the particular keys to be updated according to user's instructions.
+        Also keep the "JSON START" and "JSON END" at the beginning and ending of
+        JSON code block respectively.
         """
 
         user_prompt = f"""
