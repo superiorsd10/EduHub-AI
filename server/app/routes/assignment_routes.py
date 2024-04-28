@@ -662,3 +662,51 @@ def get_assignment(hub_id, assignment_uuid):
             jsonify({"error": str(error), "success": False}),
             StatusCode.INTERNAL_SERVER_ERROR.value,
         )
+
+
+@assignment_blueprint.route("/api/submit-assignment/<assignment_id>", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def submit_assignment(assignment_id):
+    """Submit a response to an assignment.
+
+    This endpoint allows users to submit their responses to a specific assignment.
+
+    Args:
+        assignment_id (str): The base64 encoded ID of the assignment.
+
+    Returns:
+        tuple: A tuple containing a JSON response indicating the status of the submission
+        and a corresponding HTTP status code.
+
+    Raises:
+        Exception: If an error occurs during the submission process.
+    """
+    try:
+        schema = SubmitAssignmentSchema()
+        data = schema.load(request.get_json())
+
+        email = request.args.get("email")
+        response = data.get("email")
+
+        assignment_object_id = decode_base64_to_objectid(base64_encoded=assignment_id)
+
+        Assignment.objects(id=assignment_object_id).update_one(
+            push__responses={email: response}
+        )
+
+        return (
+            jsonify(
+                {
+                    "message": "Response submitted successfully",
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
