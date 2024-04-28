@@ -58,7 +58,7 @@ def create_app(config=None):
 
     sess.init_app(app)
 
-    socketio.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
 
     app.config["S3_CLIENT"] = boto3.client(
         "s3",
