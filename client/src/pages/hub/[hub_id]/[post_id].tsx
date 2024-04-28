@@ -25,8 +25,8 @@ const post = () => {
       const resp = await fetch(
         `http://127.0.0.1:5000/api/${base64hub_id}/get-post/${post_id}`
       );
-      const data = await resp.json();
-      console.log(data);
+      let data = await resp.json();
+      data = data.message
       setPostData({
         title: data.title,
         topic: data.topic,

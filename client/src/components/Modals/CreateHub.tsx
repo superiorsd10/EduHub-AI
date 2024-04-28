@@ -54,7 +54,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           hub_name: hubName,
           section: section,
           description: description,
-          email: "nikhilranjan1103@gmail.com",
+          email: "check@check.check",
           room_code_teacher: room_code_teacher,
           room_code_ta: room_code_ta,
           room_code_student: room_code_student,

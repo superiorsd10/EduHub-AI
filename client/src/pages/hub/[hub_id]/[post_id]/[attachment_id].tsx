@@ -16,11 +16,9 @@ const post = () => {
   const [postData, setPostData] = useState<PostType>();
   const router = useRouter();
   const hub_id = router.query.hub_id as string;
+  const base64hub_id = btoa(hub_id);
   const post_id = router.query.post_id as string;
   const attachment_id = router.query.attachment_id as string;
-  console.log("attachment id... ")
-  console.log(attachment_id);
-  const base64hub_id = btoa(hub_id);
 
   useEffect(() => {
     const getPost = async () => {
@@ -28,7 +26,8 @@ const post = () => {
       const resp = await fetch(
         `http://127.0.0.1:5000/api/${base64hub_id}/get-post/${post_id}`
       );
-      const data = await resp.json();
+      let data = await resp.json();
+      data = data.message;
       setPostData({
         title: data.title,
         topic: data.topic,
@@ -66,7 +65,7 @@ const post = () => {
                 style={{ border: "1px solid #868E96", borderRadius: "10px" }}
                 w="15vw"
                 h="6vh"
-                onClick={() => router.push(`http://localhost:3000/chat`)}
+                onClick={() => router.push(`http://localhost:3000/chat/${hub_id}/${attachment_id}`)}
               ></Box>
             </Stack>
           )}

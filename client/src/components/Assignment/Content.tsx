@@ -102,7 +102,6 @@ const Content = () => {
           bg="black"
           onClick={() => {
             setIsPreviewAssignmentVisible(true)
-            console.log("ff")
           }}
         >
           Preview

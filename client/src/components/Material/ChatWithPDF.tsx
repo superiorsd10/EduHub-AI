@@ -20,7 +20,7 @@ type Chat = {
   message: string;
 };
 
-const ChatWithPDF = () => {
+const ChatWithPDF = ({attachmentId}:{attachmentId:string}) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [chats, setChats] = useState<Chat[]>([]);
@@ -39,13 +39,13 @@ const ChatWithPDF = () => {
   const [currentMessage, setCurrentMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const savedChats = localStorage.getItem("chats");
-    if (savedChats) {
-      setChats(JSON.parse(savedChats));
-      scrollToBottom();
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedChats = localStorage.getItem("chats");
+  //   if (savedChats) {
+  //     setChats(JSON.parse(savedChats));
+  //     scrollToBottom();
+  //   }
+  // }, []);
 
   const handleMessageSend = async () => {
     let msg = currentMessage;
@@ -63,7 +63,7 @@ const ChatWithPDF = () => {
     setCurrentMessage("");
     setIsLoading(true);
     const response = await fetch(
-      "http://127.0.0.1:5000/api/chat-with-material/90b9d96d-7beb-4fe7-9830-66a693c22de8",
+      `http://127.0.0.1:5000/api/chat-with-material/${attachmentId}`,
       {
         method: "POST",
         headers: {
@@ -76,6 +76,7 @@ const ChatWithPDF = () => {
       }
     );
     const body = await response.json();
+    console.log(body);
     const respmsg = body.message;
     setChats((prevChats: any) => {
       const newChats = [

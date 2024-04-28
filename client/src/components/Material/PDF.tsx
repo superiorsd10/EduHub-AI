@@ -11,7 +11,12 @@ import { RenderZoomProps } from "@react-pdf-viewer/zoom";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
 import "@react-pdf-viewer/toolbar/lib/styles/index.css";
 
-const PDF = ({pdfUrl,attachment_id}:{pdfUrl?:string,attachment_id?:string}) => {
+const PDF = ({hubId,attachmentId}:{hubId:string,attachmentId:string}) => {
+  const base64hub_id = btoa(hubId);
+  const unique_filename = attachmentId + ".pdf";
+  const file_key = `posts/${base64hub_id}/${unique_filename}`;
+  const file_url = `https://d2zvmtskygrsot.cloudfront.net/${file_key}`;
+
   const toolbarPluginInstance = toolbarPlugin();
   const zoomPluginInstance = zoomPlugin();
 
@@ -32,7 +37,7 @@ const PDF = ({pdfUrl,attachment_id}:{pdfUrl?:string,attachment_id?:string}) => {
           <Stack h="93vh">
             <Viewer
               plugins={[toolbarPluginInstance, zoomPluginInstance]}
-              fileUrl='./dummy12.pdf'
+              fileUrl={file_url}
             />
           </Stack>
         </Stack>
@@ -74,7 +79,7 @@ const PDF = ({pdfUrl,attachment_id}:{pdfUrl?:string,attachment_id?:string}) => {
           justify="center"
           style={{ flex: 1 }}
         ></Stack>
-        <ChatWithPDF />
+        <ChatWithPDF attachmentId={attachmentId}/>
       </motion.div>
     </Group>
   );
