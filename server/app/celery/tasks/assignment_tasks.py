@@ -17,6 +17,7 @@ from datetime import datetime
 import os
 import json
 from typing import List
+import uuid
 from app.celery.celery import celery_instance
 from app.models.assignment import Assignment
 from app.models.hub import Hub, Assignment as EmbeddedAssignment
@@ -486,8 +487,8 @@ def process_create_assignment_using_ai(
 
         if assignments_dict_data:
             assignments_dict = json.loads(assignments_dict_data)
-            embedded_assignment_dict = {}
             hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+            assignments_to_save = []
 
             for difficulty_level, assignment in assignments_dict.items():
                 assignment_answer = generate_assignment_answer_llama(assignment)
@@ -507,24 +508,13 @@ def process_create_assignment_using_ai(
                     automatic_feedback_enabled=automatic_feedback_enabled,
                     plagiarism_checker_enabled=plagiarism_checker_enabled,
                 )
-                new_assignment.save()
-                Hub.objects(id=hub_object_id).update_one(push__topics=topic)
 
-                embedded_assignment = EmbeddedAssignment(
-                    assignment_id=new_assignment.id,
-                    title=title,
-                    total_points=total_points,
-                    topic=topic,
-                    due_datetime=due_datetime,
-                )
-                embedded_assignment_dict[difficulty_level] = embedded_assignment
+                assignments_to_save.append(new_assignment)
 
-            Hub.objects(id=hub_object_id).update_one(
-                push__assignments=embedded_assignment_dict
+            saved_assignments_ids = Assignment.objects.insert(
+                assignments_to_save,
+                load_bulk=False,
             )
-
-            cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
-            redis_client.delete(cache_paginated_key)
 
             # students_assignment_marks = (
             #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
@@ -533,9 +523,23 @@ def process_create_assignment_using_ai(
             # integrate ml model
             predicted_difficulty_level = ["easy", "medium", "hard"]
 
-            Hub.objects(id=hub_id).update_one(
-                set__assignments_difficulty_level=predicted_difficulty_level
+            embedded_assignment = EmbeddedAssignment(
+                uuid=str(uuid.uuid4()),
+                assignment_ids=saved_assignments_ids,
+                title=title,
+                total_points=total_points,
+                topic=topic,
+                predicted_difficulty_level=predicted_difficulty_level,
+                due_datetime=due_datetime,
             )
+
+            Hub.objects(id=hub_object_id).update_one(
+                push__assignments=embedded_assignment,
+                push__topics=topic,
+            )
+
+            cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+            redis_client.delete(cache_paginated_key, generate_assignment_key)
 
         else:
             print("Assignment data not found!")
