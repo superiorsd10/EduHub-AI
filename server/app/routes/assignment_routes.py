@@ -13,6 +13,8 @@ from app.models.hub import Hub
 from app.celery.tasks.assignment_tasks import (
     process_assignment_generation,
     process_assignment_changes,
+    process_create_assignment_using_ai,
+    process_create_assignment_manually,
 )
 from marshmallow import Schema, fields
 
@@ -64,7 +66,7 @@ class GenerateAssignmentSchema(Schema):
     topics = fields.List(fields.String())
     specific_topics = fields.String()
     instructions_for_ai = fields.String()
-    types_of_questions = fields.Mapping(
+    types_of_questions = fields.Dict(
         keys=fields.String(),
         values=fields.List(fields.Integer()),
     )
@@ -88,6 +90,77 @@ class MakeChangesToAssignmentSchema(Schema):
 
     changes_prompt = fields.String(required=True)
     assignment_difficulty = fields.String(required=True)
+
+
+class CreateAssignmentUsingAISchema(Schema):
+    """
+    Schema for validating data when creating an assignment using AI.
+
+    Attributes:
+        hub_id (str): The ID of the hub where the assignment is created.
+        title (str): The title of the assignment.
+        instructions (str, optional): Instructions for the assignment.
+        total_points (int, optional): Total points for the assignment.
+        question_points (list of int, optional): List of points for each question.
+        due_datetime (datetime, optional): Due date and time for the assignment.
+        topic (str, optional): Topic of the assignment.
+        automatic_grading_enabled (bool, optional): Flag indicating if automatic grading is enabled.
+        automatic_feedback_enabled (bool, optional): Flag indicating if automatic feedback is
+        enabled.
+        plagiarism_checker_enabled (bool, optional): Flag indicating if plagiarism checker is
+        enabled.
+    """
+
+    title = fields.String(required=True)
+    instructions = fields.String()
+    total_points = fields.Integer()
+    question_points = fields.List(fields.Integer())
+    due_datetime = fields.DateTime()
+    topic = fields.String()
+    automatic_grading_enabled = fields.Boolean()
+    automatic_feedback_enabled = fields.Boolean()
+    plagiarism_checker_enabled = fields.Boolean()
+
+
+class CreateAssignmentManuallySchema(Schema):
+    """
+    Schema for validating and deserializing data when creating an assignment manually.
+
+    Attributes:
+        title (str): The title of the assignment. Required.
+        instructions (str, optional): Instructions for the assignment.
+        total_points (int, optional): Total points for the assignment.
+        question_points (List[int], optional): List of points for each question.
+        due_datetime (datetime, optional): Due date and time for the assignment.
+        topic (str, optional): Topic of the assignment.
+        questions (str, optional): The questions for the assignment.
+        answers (str, optional): The answers to the questions.
+        automatic_grading_enabled (bool, optional): Indicates if automatic grading is enabled.
+        automatic_feedback_enabled (bool, optional): Indicates if automatic feedback is enabled.
+        plagiarism_checker_enabled (bool, optional): Indicates if plagiarism checker is enabled.
+
+    Raises:
+        ValidationError: If validation fails for any of the attributes.
+
+    """
+
+    title = fields.String(required=True)
+    instructions = fields.String()
+    total_points = fields.Integer()
+    question_points = fields.List(fields.Integer())
+    due_datetime = fields.DateTime()
+    topic = fields.String()
+    questions = fields.Dict(
+        keys=fields.String(),
+        values=fields.String(),
+    )
+    answers = fields.Dict(
+        keys=fields.String(),
+        values=fields.String(),
+    )
+    automatic_grading_enabled = fields.Boolean()
+    automatic_feedback_enabled = fields.Boolean()
+    plagiarism_checker_enabled = fields.Boolean()
 
 
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
@@ -239,6 +312,167 @@ def make_changes_to_assignment(generate_assignment_id):
             jsonify(
                 {
                     "message": "Assignment modification in process",
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@assignment_blueprint.route(
+    "/api/<hub_id>/create-assignment-using-ai/<generate_assignment_id>",
+    methods=["POST"],
+)
+@limiter.limit("5 per minute")
+@firebase_token_required
+def create_assignment_using_ai(hub_id, generate_assignment_id):
+    """
+    Create Assignment Using AI.
+
+    This endpoint creates an assignment using AI-assisted generation.
+    The function receives POST requests containing assignment data in JSON format
+    and processes them asynchronously.
+
+    Args:
+        generate_assignment_id (str): The unique identifier for generating the assignment.
+
+    Returns:
+        tuple: A tuple containing JSON response and HTTP status code.
+            The JSON response contains a message indicating whether the assignment creation
+            is in process and its success status.
+            The HTTP status code indicates the success or failure of the request.
+
+    Raises:
+        StatusCode.INTERNAL_SERVER_ERROR: If an unexpected error occurs during assignment creation.
+
+    """
+    try:
+        schema = CreateAssignmentUsingAISchema()
+        data = schema.load(request.get_json())
+
+        title = data.get("title")
+        instructions = data.get("instructions")
+        total_points = data.get("total_points")
+        question_points = data.get("question_points")
+        due_datetime = data.get("due_datetime")
+        topic = data.get("topic")
+        automatic_grading_enabled = data.get("automatic_grading_enabled")
+        automatic_feedback_enabled = data.get("automatic_feedback_enabled")
+        plagiarism_checker_enabled = data.get("plagiarism_checker_enabled")
+
+        process_create_assignment_using_ai.apply_async(
+            args=[
+                generate_assignment_id,
+                hub_id,
+                title,
+                instructions,
+                total_points,
+                question_points,
+                due_datetime,
+                topic,
+                automatic_grading_enabled,
+                automatic_feedback_enabled,
+                plagiarism_checker_enabled,
+            ],
+            retry_policy={
+                "max_retries": 3,
+                "interval_start": 2,
+                "interval_step": 2,
+                "interval_max": 10,
+            },
+        )
+
+        return (
+            jsonify(
+                {
+                    "message": "Assignment creation in process",
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@assignment_blueprint.route(
+    "/api/<hub_id>/create-assignment-manually", methods=["POST"]
+)
+@limiter.limit("5 per minute")
+@firebase_token_required
+def create_assignment_manually(hub_id):
+    """
+    Create Assignment Manually.
+
+    This endpoint creates an assignment manually based on the provided data.
+    The function receives POST requests containing assignment details in JSON format
+    and processes them asynchronously.
+
+    Args:
+        hub_id (str): The ID of the hub to which the assignment belongs.
+
+    Returns:
+        tuple: A tuple containing JSON response and HTTP status code.
+            The JSON response contains a message indicating whether the assignment creation
+            is in process and its success status.
+            The HTTP status code indicates the success or failure of the request.
+
+    Raises:
+        StatusCode.INTERNAL_SERVER_ERROR: If an unexpected error occurs during assignment creation.
+
+    """
+    try:
+        schema = CreateAssignmentManuallySchema()
+        data = schema.load(request.get_json())
+
+        title = data.get("title")
+        instructions = data.get("instructions")
+        total_points = data.get("total_points")
+        question_points = data.get("question_points")
+        due_datetime = data.get("due_datetime")
+        topic = data.get("topic")
+        questions = data.get("questions")
+        answers = data.get("answers")
+        automatic_grading_enabled = data.get("automatic_grading_enabled")
+        automatic_feedback_enabled = data.get("automatic_feedback_enabled")
+        plagiarism_checker_enabled = data.get("plagiarism_checker_enabled")
+
+        process_create_assignment_manually.apply_async(
+            args=[
+                hub_id,
+                title,
+                instructions,
+                total_points,
+                question_points,
+                due_datetime,
+                topic,
+                questions,
+                answers,
+                automatic_grading_enabled,
+                automatic_feedback_enabled,
+                plagiarism_checker_enabled,
+            ],
+            retry_policy={
+                "max_retries": 3,
+                "interval_start": 2,
+                "interval_step": 2,
+                "interval_max": 10,
+            },
+        )
+
+        return (
+            jsonify(
+                {
+                    "message": "Assignment creation in process",
                     "success": True,
                 }
             ),

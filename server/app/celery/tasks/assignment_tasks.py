@@ -12,13 +12,87 @@ Functions:
     - process_assignment_generation: Processes assignment generation tasks asynchronously.
 """
 
+import base64
+from datetime import datetime
 import os
 import json
 from typing import List
+import uuid
 from app.celery.celery import celery_instance
+from app.models.assignment import Assignment
+from app.models.hub import Hub, Assignment as EmbeddedAssignment
+from bson import ObjectId
 from config.config import Config
 from dotenv import load_dotenv
 import requests
+
+
+def generate_response_llama(
+    system_prompt: str,
+    user_prompt: str,
+) -> str:
+    """
+    Generate a response using the Meta-Llama-3-70B-Instruct model.
+
+    This function sends a request to the Llama API to generate a response based on
+    the provided system and user prompts using the Meta-Llama-3-70B-Instruct model.
+
+    Args:
+        system_prompt (str): The system prompt to provide context for the response.
+        user_prompt (str): The user prompt to generate a response for.
+
+    Returns:
+        str: The generated response based on the provided prompts.
+
+    Raises:
+        Exception: If an error occurs during the request or response processing.
+
+    Note:
+        Ensure that the LLAMA_AUTH_HEADER environment variable is properly configured
+        with the authorization header required to access the Llama API.
+
+        The 'model' parameter in llama_data specifies the model to use for generating
+        the response. Adjust it accordingly if a different model is desired.
+
+        The 'stream', 'penalty', and 'max_tokens' parameters control various aspects
+        of the response generation process. Modify them as needed based on specific
+        requirements or performance considerations.
+    """
+    try:
+        load_dotenv()
+
+        llama_data = {
+            "temperature": 0.8,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "model": "rohan/Meta-Llama-3-70B-Instruct",
+            "stream": False,
+            "penalty": 0,
+            "max_tokens": 900,
+        }
+
+        llama_auth_header = os.environ.get("LLAMA_AUTH_HEADER")
+        llama_url = "https://proxy.tune.app/chat/completions"
+        llama_headers = {
+            "Authorization": llama_auth_header,
+            "Content-Type": "application/json",
+        }
+
+        response = requests.post(
+            llama_url,
+            headers=llama_headers,
+            json=llama_data,
+        )
+
+        response_json = response.json()
+        response_content = response_json["choices"][0]["message"]["content"]
+        return response_content
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
 
 
 def generate_assignment_llama(
@@ -59,8 +133,6 @@ def generate_assignment_llama(
 
     """
     try:
-        load_dotenv()
-
         user_prompt = f"""
         Generate a comprehensive assignment in Markdown format with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
 
@@ -86,34 +158,9 @@ def generate_assignment_llama(
         Create a comprehensive and challenging assignment that assesses the student's understanding of the topics. Ensure the questions are clear, concise, and relevant to the topics.
         """
 
-        llama_data = {
-            "temperature": 0.8,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "model": "rohan/Meta-Llama-3-70B-Instruct",
-            "stream": False,
-            "penalty": 0,
-            "max_tokens": 900,
-        }
-
-        llama_auth_header = os.environ.get("LLAMA_AUTH_HEADER")
-        llama_url = "https://proxy.tune.app/chat/completions"
-        llama_headers = {
-            "Authorization": llama_auth_header,
-            "Content-Type": "application/json",
-        }
-
-        response = requests.post(
-            llama_url,
-            headers=llama_headers,
-            json=llama_data,
+        generated_assignment_string = generate_response_llama(
+            system_prompt, user_prompt
         )
-
-        response_json = response.json()
-        generated_assignment_string = response_json["choices"][0]["message"]["content"]
-
         return difficulty, generated_assignment_string
 
     except Exception as error:
@@ -147,8 +194,6 @@ def modify_assignment_llama(
 
     """
     try:
-        load_dotenv()
-
         system_prompt = """
         Modify the existing assignment to incorporate the user's requested changes.
 
@@ -169,38 +214,87 @@ def modify_assignment_llama(
         maintaining the overall format and {assignment_difficulty} assignment difficulty level.
         """
 
-        llama_data = {
-            "temperature": 0.8,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "model": "rohan/Meta-Llama-3-70B-Instruct",
-            "stream": False,
-            "penalty": 0,
-            "max_tokens": 900,
-        }
-
-        llama_auth_header = os.environ.get("LLAMA_AUTH_HEADER")
-        llama_url = "https://proxy.tune.app/chat/completions"
-        llama_headers = {
-            "Authorization": llama_auth_header,
-            "Content-Type": "application/json",
-        }
-
-        response = requests.post(
-            llama_url,
-            headers=llama_headers,
-            json=llama_data,
-        )
-
-        response_json = response.json()
-        generated_assignment_string = response_json["choices"][0]["message"]["content"]
-        return generated_assignment_string
+        modified_assignment_string = generate_response_llama(system_prompt, user_prompt)
+        return modified_assignment_string
 
     except Exception as error:
         print(f"error: {error}")
         raise
+
+
+def generate_assignment_answer_llama(assignment: str) -> str:
+    """
+    Generate answers for assignment questions using the Meta-Llama-3-70B-Instruct model.
+
+    This function generates answers for assignment questions by providing system and user
+    prompts to the Meta-Llama-3-70B-Instruct model. The system prompt provides context
+    about the task, while the user prompt contains the assignment questions formatted in
+    markdown, latex, and mermaid (for diagrams). The generated answers maintain the same
+    formatting as the input questions.
+
+    Args:
+        assignment (str): The assignment questions formatted in markdown, latex, and mermaid.
+
+    Returns:
+        str: The generated answers to the assignment questions, maintaining the same format.
+
+    Raises:
+        Exception: If an error occurs during the response generation process.
+
+    Note:
+        Ensure that the generate_response_llama function is properly configured to handle
+        the system and user prompts and interact with the Meta-Llama-3-70B-Instruct model.
+        Adjust the system prompt and user prompt to provide appropriate context and input
+        for the response generation.
+
+        The assignment questions should be formatted correctly to ensure accurate responses.
+        The generated answers will maintain the same formatting as the input questions,
+        including markdown, latex, and mermaid syntax.
+    """
+    try:
+        system_prompt = """
+        This system is designed to assist with answering assignment questions.
+        The assignment questions are formatted in markdown, latex, and mermaid (for diagrams).
+        The system should provide clear and concise answers to each question.
+
+        For single correct choice type questions, provide the correct option with the answer.
+        For multiple correct choice type questions, provide all correct options with answers.
+        For numerical type questions, provide the correct answer without explanation.
+        For descriptive type questions, provide a detailed answer.
+        """
+
+        user_prompt = f"""
+        Please answer the following assignment questions:
+
+        {assignment}
+
+        Note: The assignment questions will be provided, and the system should respond
+        with the answers to each question in the format specified above maintaining
+        the markdown, latex and mermaid format.
+        """
+
+        assignment_answer = generate_response_llama(system_prompt, user_prompt)
+        return assignment_answer
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
+def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
+    """
+    Decodes a base64 encoded string and converts it to an ObjectId.
+
+    Args:
+        base64_encoded (str): The base64 encoded string to decode.
+
+    Returns:
+        ObjectId: The decoded ObjectId.
+    """
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
+    object_id = ObjectId(hex_string)
+    return object_id
 
 
 @celery_instance.task(soft_time_limit=120, time_limit=180)
@@ -343,6 +437,215 @@ def process_assignment_changes(
             redis_client.publish(generate_assignment_key, assignments_dict_data)
         else:
             print("Assignment data not found!")
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
+@celery_instance.task(soft_time_limit=120, time_limit=180)
+def process_create_assignment_using_ai(
+    generate_assignment_id: str,
+    hub_id: str,
+    title: str,
+    instructions: str,
+    total_points: int,
+    question_points: List,
+    due_datetime: datetime,
+    topic: str,
+    automatic_grading_enabled: bool,
+    automatic_feedback_enabled: bool,
+    plagiarism_checker_enabled: bool,
+) -> None:
+    """
+    Process to create assignments using an AI model.
+
+    Args:
+        generate_assignment_id (str): The ID associated with generating the assignment.
+        hub_id (str): The ID of the hub where the assignment will be created.
+        title (str): The title of the assignment.
+        instructions (str): The instructions for the assignment.
+        total_points (int): The total points of the assignment.
+        question_points (List): The points associated with each question in the assignment.
+        due_datetime (datetime): The due date and time for the assignment.
+        topic (str): The topic of the assignment.
+        automatic_grading_enabled (bool): Indicates whether automatic grading is enabled.
+        automatic_feedback_enabled (bool): Indicates whether automatic feedback is enabled.
+        plagiarism_checker_enabled (bool): Indicates whether plagiarism checker is enabled.
+
+    Returns:
+        None: This function does not return anything.
+
+    Raises:
+        Exception: If any error occurs during the execution of the task.
+
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+        generate_assignment_key = f"generate_assignment_id_{generate_assignment_id}"
+        assignments_dict_data = redis_client.get(generate_assignment_key)
+
+        if assignments_dict_data:
+            assignments_dict = json.loads(assignments_dict_data)
+            hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+            assignments_to_save = []
+
+            for difficulty_level, assignment in assignments_dict.items():
+                assignment_answer = generate_assignment_answer_llama(assignment)
+
+                new_assignment = Assignment(
+                    hub_id=hub_object_id,
+                    title=title,
+                    difficulty=difficulty_level,
+                    instructions=instructions,
+                    total_points=total_points,
+                    question=assignment,
+                    answer=assignment_answer,
+                    question_points=question_points,
+                    due_datetime=due_datetime,
+                    topic=topic,
+                    automatic_grading_enabled=automatic_grading_enabled,
+                    automatic_feedback_enabled=automatic_feedback_enabled,
+                    plagiarism_checker_enabled=plagiarism_checker_enabled,
+                )
+
+                assignments_to_save.append(new_assignment)
+
+            # students_assignment_marks = (
+            #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
+            # )
+
+            # integrate ml model
+            predicted_difficulty_level = ["easy", "medium", "hard"]
+
+            saved_assignments_ids = Assignment.objects.insert(
+                assignments_to_save,
+                load_bulk=False,
+            )
+
+            embedded_assignment = EmbeddedAssignment(
+                uuid=str(uuid.uuid4()),
+                assignment_ids=saved_assignments_ids,
+                title=title,
+                total_points=total_points,
+                topic=topic,
+                predicted_difficulty_level=predicted_difficulty_level,
+                due_datetime=due_datetime,
+            )
+
+            Hub.objects(id=hub_object_id).update_one(
+                push__assignments=embedded_assignment,
+                push__topics=topic,
+            )
+
+            cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+            redis_client.delete(cache_paginated_key, generate_assignment_key)
+
+        else:
+            print("Assignment data not found!")
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
+@celery_instance.task(soft_time_limit=120, time_limit=180)
+def process_create_assignment_manually(
+    hub_id: str,
+    title: str,
+    instructions: str,
+    total_points: int,
+    question_points: List,
+    due_datetime: datetime,
+    topic: str,
+    questions: dict,
+    answers: dict,
+    automatic_grading_enabled: bool,
+    automatic_feedback_enabled: bool,
+    plagiarism_checker_enabled: bool,
+) -> None:
+    """
+    Process creation of assignments manually.
+
+    This Celery task function processes the creation of assignments manually.
+    It takes various parameters representing the details of the assignment to be created
+    and saves the assignments to the database.
+
+    Args:
+        hub_id (str): The ID of the hub to which the assignments belong.
+        title (str): The title of the assignment.
+        instructions (str): Instructions for the assignment.
+        total_points (int): Total points for the assignment.
+        question_points (List): List of points for each question.
+        due_datetime (datetime): Due date and time for the assignment.
+        topic (str): Topic of the assignment.
+        questions (dict): Dictionary containing questions for the assignment,
+        categorized by difficulty level.
+        answers (dict): Dictionary containing answers to the questions,
+        categorized by difficulty level.
+        automatic_grading_enabled (bool): Indicates if automatic grading is enabled.
+        automatic_feedback_enabled (bool): Indicates if automatic feedback is enabled.
+        plagiarism_checker_enabled (bool): Indicates if plagiarism checker is enabled.
+
+    Raises:
+        Exception: If an error occurs during the assignment creation process.
+
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+        assignments_to_save = []
+
+        for difficulty_level, assignment in questions.items():
+            assignment_answer = answers[difficulty_level]
+
+            new_assignment = Assignment(
+                hub_id=hub_object_id,
+                title=title,
+                difficulty=difficulty_level,
+                instructions=instructions,
+                total_points=total_points,
+                question=assignment,
+                answer=assignment_answer,
+                question_points=question_points,
+                due_datetime=due_datetime,
+                topic=topic,
+                automatic_grading_enabled=automatic_grading_enabled,
+                automatic_feedback_enabled=automatic_feedback_enabled,
+                plagiarism_checker_enabled=plagiarism_checker_enabled,
+            )
+
+            assignments_to_save.append(new_assignment)
+
+        # students_assignment_marks = (
+        #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
+        # )
+
+        # integrate ml model
+        predicted_difficulty_level = ["easy", "medium", "hard"]
+
+        saved_assignments_ids = Assignment.objects.insert(
+            assignments_to_save,
+            load_bulk=False,
+        )
+
+        embedded_assignment = EmbeddedAssignment(
+            uuid=str(uuid.uuid4()),
+            assignment_ids=saved_assignments_ids,
+            title=title,
+            total_points=total_points,
+            topic=topic,
+            predicted_difficulty_level=predicted_difficulty_level,
+            due_datetime=due_datetime,
+        )
+
+        Hub.objects(id=hub_object_id).update_one(
+            push__assignments=embedded_assignment,
+            push__topics=topic,
+        )
+
+        cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+        redis_client.delete(cache_paginated_key)
 
     except Exception as error:
         print(f"error: {error}")
