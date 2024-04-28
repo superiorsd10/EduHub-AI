@@ -546,3 +546,107 @@ def process_create_assignment_using_ai(
     except Exception as error:
         print(f"error: {error}")
         raise
+
+
+@celery_instance.task(soft_time_limit=120, time_limit=180)
+def process_create_assignment_manually(
+    hub_id: str,
+    title: str,
+    instructions: str,
+    total_points: int,
+    question_points: List,
+    due_datetime: datetime,
+    topic: str,
+    questions: dict,
+    answers: dict,
+    automatic_grading_enabled: bool,
+    automatic_feedback_enabled: bool,
+    plagiarism_checker_enabled: bool,
+) -> None:
+    """
+    Process creation of assignments manually.
+
+    This Celery task function processes the creation of assignments manually.
+    It takes various parameters representing the details of the assignment to be created
+    and saves the assignments to the database.
+
+    Args:
+        hub_id (str): The ID of the hub to which the assignments belong.
+        title (str): The title of the assignment.
+        instructions (str): Instructions for the assignment.
+        total_points (int): Total points for the assignment.
+        question_points (List): List of points for each question.
+        due_datetime (datetime): Due date and time for the assignment.
+        topic (str): Topic of the assignment.
+        questions (dict): Dictionary containing questions for the assignment,
+        categorized by difficulty level.
+        answers (dict): Dictionary containing answers to the questions,
+        categorized by difficulty level.
+        automatic_grading_enabled (bool): Indicates if automatic grading is enabled.
+        automatic_feedback_enabled (bool): Indicates if automatic feedback is enabled.
+        plagiarism_checker_enabled (bool): Indicates if plagiarism checker is enabled.
+
+    Raises:
+        Exception: If an error occurs during the assignment creation process.
+
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+        assignments_to_save = []
+
+        for difficulty_level, assignment in questions.items():
+            assignment_answer = answers[difficulty_level]
+
+            new_assignment = Assignment(
+                hub_id=hub_object_id,
+                title=title,
+                difficulty=difficulty_level,
+                instructions=instructions,
+                total_points=total_points,
+                question=assignment,
+                answer=assignment_answer,
+                question_points=question_points,
+                due_datetime=due_datetime,
+                topic=topic,
+                automatic_grading_enabled=automatic_grading_enabled,
+                automatic_feedback_enabled=automatic_feedback_enabled,
+                plagiarism_checker_enabled=plagiarism_checker_enabled,
+            )
+
+            assignments_to_save.append(new_assignment)
+
+        # students_assignment_marks = (
+        #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
+        # )
+
+        # integrate ml model
+        predicted_difficulty_level = ["easy", "medium", "hard"]
+
+        saved_assignments_ids = Assignment.objects.insert(
+            assignments_to_save,
+            load_bulk=False,
+        )
+
+        embedded_assignment = EmbeddedAssignment(
+            uuid=str(uuid.uuid4()),
+            assignment_ids=saved_assignments_ids,
+            title=title,
+            total_points=total_points,
+            topic=topic,
+            predicted_difficulty_level=predicted_difficulty_level,
+            due_datetime=due_datetime,
+        )
+
+        Hub.objects(id=hub_object_id).update_one(
+            push__assignments=embedded_assignment,
+            push__topics=topic,
+        )
+
+        cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
+        redis_client.delete(cache_paginated_key)
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
