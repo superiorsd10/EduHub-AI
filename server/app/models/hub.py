@@ -210,7 +210,7 @@ class Hub(Document):
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
-    members_id = DictField(field=ListField(ObjectIdField()), required=True)
+    members_email = DictField(field=ListField(StringField()), required=True)
     auth_option = StringField(
         choices=("open_to_anyone", "lobby", "institute_id"), default="open_to_anyone"
     )
