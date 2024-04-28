@@ -23,17 +23,23 @@ const post = () => {
   useEffect(() => {
     const getPost = async () => {
       if (!hub_id || !post_id) return;
-      const resp = await fetch(
-        `http://127.0.0.1:5000/api/${base64hub_id}/get-post/${post_id}`
-      );
-      let data = await resp.json();
-      data = data.message;
-      setPostData({
-        title: data.title,
-        topic: data.topic,
-        description: data.description,
-        created_at:data.created_at
-      });
+      try {
+          const resp = await fetch(
+            `http://127.0.0.1:5000/api/${base64hub_id}/get-post/${post_id}`
+          );
+          let data = await resp.json();
+          console.log(data);
+          data = data.message;
+          setPostData({
+            title: data.title,
+            topic: data.topic,
+            description: data.description,
+            created_at:data.created_at
+          });
+
+      } catch(error) {
+        console.log(error)
+      }
     };
     getPost();
   }, [post_id, hub_id]);

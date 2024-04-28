@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/firebase/clientApp";
+import { io } from "socket.io-client";
 
 type Hub = {
   creator_name: string;
@@ -18,8 +19,8 @@ interface AppProviderProps {
   children: React.ReactNode;
 }
 interface AppContextProps {
-  userName: string|null;
-  displayPhoto: string|null;
+  userName: string | null;
+  displayPhoto: string | null;
   email: string | null;
   loading: boolean;
   isDrawerOpen: boolean;
@@ -32,15 +33,16 @@ interface AppContextProps {
   isCreateHubVisible: boolean;
   setIsCreateHubVisible: (isCreateHubVisible: boolean) => void;
   token: string | null;
-  hubList:Hubs;
+  hubList: Hubs;
   fetchHubs: () => void;
-  appendHub:(newHub:Hub)=>void;
+  appendHub: (newHub: Hub) => void;
+  socket: any;
 }
 
 const AppContext = createContext<AppContextProps>({
   email: null,
   userName: null,
-  displayPhoto:null,
+  displayPhoto: null,
   loading: true,
   isDrawerOpen: false,
   setIsDrawerOpen: () => {},
@@ -52,12 +54,13 @@ const AppContext = createContext<AppContextProps>({
   isCreateHubVisible: false,
   setIsCreateHubVisible: () => {},
   token: null,
-  hubList:{
+  hubList: {
     student: [],
     teacher: [],
   },
   fetchHubs: () => {},
   appendHub: () => {},
+  socket: null,
 });
 
 const AppProvider: React.FC<AppProviderProps> = ({
@@ -69,22 +72,26 @@ const AppProvider: React.FC<AppProviderProps> = ({
     teacher: [],
   });
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string|null>(null);
-  const [displayPhoto, setDisplayPhoto] = useState<string|null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [displayPhoto, setDisplayPhoto] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isDrawerTemporarilyOpen, setIsDrawerTemporarilyOpen] =
     useState<boolean>(false);
   const [isCreateHubVisible, setIsCreateHubVisible] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
+  const [socket, setSocket] = useState<any>(null);
 
   const fetchHubs = async () => {
-    const response = await fetch(`http://127.0.0.1:5000/api/get-hubs?email=${userEmail}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token}`,
-      },
-    });
+    const response = await fetch(
+      `http://127.0.0.1:5000/api/get-hubs?email=${userEmail}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+      }
+    );
 
     const data = await response.json();
     const hubs: Hubs = data.data[0];
@@ -114,13 +121,29 @@ const AppProvider: React.FC<AppProviderProps> = ({
     return () => unsubscribe();
   }, []);
 
+  const connectToSocket = () => {
+    try {
+      const newSocket = io("http://127.0.0.1:5000", {
+        reconnection: false,
+      });
+      setSocket(newSocket);
+      console.log("socket connected")
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(()=>{
+    connectToSocket();
+  },[])
+
   const appendHub = (newHub: Hub) => {
-      const updatedTeacherHubs = [newHub, ...hubList.teacher];
-      const updatedHubList = {
-        ...hubList,
-        teacher: updatedTeacherHubs,
-      };
-      setHubList(updatedHubList);
+    const updatedTeacherHubs = [newHub, ...hubList.teacher];
+    const updatedHubList = {
+      ...hubList,
+      teacher: updatedTeacherHubs,
+    };
+    setHubList(updatedHubList);
   };
 
   return (
@@ -142,7 +165,8 @@ const AppProvider: React.FC<AppProviderProps> = ({
         setIsCreateHubVisible,
         hubList,
         fetchHubs,
-        appendHub
+        appendHub,
+        socket,
       }}
     >
       {children}
