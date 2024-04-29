@@ -530,58 +530,38 @@ def get_assignment(hub_id, assignment_uuid):
         hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
 
         pipeline = [
+            # Match the hub document
             {"$match": {"_id": hub_object_id}},
+            # Project members_email to key-value pairs
             {
-                "$addFields": {
-                    "member_position": {
-                        "$map": {
-                            "input": {"$objectToArray": "$members_id"},
-                            "as": "member",
-                            "in": {
-                                "key": "$$member.k",
-                                "value": {
-                                    "$map": {
-                                        "input": "$$member.v",
-                                        "as": "member_email",
-                                        "in": {
-                                            "$cond": [
-                                                {"$eq": ["$$member_email", email]},
-                                                {
-                                                    "$indexOfArray": [
-                                                        "$$member.v",
-                                                        "$$member_email",
-                                                    ]
-                                                },
-                                                -1,
-                                            ]
-                                        },
-                                    },
-                                    "member_index": {
-                                        "$indexOfArray": ["$$member.v", email]
-                                    },
-                                },
-                            },
-                        }
-                    }
+                "$project": {
+                    "members_email": {"$objectToArray": "$members_email"},
+                    "assignments": 1,
                 }
             },
+            # Unwind members_email array
+            {"$unwind": "$members_email"},
+            # Match document where key (role) matches email
+            {"$match": {"members_email.v": email}},
+            # Project member_role and member_index
             {
-                "$unwind": {
-                    "path": "$assignments",
-                    "preserveNullAndEmptyArrays": True,
+                "$project": {
+                    "member_role": "$members_email.k",
+                    "member_index": {"$indexOfArray": ["$members_email.v", email]},
+                    "assignments": 1,
                 }
             },
+            # Unwind assignments array
+            {"$unwind": "$assignments"},
+            # Match assignment with provided assignment_uuid
+            {"$match": {"assignments.uuid": assignment_uuid}},
+            # Return required fields
             {
-                "$match": {
-                    "assignments.uuid": assignment_uuid,
-                }
-            },
-            {
-                "$replaceRoot": {
-                    "newRoot": {
-                        "assignment": "$assignments",
-                        "member_position": "$member_position",
-                    }
+                "$project": {
+                    "_id": 0,
+                    "member_role": 1,
+                    "member_index": 1,
+                    "assignment": "$assignments",
                 }
             },
         ]
@@ -591,27 +571,25 @@ def get_assignment(hub_id, assignment_uuid):
         if results:
             result = results[0]
             assignment = result["assignment"]
-            member_position = result["member_position"][0]
-
-            if not member_position:
-                return (
-                    jsonify({"error": "User not found", "success": False}),
-                    StatusCode.NOT_FOUND.value,
-                )
-
-            member_role = member_position["key"]
-            member_index = member_position["value"]
+            member_role = result["member_role"]
+            member_index = result["member_index"]
+            assignment_ids = assignment.get("assignment_ids")
 
             if member_role in ("teacher", "teaching_assistant"):
-                assignment_ids = assignment.assignment_ids
                 assignments = Assignment.objects(id__in=assignment_ids)
+
+                assignments_list = []
+
+                for assignment in assignments:
+                    assignment_dict = assignment.to_mongo().to_dict()
+                    assignment_dict["_id"] = str(assignment_dict["_id"])
+                    assignment_dict["hub_id"] = str(assignment_dict["hub_id"])
+                    assignments_list.append(assignment_dict)
 
                 return (
                     jsonify(
                         {
-                            "message": jsonify(
-                                [assignment.to_mongo() for assignment in assignments]
-                            ),
+                            "message": assignments_list,
                             "success": True,
                         }
                     ),
@@ -619,7 +597,9 @@ def get_assignment(hub_id, assignment_uuid):
                 )
 
             if member_role == "student":
-                predicted_difficulty_level = assignment.predicted_difficulty_level
+                predicted_difficulty_level = assignment.get(
+                    "predicted_difficulty_level"
+                )
                 difficulty_level = predicted_difficulty_level[member_index]
                 difficulty_mapping = {
                     "easy": 0,
@@ -628,14 +608,17 @@ def get_assignment(hub_id, assignment_uuid):
                 }
                 assignment_id = assignment_ids[difficulty_mapping[difficulty_level]]
                 retrieved_assignment = (
-                    Assignment.objects(id=assignment_id).first().to_mongo()
+                    Assignment.objects(id=assignment_id).first().to_mongo().to_dict()
                 )
+
+                retrieved_assignment["_id"] = str(retrieved_assignment["_id"])
+                retrieved_assignment["hub_id"] = str(retrieved_assignment["hub_id"])
 
                 if retrieved_assignment:
                     return (
                         jsonify(
                             {
-                                "message": jsonify(retrieved_assignment),
+                                "message": retrieved_assignment,
                                 "success": True,
                             }
                         ),
