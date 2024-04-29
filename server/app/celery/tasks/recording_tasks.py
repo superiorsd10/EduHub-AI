@@ -37,7 +37,6 @@ import base64
 from typing import List
 import cv2
 
-from flask import current_app
 from app.celery.celery import celery_instance
 from app.models.recording_embedding import RecordingEmbedding
 from config.config import Config
@@ -358,7 +357,7 @@ def process_recording_webhook(transcript_txt_presigned_url: str, room_id: str) -
             f"room_id_{room_id}_number_of_recording_embeddings"
         )
 
-        redis_client = current_app.redis_client
+        redis_client = Config.REDIS_CLIENT
 
         with redis_client.pipeline() as pipe:
             try:
