@@ -1,26 +1,33 @@
 import { useRouter } from "next/router";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { NextPageWithLayout } from "../../../_app";
 import EmptyLayout from "@/components/EmptyLayout";
 import LiveControls from "@/components/Live/LiveControls";
 import html2canvas from "html2canvas";
+import { HMSPrebuilt } from "@100mslive/roomkit-react";
+import { HMSRoomProvider } from "@100mslive/react-sdk";
+import {
+  useHMSStore,
+  useHMSActions,
+  useHMSNotifications,
+} from "@100mslive/react-sdk";
 
-const Live: NextPageWithLayout = () => {
+const LiveWithoutContext: NextPageWithLayout = () => {
   const ToCaptureRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const room_code = router.query.room_code as string;
-  const [HMSPrebuilt, setHMSPrebuilt] = useState<any | null>(null);
-  const [HMSActions, setHMSActions] = useState<any | null>(null);
+  const notification = useHMSNotifications();
+  useEffect(() => {
+    if (!notification) {
+      return;
+    }
+
+    console.log("notification type", notification.type);
+
+    console.log("data", notification.data);
+  }, [notification]);
 
   useEffect(() => {
-    import("@100mslive/roomkit-react")
-      .then((module) => {
-        setHMSPrebuilt(module.HMSPrebuilt);
-      })
-      .catch((error) => {
-        console.error("Failed to dynamically import HMSPrebuilt:", error);
-      });
-
     const request = window.indexedDB.open("screenshotsDB", 1);
     request.onupgradeneeded = (event) => {
       const db = (event.target as any).result as IDBDatabase;
@@ -29,7 +36,7 @@ const Live: NextPageWithLayout = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(captureScreenshot, 10000); // Capture every 10 seconds
+    const interval = setInterval(captureScreenshot, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -67,12 +74,16 @@ const Live: NextPageWithLayout = () => {
 
   return (
     <div style={{ height: "100vh" }} ref={ToCaptureRef}>
-      {HMSPrebuilt && (
-        <HMSPrebuilt roomCode={room_code}>
-          {ToCaptureRef && <LiveControls />}
-        </HMSPrebuilt>
-      )}
+      <HMSPrebuilt roomCode={room_code} />
     </div>
+  );
+};
+
+const Live: NextPageWithLayout = () => {
+  return (
+    <HMSRoomProvider>
+      <LiveWithoutContext />
+    </HMSRoomProvider>
   );
 };
 
