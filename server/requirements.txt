@@ -252,7 +252,7 @@ uritemplate==4.1.1
 urllib3==1.26.18
 uuid==1.30
 uvicorn==0.27.1
-uvloop==0.19.0
+# uvloop==0.19.0
 vine==5.1.0
 virtualenv==20.25.0
 wasabi==1.1.2

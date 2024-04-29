@@ -33,7 +33,7 @@ type Post = {
 type HubsData = {
   introductory: HubIntroductoryData;
   paginated: { items: Post }[];
-  role: "teacher"|"student";
+  role: "teacher" | "student";
 };
 
 interface HubProviderProps {
@@ -47,8 +47,22 @@ interface HubContextProps {
   currentHubData: HubsData | null;
   appendPost: (newPost: Post) => void;
   fetchHubData: (hubId: string, token: string | null) => void;
-  roomId: string|null;
-  setRoomId:(roomId:string)=>void;
+  roomId: string | null;
+  setRoomId: (roomId: string) => void;
+  recordingData: {
+    title: string;
+    topic: string;
+    description: string;
+    room_id:string;
+  } | null;
+  setRecordingData: (
+    recordingData: {
+      title: string;
+      topic: string;
+      description: string;
+      room_id:string;
+    } | null
+  ) => void;
 }
 
 const HubContext = createContext<HubContextProps>({
@@ -60,18 +74,27 @@ const HubContext = createContext<HubContextProps>({
   currentHubData: null,
   fetchHubData: () => {},
   roomId: null,
-  setRoomId:()=>{}
+  setRoomId: () => {},
+  recordingData: null,
+  setRecordingData: () => {},
 });
 
 const HubProvider: React.FC<HubProviderProps> = ({
   children,
 }: HubProviderProps) => {
-  const {email} = useContext(AppContext);
+  const { email } = useContext(AppContext);
   const [currentHubData, setCurrentHubData] = useState<HubsData | null>(null);
   const [isCreatePostVisible, setIsCreatePostVisible] =
     useState<boolean>(false);
-  const [isAcceptRequestsVisible, setIsAcceptRequestsVisible] = useState<boolean>(false);
-  const [roomId,setRoomId] = useState<string|null>(null);
+  const [isAcceptRequestsVisible, setIsAcceptRequestsVisible] =
+    useState<boolean>(false);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [recordingData, setRecordingData] = useState<{
+    title: string;
+    topic: string;
+    description: string;
+    room_id:string;
+  } | null>(null);
 
   const fetchHubData = async (hubId: string, token: string | null) => {
     const encodedBase64 = btoa(hubId);
@@ -112,7 +135,9 @@ const HubProvider: React.FC<HubProviderProps> = ({
         currentHubData,
         appendPost,
         roomId,
-        setRoomId
+        setRoomId,
+        recordingData,
+        setRecordingData
       }}
     >
       {children}

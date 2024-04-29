@@ -16,7 +16,7 @@ const LiveWithoutContext: NextPageWithLayout = () => {
   const room_code = router.query.room_code as string;
 
   const { token, email } = useContext(AppContext);
-  const { currentHubData, fetchHubData, roomId } = useContext(HubContext);
+  const { currentHubData, fetchHubData, roomId, recordingData } = useContext(HubContext);
 
   useEffect(() => {
     if (hub_id && email) fetchHubData(hub_id, token);
@@ -73,8 +73,21 @@ const LiveWithoutContext: NextPageWithLayout = () => {
     };
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (role === "teacher" && !hasJoined) {
+      await fetch(`http://127.0.0.1:5000/api/${hub_id}/create-recording`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          title: recordingData?.title,
+          topic: recordingData?.topic,
+          description: recordingData?.description,
+          room_id:roomId
+        }),
+      });
       console.log("User joined as a teacher, start capturing screenshots");
       const id = setInterval(captureScreenshot, 10000);
       setIntervalId(id);

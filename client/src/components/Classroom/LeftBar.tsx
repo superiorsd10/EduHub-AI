@@ -1,5 +1,5 @@
 import { Button, Group, Stack, Text, CopyButton, Box } from "@mantine/core";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { PiChatCircleDotsLight } from "react-icons/pi";
 import { FaPlus } from "react-icons/fa6";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -8,6 +8,7 @@ import { AppContext } from "@/providers/AppProvider";
 import { HubContext } from "@/providers/HubProvider";
 import { IoCopySharp } from "react-icons/io5";
 import { useRouter } from "next/router";
+import CreateRecordingModal from "../Modals/CreateRecording";
 
 const LeftBar = ({
   invite_code,
@@ -22,19 +23,22 @@ const LeftBar = ({
     setIsCreatePostVisible,
     currentHubData,
     appendPost,
-    setRoomId
+    setRoomId,
+    recordingData,
+    roomId,
   } = useContext(HubContext);
-  console.log(role);
+  const [isCreateRecordingVisible, setIsCreateRecordingVisible] =
+    useState<boolean>(false);
+  const [teacherCode,setTeacherCode] = useState<string|null>(null);
   const { token } = useContext(AppContext);
   const { introductory } = currentHubData!;
   const { _id } = introductory!;
   const hub_id = router.query.hub_id as string;
 
   const managementToken =
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTQzODc0MzIsImV4cCI6MTcxNTUxMDYzMiwianRpIjoiMDBjMTMyNDItZjAwMS00NzM0LTlhYjgtMmEwNjk3MDI3ZTQ3IiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTQzODc0MzIsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.J3CU5ks1zdZ4hX0bm2UB4LwAmXMUjqEFMBlRkWLXYn0";
+    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTQzODc0MzIsImV4cCI6MTcxNTUxMDYzMiwianRpIjoiMDBjMTMyNDItZjAwMS00NzM0LTlhYjgtMmEwNjk3MDI3ZTQ3IiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTQzODc0MzIsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.J3CU5ks1zdZ4hX0bm2UB4LwAmXMUjqEFMBlRkWLXYn0";
 
   const handleMakeAnnouncement = async (studentRoomCode: string) => {
-    console.log(studentRoomCode);
     const formData = new FormData();
     formData.append("type", "announcement");
     formData.append(
@@ -62,33 +66,32 @@ const LeftBar = ({
     }
   };
 
-  const handleCreateRoom = async()=>{
+  const handleCreateRoom = async () => {
     try {
-      const URL = 'https://api.100ms.live/v2/rooms';
-      const response = await fetch(URL,{
-        method:'POST',
-        headers:{
+      const URL = "https://api.100ms.live/v2/rooms";
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: {
           Authorization: `Bearer ${managementToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          "template_id": "660ff95848b3dd31b94ff239"
-        })
+          template_id: "660ff95848b3dd31b94ff239",
+        }),
       });
       const body = await response.json();
       return body.id;
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   const handleGetRoomCode = async () => {
     try {
       const roomId = await handleCreateRoom();
       setRoomId(roomId);
-      const URL =
-        `https://api.100ms.live/v2/room-codes/room/${roomId}`;
-      
+      const URL = `https://api.100ms.live/v2/room-codes/room/${roomId}`;
+
       const response = await fetch(URL, {
         method: "POST",
         headers: {
@@ -99,21 +102,26 @@ const LeftBar = ({
       let teacherCode: string = "",
         studentCode: string = "";
       const data = await response.json();
-      console.log(data)
       for (let codes of data.data) {
-        
         if (codes.role === "teacher") teacherCode = codes.code;
         else if (codes.role === "student") {
           studentCode = codes.code;
-        } 
+        }
       }
-      
+      setTeacherCode(teacherCode);
+
       await handleMakeAnnouncement(studentCode);
-      router.push(`http://localhost:3000/hub/${_id}/live/${teacherCode}`);
+      setIsCreateRecordingVisible(true);
     } catch (error) {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (recordingData != null && !isCreateRecordingVisible) {
+      router.push(`http://localhost:3000/hub/${_id}/live/${teacherCode}`);
+    }
+  }, [isCreateRecordingVisible]);
 
   return (
     <Stack w="15%">
@@ -169,6 +177,13 @@ const LeftBar = ({
         >
           Start Live Class
         </Button>
+      )}
+      {role === "teacher" && (
+        <CreateRecordingModal
+          isCreateRecordingVisible={isCreateRecordingVisible}
+          setIsCreateRecordingVisible={setIsCreateRecordingVisible}
+          roomId={roomId as string}
+        ></CreateRecordingModal>
       )}
     </Stack>
   );
