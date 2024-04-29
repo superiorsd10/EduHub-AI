@@ -659,6 +659,9 @@ def process_create_assignment_using_ai(
             assignments_to_save = []
 
             for difficulty_level, assignment in assignments_dict.items():
+                assignment = convert_markdown_into_json_llama(
+                    markdown_assignment=assignment
+                )
                 assignment_answer = generate_assignment_answer_llama(assignment)
 
                 new_assignment = Assignment(
