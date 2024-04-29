@@ -25,6 +25,7 @@ from app.models.hub import Hub, Assignment as EmbeddedAssignment
 from bson import ObjectId
 from config.config import Config
 from dotenv import load_dotenv
+from mongoengine import connect
 import requests
 
 
@@ -89,11 +90,12 @@ def generate_response_llama(
 
         response_json = response.json()
         response_content = response_json["choices"][0]["message"]["content"]
-        response_content_json = re.search(
-            r"JSON START\n(.*?)JSON END", response_content, re.DOTALL
-        ).group(1)
+        match = re.search(r"JSON START\n(.*?)JSON END", response_content, re.DOTALL)
 
-        return response_content_json if response_content_json else response_content
+        if match:
+            response_content_json = match.group(1)
+            return response_content_json if response_content_json else response_content
+        return response_content
 
     except Exception as error:
         print(f"error: {error}")
@@ -611,7 +613,7 @@ def process_assignment_changes(
         raise
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_create_assignment_using_ai(
     generate_assignment_id: str,
     hub_id: str,
@@ -650,6 +652,15 @@ def process_create_assignment_using_ai(
     """
     try:
         redis_client = Config.REDIS_CLIENT
+        load_dotenv()
+        connect(
+            db=os.getenv("MONGO_DB"),
+            host=os.getenv("MONGO_URI"),
+            username=os.getenv("MONGO_USERNAME"),
+            password=os.getenv("MONGO_PASSWORD"),
+            alias="default",
+        )
+
         generate_assignment_key = f"generate_assignment_id_{generate_assignment_id}"
         assignments_dict_data = redis_client.get(generate_assignment_key)
 
@@ -687,7 +698,7 @@ def process_create_assignment_using_ai(
             # )
 
             # integrate ml model
-            predicted_difficulty_level = ["easy", "medium", "hard"]
+            predicted_difficulty_level = ["medium"]
 
             saved_assignments_ids = Assignment.objects.insert(
                 assignments_to_save,
