@@ -48,6 +48,7 @@ class Assignment(Document):
     question = StringField(required=True)
     answer = StringField()
     responses = DictField(StringField())
+    feedbacks = DictField(StringField())
     question_points = ListField(field=IntField())
     due_datetime = DateTimeField()
     topic = StringField()
