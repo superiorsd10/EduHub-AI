@@ -182,7 +182,7 @@ class Hub(Document):
     recordings = ListField(EmbeddedDocumentField(Recording))
     quizzes = ListField(EmbeddedDocumentField(Quiz))
     assignments = ListField(EmbeddedDocumentField(Assignment))
-    students_assignment_marks = ListField(ListField(FloatField()))
+    students_assignment_marks = DictField(ListField(FloatField()))
     posts = ListField(EmbeddedDocumentField(Post))
     messages = ListField(EmbeddedDocumentField(Message))
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
