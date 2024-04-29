@@ -138,7 +138,7 @@ def generate_assignment_llama(
     """
     try:
         system_prompt = """
-        Generate a JSON-formatted assignment based on the provided variables.
+        Generate a Markdown-formatted assignment based on the provided variables.
         The assignment should have a clear title, cover the specified topics,
         and include a mix of question types with varying point values.
 
@@ -148,50 +148,25 @@ def generate_assignment_llama(
         Ensure the assignment is at the specified difficulty level
         and format any mathematical equations using LaTeX in Markdown.
 
-        You have to return assignment in JSON format. Follow these example:
+        If any question code diagrams or code blocks use Mermaid in markdown formatting.
 
-        {
-            "title": "{title}",
-            "single-correct-questions": [
-                {
-                    "question": "{question}",
-                    "options": ["option1", "option2", "option3", "option4"],
-                    "points": "{points}"
-                }
-            ],
-            "multiple-correct-questions": [
-                {
-                    "question": "{question}",
-                    "options": ["option1", "option2", "option3", "option4"],
-                    "points": "{points}"
-                }
-            ],
-            "numerical-questions": [
-                {
-                    "question": "{question}",
-                    "points": "{points}"
-                }
-            ],
-            "descriptive-questions": [
-                {
-                    "question": "{question}",
-                    "points": "{points}"
-                }
-            ]
-        }
+        The assigment format is going to be:
+        JSON START
+        TITLE
+        Question Type
+        Questions (mentioning the number of points with each question at the end)
 
-        The {question} and {options} should be in the Markdown format and any mathematical equations in them should be in LaTeX format using Markdown.
+        Questions should follow a numbered ordered list.
 
-        If the {question} contains any diagram then use Mermaid code in Markdown format and if it included any code block then use Markdown formatting.
-
-        Note that you have to append "JSON START" before beginning of JSON code block and "JSON END" after the end of JSON code block.
+        Note that you have to append "JSON START" before beginning of {title} of
+        assignment and "JSON END" after the last question of assignment.
 
         Create a comprehensive and challenging assignment that
         assesses the student's understanding of the topics.
         """
 
         user_prompt = f"""
-        Generate a comprehensive assignment with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
+        Generate a comprehensive assignment in Markdown format with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
 
         Follow the special instructions provided by the teacher: {"no special instruction is given by teacher" if instructions_for_ai is None else instructions_for_ai}.
 
@@ -246,10 +221,22 @@ def modify_assignment_llama(
 
         Maintain the whole assignment format and difficulty as well as before.
         Just make changes in the questions as per user's instructions.
-        Make sure to maintain the JSON format and update the changes in the value of
-        the particular keys to be updated according to user's instructions.
+        Make sure to maintain the overall markdown format and update the changes at only place
+        where user requested according to user's instructions.
+
+        Ensure the assignment is at the specified difficulty level
+        and format any mathematical equations using LaTeX in Markdown.
+
+        If any question code diagrams or code blocks use Mermaid in markdown formatting.
+
+        The assigment format is going to be:
+        JSON START
+        TITLE
+        Question Type
+        Questions (mentioning the number of points with each question at the end)
+
         Also keep the "JSON START" and "JSON END" at the beginning and ending of
-        JSON code block respectively.
+        assignment respectively.
         """
 
         user_prompt = f"""
@@ -410,10 +397,10 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     return object_id
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_assignment_generation(
     title: str,
-    topics: List[str],
+    topics: str,
     specific_topics: str,
     instructions_for_ai: str,
     types_of_questions: dict,
@@ -444,7 +431,6 @@ def process_assignment_generation(
     try:
         assignments_dict = {}
 
-        topics_string = ", ".join(topics)
         types_of_questions_string = ", ".join(
             [
                 f"{key}: {value[0]} questions each worth {value[1]} points"
@@ -452,10 +438,10 @@ def process_assignment_generation(
             ]
         )
 
-        if assignments_count == 1:
+        if assignments_count == 0:
             generated_assignment = generate_assignment_llama(
                 title=title,
-                topics_string=topics_string,
+                topics_string=topics,
                 specific_topics=specific_topics,
                 instructions_for_ai=instructions_for_ai,
                 types_of_questions_string=types_of_questions_string,
@@ -468,7 +454,7 @@ def process_assignment_generation(
             for difficulty_level in difficulty_levels:
                 generated_assignment = generate_assignment_llama(
                     title=title,
-                    topics_string=topics_string,
+                    topics_string=topics,
                     specific_topics=specific_topics,
                     instructions_for_ai=instructions_for_ai,
                     types_of_questions_string=types_of_questions_string,
