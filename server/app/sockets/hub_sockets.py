@@ -2,6 +2,7 @@
 Hub sockets for the Flask application.
 """
 
+import time
 from flask import current_app
 from flask_socketio import emit
 from app.app import socketio
@@ -40,7 +41,8 @@ def handle_invite_sent(data):
 
         hub_object_id = hub_data.id
         hub_invitation_list_key = f"hub_{hub_object_id}_invitation_list"
-        redis_client.rpush(hub_invitation_list_key, email)
+        timestamp = int(time.time())
+        redis_client.zadd(hub_invitation_list_key, {email: timestamp})
 
         emit(
             "invite-sent-success",
@@ -81,7 +83,7 @@ def handle_accept_request(data):
 
         redis_client = current_app.redis_client
         hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
-        redis_client.lrem(hub_invitation_list_key, 0, email)
+        redis_client.zrem(hub_invitation_list_key, email)
 
         emit(
             "join-request-accepted",
@@ -120,7 +122,7 @@ def handle_reject_request(data):
 
         redis_client = current_app.redis_client
         hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
-        redis_client.lrem(hub_invitation_list_key, 0, email)
+        redis_client.zrem(hub_invitation_list_key, email)
 
         emit(
             "join-request-rejected",

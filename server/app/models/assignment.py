@@ -11,6 +11,7 @@ from mongoengine import (
     ObjectIdField,
     ListField,
     BooleanField,
+    DictField,
 )
 
 
@@ -46,6 +47,7 @@ class Assignment(Document):
     total_points = IntField()
     question = StringField(required=True)
     answer = StringField()
+    responses = DictField(StringField())
     question_points = ListField(field=IntField())
     due_datetime = DateTimeField()
     topic = StringField()

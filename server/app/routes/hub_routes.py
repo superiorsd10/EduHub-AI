@@ -18,9 +18,6 @@ from marshmallow import Schema, fields, ValidationError
 from bson.objectid import ObjectId
 from redis import RedisError
 
-# from flask_socketio import join_room
-# from app.app import socketio
-
 hub_blueprint = Blueprint("hub", __name__)
 
 
@@ -675,114 +672,6 @@ def get_hub(hub_id):
         )
 
 
-# @hub_blueprint.route("/api/join-hub/<invite_code>", methods=["POST"])
-# @limiter.limit("5 per minute")
-# @firebase_token_required
-# def join_hub(invite_code):
-#     """
-#     Joins a user to a hub.
-
-#     This endpoint allows a user to join a hub based on the provided invite code.
-#     It checks if the hub exists, validates the request data, and sends a join request
-#     notification to the hub creator.
-
-#     **Request:**
-
-#     - **Method:** POST
-#     - **URL:** /api/join-hub/<invite_code>
-#     - **Body:** JSON data with the following fields:
-#         - `email`: The email address of the user joining the hub (required, string)
-
-#     **Response:**
-
-#     - **Success:**
-#         - JSON response with:
-#             - `message`: "Join request sent successfully"
-#             - `success`: True
-#         - Status code: 200 OK
-#     - **Error:**
-#         - JSON response with:
-#             - `error`: Error message describing the issue
-#             - `success`: False
-#         - Status code varies depending on the error (e.g., 404 for not found,
-#           409 for conflict, 500 for internal server error)
-
-#     **Raises:**
-
-#     - `ValidationError`: If the request data is invalid.
-#     - `Exception`: For any other unexpected error.
-
-#     **Notes:**
-
-#     - Requires a valid Firebase authentication token.
-#     - Rate-limited to 5 requests per minute per user.
-#     - Sends a join request notification to the hub creator if the hub is found and the
-#       user is not already a member.
-#     """
-
-#     try:
-#         schema = JoinHubSchema()
-#         data = schema.load(request.get_json())
-#         email = data["email"]
-
-#         hub_data = (
-#             Hub.objects(invite_code=invite_code)
-#             .only("creator_id", "members_id")
-#             .first()
-#         )
-
-#         if hub_data is None:
-#             return (
-#                 jsonify(
-#                     {
-#                         "error": "Hub not found for the provided invite code",
-#                         "success": False,
-#                     }
-#                 ),
-#                 StatusCode.NOT_FOUND.value,
-#             )
-
-#         hub_data_dict = hub_data.to_mongo().to_dict()
-
-#         hub_id = hub_data.id
-#         creator_id = hub_data_dict.get("creator_id")
-#         members_id = hub_data_dict.get("members_id")
-
-#         redis_client = current_app.redis_client
-#         user_cache_key = f"user:{email}"
-#         user_object_id = redis_client.hget(user_cache_key, "user_object_id")
-#         user_object_id = ObjectId(user_object_id.decode("utf-8"))
-
-#         is_member_already_exists = any(
-#             user_object_id in id_list for id_list in members_id.values()
-#         )
-
-#         if is_member_already_exists:
-#             return (
-#                 jsonify({"error": "Member already exists", "success": False}),
-#                 StatusCode.CONFLICT.value,
-#             )
-
-#         room_id = f"{str(creator_id)}-{str(user_object_id)}"
-#         join_room(room_id)
-#         socketio.emit(
-#             "join_request_notification",
-#             {"user_id": user_object_id, "hub_id": hub_id, "room_id": room_id},
-#             room=room_id,
-#         )
-
-#         return (
-#             jsonify({"message": "Join request sent successfully", "success": True}),
-#             StatusCode.SUCCESS.value,
-#         )
-
-#     except Exception as error:
-#         return (
-#             jsonify({"error": str(error), "success": False}),
-#             StatusCode.INTERNAL_SERVER_ERROR.value,
-#         )
-
-
 @hub_blueprint.route("/api/<hub_id>/get-topics", methods=["GET"])
 @limiter.limit("5 per minute")
 @firebase_token_required
@@ -833,6 +722,45 @@ def get_topics(hub_id):
         return (
             jsonify({"error": "Recording not found", "success": False}),
             StatusCode.NOT_FOUND.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@hub_blueprint.route("/api/<hub_id>/get-invitation-list", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_invitation_list(hub_id):
+    """Retrieve the invitation list for a hub.
+
+    Args:
+        hub_id (str): The base64 encoded ID of the hub.
+
+    Returns:
+        tuple: A tuple containing a JSON response with the invitation list and success status code.
+
+    Raises:
+        Exception: If an error occurs while retrieving the invitation list.
+    """
+    try:
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+        redis_client = current_app.redis_client
+        hub_invitation_list_key = f"hub_{hub_object_id}_invitation_list"
+        hub_invitation_list = redis_client.zrange(
+            hub_invitation_list_key, 0, -1, withscores=False
+        )
+        hub_invitation_list_decoded = [
+            item.decode("utf-8") for item in hub_invitation_list
+        ]
+
+        return (
+            jsonify({"message": hub_invitation_list_decoded, "success": True}),
+            StatusCode.SUCCESS.value,
         )
 
     except Exception as error:

@@ -16,6 +16,7 @@ import base64
 from datetime import datetime
 import os
 import json
+import re
 from typing import List
 import uuid
 from app.celery.celery import celery_instance
@@ -24,6 +25,7 @@ from app.models.hub import Hub, Assignment as EmbeddedAssignment
 from bson import ObjectId
 from config.config import Config
 from dotenv import load_dotenv
+from mongoengine import connect
 import requests
 
 
@@ -88,6 +90,11 @@ def generate_response_llama(
 
         response_json = response.json()
         response_content = response_json["choices"][0]["message"]["content"]
+        match = re.search(r"JSON START\n(.*?)JSON END", response_content, re.DOTALL)
+
+        if match:
+            response_content_json = match.group(1)
+            return response_content_json if response_content_json else response_content
         return response_content
 
     except Exception as error:
@@ -102,7 +109,6 @@ def generate_assignment_llama(
     instructions_for_ai: str,
     types_of_questions_string: str,
     difficulty: str,
-    system_prompt: str,
 ) -> tuple:
     """
     Generate an assignment using the Llama AI model.
@@ -133,6 +139,34 @@ def generate_assignment_llama(
 
     """
     try:
+        system_prompt = """
+        Generate a Markdown-formatted assignment based on the provided variables.
+        The assignment should have a clear title, cover the specified topics,
+        and include a mix of question types with varying point values.
+
+        Follow the teacher's instructions and give special attention
+        to the specific topics.
+
+        Ensure the assignment is at the specified difficulty level
+        and format any mathematical equations using LaTeX in Markdown.
+
+        If any question code diagrams or code blocks use Mermaid in markdown formatting.
+
+        The assigment format is going to be:
+        JSON START
+        TITLE
+        Question Type
+        Questions (mentioning the number of points with each question at the end)
+
+        Questions should follow a numbered ordered list.
+
+        Note that you have to append "JSON START" before beginning of {title} of
+        assignment and "JSON END" after the last question of assignment.
+
+        Create a comprehensive and challenging assignment that
+        assesses the student's understanding of the topics.
+        """
+
         user_prompt = f"""
         Generate a comprehensive assignment in Markdown format with the title '{title}'. The assignment should cover the following topics: {topics_string} and give special attention to the specific topics: {"give equal attention to the previously mentioned topics" if specific_topics is None else specific_topics}.
 
@@ -142,18 +176,6 @@ def generate_assignment_llama(
         {types_of_questions_string}
 
         Ensure the assignment is at {difficulty} difficulty level.
-
-        When generating the assignment, please format it in Markdown and use LaTeX equations for any mathematical equations.
-
-        If any question includes a diagram, write mermaid code for it inside markdown
-        code blocks specifying the mermaid language.
-
-        The assigment format is going to be:
-        Topics (h1 heading)
-        Question Type (h3 heading)
-        Questions (mentioning the number of points with each question at the end)
-
-        Questions should follow a numbered ordered list.
 
         Create a comprehensive and challenging assignment that assesses the student's understanding of the topics. Ensure the questions are clear, concise, and relevant to the topics.
         """
@@ -201,6 +223,22 @@ def modify_assignment_llama(
 
         Maintain the whole assignment format and difficulty as well as before.
         Just make changes in the questions as per user's instructions.
+        Make sure to maintain the overall markdown format and update the changes at only place
+        where user requested according to user's instructions.
+
+        Ensure the assignment is at the specified difficulty level
+        and format any mathematical equations using LaTeX in Markdown.
+
+        If any question code diagrams or code blocks use Mermaid in markdown formatting.
+
+        The assigment format is going to be:
+        JSON START
+        TITLE
+        Question Type
+        Questions (mentioning the number of points with each question at the end)
+
+        Also keep the "JSON START" and "JSON END" at the beginning and ending of
+        assignment respectively.
         """
 
         user_prompt = f"""
@@ -216,6 +254,92 @@ def modify_assignment_llama(
 
         modified_assignment_string = generate_response_llama(system_prompt, user_prompt)
         return modified_assignment_string
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
+def convert_markdown_into_json_llama(markdown_assignment: str) -> str:
+    """Convert a Markdown-formatted assignment into JSON format using LLAMA.
+
+    This function takes a Markdown-formatted assignment as input and prompts the user to
+    convert it into JSON format.
+    The conversion is performed using the LLAMA (Large Language Model Assisted MAchine writing)
+    system, which assists
+    users in generating textual content based on prompts.
+
+    Args:
+        markdown_assignment (str): The Markdown-formatted assignment that needs to be converted
+        into JSON format.
+
+    Returns:
+        str: The JSON-formatted representation of the assignment generated by the LLAMA system.
+
+    Raises:
+        Exception: If an error occurs during the conversion process.
+    """
+    try:
+        system_prompt = """
+        You will be provided an {assignment} that is formatted in Markdown and you have to convert it into JSON String.
+
+        The assignment format is:
+
+        TITLE
+        QUESTION TYPE
+        QUESTIONS (of that QUESTION TYPE)
+
+        After each question, the number of points associated with it are provided.
+
+        Options are identified using (a), (b), (c), and (d)
+
+        Questions are in ordered numbered list.
+
+        "\n" is used for line breaks.
+
+        The JSON format should be:
+
+        {
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ]
+        }
+
+        Note that you have to append "JSON START" before beginning of JSON code block and "JSON END" after the end of JSON code block.
+        """
+
+        user_prompt = f"""
+        Convert the below Markdown formatted assignment into JSON format:
+
+        {markdown_assignment}
+        """
+
+        json_assignment = generate_response_llama(system_prompt, user_prompt)
+        return json_assignment
 
     except Exception as error:
         print(f"error: {error}")
@@ -254,23 +378,87 @@ def generate_assignment_answer_llama(assignment: str) -> str:
     try:
         system_prompt = """
         This system is designed to assist with answering assignment questions.
-        The assignment questions are formatted in markdown, latex, and mermaid (for diagrams).
+        The assignment questions are formatted in the below format:
+
+        {
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}"
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}"
+                }
+            ]
+        }
+
         The system should provide clear and concise answers to each question.
 
-        For single correct choice type questions, provide the correct option with the answer.
-        For multiple correct choice type questions, provide all correct options with answers.
-        For numerical type questions, provide the correct answer without explanation.
-        For descriptive type questions, provide a detailed answer.
+        The format of the answer response should be as follows:
+
+        {
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}",
+                    "correct-option": "{correct-option}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}",
+                    "correct-options": ["option1", "option3", "option4"]
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}",
+                    "answer": "{answer}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}",
+                    "answer": "{answer}"
+                }
+            ]
+        }
+
+        The {question}, {options}, {answer}, {correct-option} and {correct-options} should be in the Markdown format and any mathematical equations in them should be in LaTeX format using Markdown.
+
+        If the {question} or {answer} contains any diagram then use Mermaid code in Markdown format and if it included any code block then use Markdown formatting.
+
+        Note that you have to append "JSON START" before beginning of JSON code block and "JSON END" after the end of JSON code block.
         """
 
         user_prompt = f"""
         Please answer the following assignment questions:
 
         {assignment}
-
-        Note: The assignment questions will be provided, and the system should respond
-        with the answers to each question in the format specified above maintaining
-        the markdown, latex and mermaid format.
         """
 
         assignment_answer = generate_response_llama(system_prompt, user_prompt)
@@ -297,10 +485,10 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     return object_id
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_assignment_generation(
     title: str,
-    topics: List[str],
+    topics: str,
     specific_topics: str,
     instructions_for_ai: str,
     types_of_questions: dict,
@@ -331,22 +519,6 @@ def process_assignment_generation(
     try:
         assignments_dict = {}
 
-        system_prompt = """
-        Generate a Markdown-formatted assignment based on the provided variables.
-        The assignment should have a clear title, cover the specified topics,
-        and include a mix of question types with varying point values.
-
-        Follow the teacher's instructions and give special attention
-        to the specific topics.
-
-        Ensure the assignment is at the specified difficulty level
-        and format any mathematical equations using LaTeX in Markdown.
-
-        Create a comprehensive and challenging assignment that
-        assesses the student's understanding of the topics.
-        """
-
-        topics_string = ", ".join(topics)
         types_of_questions_string = ", ".join(
             [
                 f"{key}: {value[0]} questions each worth {value[1]} points"
@@ -354,15 +526,14 @@ def process_assignment_generation(
             ]
         )
 
-        if assignments_count == 1:
+        if assignments_count == 0:
             generated_assignment = generate_assignment_llama(
                 title=title,
-                topics_string=topics_string,
+                topics_string=topics,
                 specific_topics=specific_topics,
                 instructions_for_ai=instructions_for_ai,
                 types_of_questions_string=types_of_questions_string,
                 difficulty="medium",
-                system_prompt=system_prompt,
             )
             assignments_dict[generated_assignment[0]] = generated_assignment[1]
 
@@ -371,12 +542,11 @@ def process_assignment_generation(
             for difficulty_level in difficulty_levels:
                 generated_assignment = generate_assignment_llama(
                     title=title,
-                    topics_string=topics_string,
+                    topics_string=topics,
                     specific_topics=specific_topics,
                     instructions_for_ai=instructions_for_ai,
                     types_of_questions_string=types_of_questions_string,
                     difficulty=difficulty_level,
-                    system_prompt=system_prompt,
                 )
                 assignments_dict[generated_assignment[0]] = generated_assignment[1]
 
@@ -394,7 +564,7 @@ def process_assignment_generation(
         raise
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_assignment_changes(
     generate_assignment_id: str,
     changes_prompt: str,
@@ -443,7 +613,7 @@ def process_assignment_changes(
         raise
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_create_assignment_using_ai(
     generate_assignment_id: str,
     hub_id: str,
@@ -482,6 +652,15 @@ def process_create_assignment_using_ai(
     """
     try:
         redis_client = Config.REDIS_CLIENT
+        load_dotenv()
+        connect(
+            db=os.getenv("MONGO_DB"),
+            host=os.getenv("MONGO_URI"),
+            username=os.getenv("MONGO_USERNAME"),
+            password=os.getenv("MONGO_PASSWORD"),
+            alias="default",
+        )
+
         generate_assignment_key = f"generate_assignment_id_{generate_assignment_id}"
         assignments_dict_data = redis_client.get(generate_assignment_key)
 
@@ -491,6 +670,9 @@ def process_create_assignment_using_ai(
             assignments_to_save = []
 
             for difficulty_level, assignment in assignments_dict.items():
+                assignment = convert_markdown_into_json_llama(
+                    markdown_assignment=assignment
+                )
                 assignment_answer = generate_assignment_answer_llama(assignment)
 
                 new_assignment = Assignment(
@@ -516,7 +698,7 @@ def process_create_assignment_using_ai(
             # )
 
             # integrate ml model
-            predicted_difficulty_level = ["easy", "medium", "hard"]
+            predicted_difficulty_level = ["medium"]
 
             saved_assignments_ids = Assignment.objects.insert(
                 assignments_to_save,
@@ -548,7 +730,7 @@ def process_create_assignment_using_ai(
         raise
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_create_assignment_manually(
     hub_id: str,
     title: str,
@@ -592,6 +774,14 @@ def process_create_assignment_manually(
     """
     try:
         redis_client = Config.REDIS_CLIENT
+        load_dotenv()
+        connect(
+            db=os.getenv("MONGO_DB"),
+            host=os.getenv("MONGO_URI"),
+            username=os.getenv("MONGO_USERNAME"),
+            password=os.getenv("MONGO_PASSWORD"),
+            alias="default",
+        )
 
         hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
         assignments_to_save = []

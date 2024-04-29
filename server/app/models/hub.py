@@ -17,43 +17,6 @@ from mongoengine import (
     FloatField,
 )
 
-from mongoengine.base import BaseField
-
-
-class SetField(BaseField):
-    """
-    A custom field to represent a set that allows duplicate values during insertion."""
-
-    def __init__(self, field=None, **kwargs):
-        """
-        Initializes the field
-        """
-        self.field = field or ListField(field=str)
-        super().__init__(**kwargs)
-
-    def to_python(self, value):
-        """
-        Converts the value to a Python set during retrieval.
-        """
-        if value is None:
-            return set()
-        return set(value)
-
-    def to_mongo(self, value):
-        """
-        Converts the value to a list during storage.
-        """
-        if not isinstance(value, (set, list, tuple)):
-            self.error("Value must be a set, list, or tuple.")
-        return list(value)
-
-    def validate(self, value):
-        """
-        Performs validation on the value.
-        """
-        if not isinstance(value, (set, list, tuple)):
-            self.error("Value must be a set, list, or tuple.")
-
 
 class Recording(EmbeddedDocument):
     """
@@ -206,7 +169,7 @@ class Hub(Document):
     name = StringField(required=True, max_length=100, min_length=1)
     section = StringField()
     description = StringField(max_length=280)
-    topics = SetField()
+    topics = ListField(StringField())
     creator_id = ObjectIdField(required=True)
     theme_color = StringField()
     photo_url = URLField()
