@@ -774,6 +774,14 @@ def process_create_assignment_manually(
     """
     try:
         redis_client = Config.REDIS_CLIENT
+        load_dotenv()
+        connect(
+            db=os.getenv("MONGO_DB"),
+            host=os.getenv("MONGO_URI"),
+            username=os.getenv("MONGO_USERNAME"),
+            password=os.getenv("MONGO_PASSWORD"),
+            alias="default",
+        )
 
         hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
         assignments_to_save = []
