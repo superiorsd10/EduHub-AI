@@ -13,37 +13,10 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token,email } =
     useContext(AppContext);
-
-  const handleGetRoomCode = async () => {
-    const URL =
-      "https://api.100ms.live/v2/room-codes/room/6610f313e4bed7263690583b";
-    const token =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTM5NjAxNjMsImV4cCI6MTcxNDU2NDk2MywianRpIjoiZjk4YzVkZTAtY2I2Mi00Y2NhLWI2MGYtYjc4NzdjOGVkYmY1IiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTM5NjAxNjMsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.7I8lXaijeT9NO5pTfnDJra-7cEyz_qZOZz9ebg0dzoo";
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-    let room_code_student,room_code_ta,room_code_teacher;
-    for (let codes of data.data) {
-      if(codes.role==="teacher") room_code_teacher=codes.code;
-      else if(codes.role==="student") room_code_student=codes.code;
-      else if(codes.role==="teaching-assistant") room_code_ta=codes.code;
-    }
-    return {
-      room_code_teacher: room_code_teacher,
-      room_code_ta: room_code_ta,
-      room_code_student: room_code_student,
-    };
-  };
+  
   const handleCreateHub = async () => {
     setLoading(true);
     try {
-      const { room_code_teacher, room_code_ta, room_code_student } =
-        await handleGetRoomCode();
       const resp = await fetch("http://127.0.0.1:5000/api/create-hub", {
         method: "POST",
         headers: {
@@ -55,9 +28,6 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           section: section,
           description: description,
           email: email,
-          room_code_teacher: room_code_teacher,
-          room_code_ta: room_code_ta,
-          room_code_student: room_code_student,
         }),
       });
       const { hub_id } = await resp.json();

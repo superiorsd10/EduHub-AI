@@ -1,13 +1,26 @@
 import { Avatar, Button, Group, Modal, Stack, Text } from "@mantine/core";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { HubContext } from "@/providers/HubProvider";
 import NextLink from "@/utils/NextLink";
 import { FaCircleCheck } from "react-icons/fa6";
 import { RxCross1 } from "react-icons/rx";
+import { useRouter } from "next/router";
 
 const AcceptRequests:React.FC<{id: string;}> = ({id}) => {
   const { setIsAcceptRequestsVisible, isAcceptRequestsVisible } =
     useContext(HubContext);
+  const router = useRouter();
+  const hub_id=router.query.hub_id as string;
+
+  const getInvitationList = async()=>{
+    const resp=await fetch(`http://127.0.0.1:5000/api/${hub_id}/get-invitation-list`);
+    const body=await resp.json();
+    console.log(body);
+  }
+
+  useEffect(()=>{
+    getInvitationList();
+  },[])
   return (
     <Modal
       opened={isAcceptRequestsVisible}

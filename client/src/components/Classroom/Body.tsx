@@ -15,8 +15,6 @@ type HubIntroductoryData = {
   recordings: any[];
   section: string;
   streaming_url: string;
-  room_code_teacher: string;
-  room_code_student: string;
   _id: string;
 };
 type Post = {
@@ -40,13 +38,9 @@ type HubsData = {
 
 const Body = (props: HubsData) => {
   const { introductory, paginatedData, role } = props;
-  const room_code =
-    role === "teacher"
-      ? introductory.room_code_teacher
-      : introductory.room_code_student;
   return (
     <Group pos="relative" w="100%" gap="xl" align="flex-start">
-      <LeftBar invite_code={introductory.invite_code} room_code={room_code} />
+      <LeftBar invite_code={introductory.invite_code} role={role} />
       <Stack style={{ flex: 1 }}>
         {paginatedData.map((post, id) => (
           <Content key={id} post={post.items} />

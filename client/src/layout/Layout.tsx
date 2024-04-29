@@ -27,7 +27,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           }}
         />
       )}
-      {isLoggedIn && <JoinhubModal opened={true} close={() => {}} />}
+      {isLoggedIn && <JoinhubModal opened={false} close={() => {}} />}
       {children}
     </>
   );
