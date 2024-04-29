@@ -314,7 +314,7 @@ def recording_webhook_listener():
 
 @recording_blueprint.route("/api/process-image-files", methods=["POST"])
 @limiter.limit("5 per minute")
-@firebase_token_required
+# @firebase_token_required
 def process_image_files_endpoint():
     """
     Process uploaded image files to generate recording embeddings asynchronously.
@@ -358,6 +358,7 @@ def process_image_files_endpoint():
             )
 
         image_files = request.files.getlist("image_files")
+        print(image_files)
         image_files_bytes = [image_file.read() for image_file in image_files]
 
         process_image_files.apply_async(
@@ -369,6 +370,8 @@ def process_image_files_endpoint():
                 "interval_max": 10,
             },
         )
+
+        print("reached")
 
         return (
             jsonify({"message": "Successfully processed the images", "success": True}),

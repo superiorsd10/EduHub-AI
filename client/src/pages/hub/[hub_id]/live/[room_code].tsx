@@ -1,40 +1,37 @@
-import { useRouter } from "next/router";
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import html2canvas from "html2canvas";
 import { NextPageWithLayout } from "../../../_app";
 import EmptyLayout from "@/components/EmptyLayout";
-import html2canvas from "html2canvas";
 import { HMSPrebuilt } from "@100mslive/roomkit-react";
 import { AppContext } from "@/providers/AppProvider";
 import { HubContext, HubProvider } from "@/providers/HubProvider";
 
 const LiveWithoutContext: NextPageWithLayout = () => {
+  const router = useRouter();
   const [hasJoined, setHasJoined] = useState(false);
   const ToCaptureRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const room_code = router.query.room_code as string;
+
   const hub_id = router.query.hub_id as string;
+  const room_code = router.query.room_code as string;
+
   const { token, email } = useContext(AppContext);
   const { currentHubData, fetchHubData, roomId } = useContext(HubContext);
 
   useEffect(() => {
-    if (hub_id && email) {
-      fetchHubData(hub_id, token);
-    }
+    if (hub_id && email) fetchHubData(hub_id, token);
   }, []);
 
   const role = currentHubData?.role;
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const request = window.indexedDB.open("screenshotsDB", 1);
+    const request = window.indexedDB.open(`screenshotsDB_${hub_id}`, 1);
     request.onupgradeneeded = (event) => {
       const db = (event.target as any).result as IDBDatabase;
       if (!db.objectStoreNames.contains("screenshots")) {
         db.createObjectStore("screenshots", { autoIncrement: true });
       }
-    };
-    request.onsuccess = (event) => {
-      const db = (event.target as any).result as IDBDatabase;
     };
     request.onerror = (event) => {
       console.error("IndexedDB error:", event);
@@ -44,7 +41,6 @@ const LiveWithoutContext: NextPageWithLayout = () => {
   const captureScreenshot = () => {
     const element = ToCaptureRef.current;
     if (!element) return;
-    console.log("capturing....");
     html2canvas(ToCaptureRef.current as HTMLElement, { useCORS: true }).then(
       (canvas) => {
         canvas.toBlob((blob: any) => {
@@ -55,14 +51,18 @@ const LiveWithoutContext: NextPageWithLayout = () => {
   };
 
   const saveScreenshotToDB = (blob: Blob) => {
-    const request = window.indexedDB.open("screenshotsDB", 1);
+    const request = window.indexedDB.open(`screenshotsDB_${hub_id}`, 1);
     request.onsuccess = (event) => {
       const db = (event.target as any).result as IDBDatabase;
       const transaction = db.transaction(["screenshots"], "readwrite");
       const store = transaction.objectStore("screenshots");
-      const addRequest = store.add({ blob, hub_id });
+  
+      // Using the current timestamp as a unique ID
+      const screenshotId = Date.now(); 
+  
+      const addRequest = store.add({ id: screenshotId, blob });
       addRequest.onsuccess = () => {
-        console.log("Screenshot saved to IndexedDB");
+        console.log("Screenshot saved to IndexedDB with ID:", screenshotId);
       };
       addRequest.onerror = (error) => {
         console.error("Error saving screenshot:", error);
@@ -83,7 +83,7 @@ const LiveWithoutContext: NextPageWithLayout = () => {
   };
 
   const sendFrames = async (formData: any) => {
-    console.log("sencing frames...")
+    console.log("sencing frames...");
     fetch("http://127.0.0.1:5000/api/process-image-files", {
       method: "POST",
       body: formData,
@@ -107,31 +107,36 @@ const LiveWithoutContext: NextPageWithLayout = () => {
         clearInterval(intervalId);
         setIntervalId(null);
       }
-
-      // Retrieve all screenshots for the current hub_id
-      const request = window.indexedDB.open("screenshotsDB", 1);
+  
+      const request = window.indexedDB.open(`screenshotsDB_${hub_id}`, 1);
       request.onsuccess = (event) => {
         const db = (event.target as any).result as IDBDatabase;
-        const transaction = db.transaction(["screenshots"], "readonly");
+        const transaction = db.transaction(["screenshots"], "readwrite");
         const store = transaction.objectStore("screenshots");
         const getAllRequest = store.getAll();
+  
         getAllRequest.onsuccess = () => {
-          const screenshots = getAllRequest.result.filter(
-            (item: any) => item.hub_id === hub_id
-          );
-          const screenshotsArray = screenshots.map((item: any) => item.blob);
-          console.log("Retrieved screenshots:", screenshotsArray);
-
+          const screenshots = getAllRequest.result;
           const formData = new FormData();
-          formData.append("room_id", room_code);
-          screenshotsArray.forEach((blob, index) => {
-            formData.append(
-              "image_files",
-              new File([blob], `screenshot_${index}.png`)
-            );
+          formData.append("room_id", roomId as string);
+          let counter = 0;
+          screenshots.forEach((item: any, index: number) => {
+            if (counter === 10) return;
+            const fileName = `SCR-${new Date().toISOString().slice(0, 10)}-${index + 1}.png`;
+            formData.append("image_files", new File([item.blob], fileName, { type: "image/png" }));
+            ++counter;
           });
-
+  
           sendFrames(formData);
+  
+          const deleteTransaction = db.transaction(["screenshots"], "readwrite");
+          const deleteStore = deleteTransaction.objectStore("screenshots");
+          screenshots.forEach((item) => {
+            console.log(item.id)
+            if (item.id !== undefined && item.id !== null) {
+              deleteStore.delete(item.id);
+            }
+          });
         };
         getAllRequest.onerror = (error) => {
           console.error("Error retrieving screenshots:", error);
@@ -140,10 +145,11 @@ const LiveWithoutContext: NextPageWithLayout = () => {
       request.onerror = (event) => {
         console.error("IndexedDB error:", event);
       };
-
+  
       setHasJoined(false);
     }
   };
+  
 
   return (
     <div style={{ height: "100vh" }} ref={ToCaptureRef}>

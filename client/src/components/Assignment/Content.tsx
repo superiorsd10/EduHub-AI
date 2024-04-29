@@ -81,7 +81,13 @@ const Content = () => {
                 <Button
                   variant="outline"
                   color="gray.7"
-                  style={{ border: "2px solid black" }}
+                  style={{
+                    border: "2px solid #ADB5BD",
+                    borderRight: "0px",
+                    borderRadius: "0px",
+                    borderTopLeftRadius: "10%",
+                    borderBottomLeftRadius: "10%",
+                  }}
                   pl="md"
                   pr="md"
                 >
@@ -90,7 +96,12 @@ const Content = () => {
                 <Button
                   variant="outline"
                   color="gray.7"
-                  style={{ border: "2px solid black" }}
+                  style={{
+                    border: "2px solid #ADB5BD",
+                    borderRight: "0px",
+                    borderLeft:'0px',
+                    borderRadius: "0px",
+                  }}
                   pl="md"
                   pr="md"
                 >
@@ -99,7 +110,12 @@ const Content = () => {
                 <Button
                   variant="outline"
                   color="gray.7"
-                  style={{ border: "2px solid black" }}
+                  style={{
+                    border: "2px solid #ADB5BD",
+                    borderRight: "0px",
+                    borderLeft:'0px',
+                    borderRadius: "0px",
+                  }}
                   pl="md"
                   pr="md"
                 >
@@ -108,7 +124,15 @@ const Content = () => {
                 <Button
                   variant="outline"
                   color="gray.7"
-                  style={{ border: "2px solid black" }}
+                  style={{
+                    border: "2px solid #ADB5BD",
+                    borderRadius: "0px",
+                    borderLeft:'0px',
+                    borderTopLeftRadius:'0',
+                    borderBottomLeftRadius:'0',
+                    borderTopRightRadius: "10%",
+                    borderBottomRightRadius: "10%",
+                  }}
                   pl="md"
                   pr="md"
                 >
@@ -149,7 +173,7 @@ const Content = () => {
           checked={false}
           color="black"
           label={`Generate Assignment ${
-            assignmentType === "AI" ? "by AI" : "Manually"
+            assignmentType === "AI" ? "Manually" : "by AI"
           }`}
           onClick={() => {
             if (assignmentType === "AI") setAssignmentType("Manual");
