@@ -26,8 +26,9 @@ const AcceptRequests: React.FC<{ id: string }> = ({ id }) => {
   };
 
   useEffect(() => {
+    if(!isAcceptRequestsVisible) return;
     getInvitationList();
-  }, []);
+  }, [isAcceptRequestsVisible]);
   return (
     <Modal
       opened={isAcceptRequestsVisible}
@@ -46,6 +47,7 @@ const AcceptRequests: React.FC<{ id: string }> = ({ id }) => {
             </Group>
             <Group>
               <FaCircleCheck size="24px" onClick={()=>{
+                console.log("clicked accept requests")
                   socket.emit("accept-request", {
                     email: email,
                     hub_id: hub_id
