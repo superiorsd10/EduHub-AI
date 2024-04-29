@@ -378,6 +378,8 @@ def create_assignment_using_ai(hub_id, generate_assignment_id):
         automatic_feedback_enabled = data.get("automatic_feedback_enabled")
         plagiarism_checker_enabled = data.get("plagiarism_checker_enabled")
 
+        create_assignment_uuid = str(uuid.uuid4())
+
         process_create_assignment_using_ai.apply_async(
             args=[
                 generate_assignment_id,
@@ -391,6 +393,7 @@ def create_assignment_using_ai(hub_id, generate_assignment_id):
                 automatic_grading_enabled,
                 automatic_feedback_enabled,
                 plagiarism_checker_enabled,
+                create_assignment_uuid,
             ],
             retry_policy={
                 "max_retries": 3,
