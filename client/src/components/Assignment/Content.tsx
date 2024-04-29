@@ -1,7 +1,4 @@
-import {
-  AssignmentContext,
-  AssignmentProvider,
-} from "@/providers/AssignmentProvider";
+import { AssignmentContext } from "@/providers/AssignmentProvider";
 import {
   Input,
   Stack,
@@ -10,18 +7,21 @@ import {
   MultiSelect,
   Group,
   Button,
-  Box,
-  Text,
-  Title,
 } from "@mantine/core";
 import React, { useContext, useState } from "react";
 import Question from "./Question";
 
 const Content = () => {
   const { setIsPreviewAssignmentVisible } = useContext(AssignmentContext);
-  const [value, setValue] = useState<string | null>("");
   const [assignmentType, setAssignmentType] = useState<"AI" | "Manual">("AI");
   const [questions, setQuestions] = useState<string[]>([]);
+
+  const [title, setTitle] = useState<string>("");
+  const [instructions, setInstructions] = useState<string>("");
+  const [topics, setTopics] = useState<string>("");
+  const [specificTopics, setSpecificTopics] = useState<string>("");
+  const [instructionsForAI, setInstructionsForAI] = useState<string>("");
+  const [typeOfQuestions, setTypeOfQuestions] = useState<string>("");
 
   const addQuestion = () => {
     setQuestions([...questions, ""]);
@@ -39,12 +39,19 @@ const Content = () => {
       justify="space-between"
     >
       {assignmentType === "AI" ? (
-        <Stack mah='85vh' h='85vh' style={{overflowY:'auto'}}>
-          <Input placeholder="Title" style={{ border: "black" }}></Input>
+        <Stack mah="85vh" h="85vh" style={{ overflowY: "auto" }}>
+          <Input
+            placeholder="Title"
+            style={{ border: "black" }}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          ></Input>
           <Textarea
             placeholder="Instructions (optional)"
             minRows={5}
             autosize
+            value={instructions}
+            onChange={(event) => setInstructions(event.target.value)}
           ></Textarea>
           <Stack>
             <Radio
@@ -53,23 +60,23 @@ const Content = () => {
               label="Generate Assignment using AI"
             />
             <Stack pl="xl">
-              <MultiSelect
-                data={["Cryptography", "Discrete Mathematics"]}
-                searchable
-                placeholder="Select topics"
-                nothingFoundMessage="Nothing found..."
-                checkIconPosition="left"
-                maxDropdownHeight={200}
-                comboboxProps={{
-                  transitionProps: { transition: "pop", duration: 200 },
-                }}
-              ></MultiSelect>
+              <Input
+                placeholder="Select Topics"
+                value={topics}
+                onChange={(event) => setTopics(event.target.value)}
+              ></Input>
               <Textarea
                 placeholder="Any specific syllabus/topic you wanna mention (optional)"
                 minRows={5}
                 autosize
+                value={specificTopics}
+                onChange={(event) => setSpecificTopics(event.target.value)}
               ></Textarea>
-              <Input placeholder="Any specific instruction for AI (optional)"></Input>
+              <Input
+                placeholder="Any specific instruction for AI (optional)"
+                value={instructionsForAI}
+                onChange={(event) => setInstructionsForAI(event.target.value)}
+              ></Input>
               <Group gap="0">
                 <Button
                   variant="outline"
@@ -126,11 +133,13 @@ const Content = () => {
         <Stack>
           <Stack>
             <Input placeholder="Title" style={{ border: "none" }}></Input>
-            <Input placeholder="Description" style={{ border: "black" }}></Input>
+            <Input
+              placeholder="Description"
+              style={{ border: "black" }}
+            ></Input>
             {questions.map((_, index) => (
               <Question key={index} />
             ))}
-            
           </Stack>
         </Stack>
       )}
@@ -147,7 +156,11 @@ const Content = () => {
             else setAssignmentType("AI");
           }}
         />
-        {assignmentType==="Manual" && <Button bg='black' onClick={addQuestion}>Add Question</Button>}
+        {assignmentType === "Manual" && (
+          <Button bg="black" onClick={addQuestion}>
+            Add Question
+          </Button>
+        )}
       </Group>
     </Stack>
   );

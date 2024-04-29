@@ -22,6 +22,7 @@ const LeftBar = ({
     setIsCreatePostVisible,
     currentHubData,
     appendPost,
+    setRoomId
   } = useContext(HubContext);
   console.log(role);
   const { token } = useContext(AppContext);
@@ -84,6 +85,7 @@ const LeftBar = ({
   const handleGetRoomCode = async () => {
     try {
       const roomId = await handleCreateRoom();
+      setRoomId(roomId);
       const URL =
         `https://api.100ms.live/v2/room-codes/room/${roomId}`;
       

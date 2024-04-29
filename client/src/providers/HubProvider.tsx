@@ -47,6 +47,8 @@ interface HubContextProps {
   currentHubData: HubsData | null;
   appendPost: (newPost: Post) => void;
   fetchHubData: (hubId: string, token: string | null) => void;
+  roomId: string|null;
+  setRoomId:(roomId:string)=>void;
 }
 
 const HubContext = createContext<HubContextProps>({
@@ -57,6 +59,8 @@ const HubContext = createContext<HubContextProps>({
   appendPost: () => {},
   currentHubData: null,
   fetchHubData: () => {},
+  roomId: null,
+  setRoomId:()=>{}
 });
 
 const HubProvider: React.FC<HubProviderProps> = ({
@@ -67,6 +71,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
   const [isCreatePostVisible, setIsCreatePostVisible] =
     useState<boolean>(false);
   const [isAcceptRequestsVisible, setIsAcceptRequestsVisible] = useState<boolean>(false);
+  const [roomId,setRoomId] = useState<string|null>(null);
 
   const fetchHubData = async (hubId: string, token: string | null) => {
     const encodedBase64 = btoa(hubId);
@@ -106,6 +111,8 @@ const HubProvider: React.FC<HubProviderProps> = ({
         fetchHubData,
         currentHubData,
         appendPost,
+        roomId,
+        setRoomId
       }}
     >
       {children}

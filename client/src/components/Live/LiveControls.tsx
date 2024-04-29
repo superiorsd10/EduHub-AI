@@ -6,12 +6,11 @@ import {
 } from "@100mslive/react-sdk";
 
 const LiveControls = () => {
-  const hmsActions = useHMSActions();
-  
   const hmsNotifications = useHMSNotifications();
-  useEffect(()=>{
-    console.log("notification",hmsNotifications?.type)
-  },[hmsNotifications])
+  useEffect(() => {
+    console.log("hey",hmsNotifications)
+    console.log("notification", hmsNotifications?.type);
+  }, [hmsNotifications]);
   return <></>;
 };
 
