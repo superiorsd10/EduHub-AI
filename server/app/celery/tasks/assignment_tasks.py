@@ -693,12 +693,20 @@ def process_create_assignment_using_ai(
 
                 assignments_to_save.append(new_assignment)
 
-            # students_assignment_marks = (
-            #     Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
-            # )
+            students_assignment_marks = (
+                Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
+            )
 
-            # integrate ml model
-            predicted_difficulty_level = ["medium"]
+            response = requests.post(
+                "https://eduhub-ai-predict-assignment-difficulty.onrender.com/predict",
+                json={"data": students_assignment_marks},
+            )
+
+            predicted_difficulty_level = []
+
+            if response.status_code == 200:
+                response_json = response.json()
+                predicted_difficulty_level = response_json.get("prediction")
 
             saved_assignments_ids = Assignment.objects.insert(
                 assignments_to_save,
