@@ -784,6 +784,7 @@ def process_create_assignment_manually(
     automatic_grading_enabled: bool,
     automatic_feedback_enabled: bool,
     plagiarism_checker_enabled: bool,
+    create_assignment_uuid: str,
 ) -> None:
     """
     Process creation of assignments manually.
@@ -821,6 +822,18 @@ def process_create_assignment_manually(
             username=os.getenv("MONGO_USERNAME"),
             password=os.getenv("MONGO_PASSWORD"),
             alias="default",
+        )
+
+        automatic_grading_enabled = (
+            False if automatic_grading_enabled is None else automatic_grading_enabled
+        )
+
+        automatic_feedback_enabled = (
+            False if automatic_feedback_enabled is None else automatic_feedback_enabled
+        )
+
+        plagiarism_checker_enabled = (
+            False if plagiarism_checker_enabled is None else plagiarism_checker_enabled
         )
 
         hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
@@ -881,13 +894,20 @@ def process_create_assignment_manually(
             due_datetime=due_datetime,
         )
 
-        Hub.objects(id=hub_object_id).update_one(
-            push__assignments=embedded_assignment,
-            push__topics=topic,
-        )
+        Hub.objects(id=hub_object_id).update_one(push__assignments=embedded_assignment)
+
+        if topic:
+            Hub.objects(id=hub_object_id).update_one(push__topics=topic)
 
         cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
         redis_client.delete(cache_paginated_key)
+
+        serialized_saved_assignments_ids = json.dumps(
+            [str(assignment_id) for assignment_id in saved_assignments_ids]
+        )
+
+        create_assignment_uuid_key = f"create_assignment_uuid_{create_assignment_uuid}"
+        redis_client.set(create_assignment_uuid_key, serialized_saved_assignments_ids)
 
     except Exception as error:
         print(f"error: {error}")
