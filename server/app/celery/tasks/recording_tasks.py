@@ -34,13 +34,13 @@ Note:
 
 import os
 import base64
-import io
 from typing import List
+import cv2
 
 from flask import current_app
 from app.celery.celery import celery_instance
 from app.models.recording_embedding import RecordingEmbedding
-from PIL import Image
+from config.config import Config
 from dotenv import load_dotenv
 from mongoengine import connect
 import numpy as np
@@ -63,20 +63,20 @@ def calculate_frame_difference(image_bytes1: bytes, image_bytes2: bytes) -> floa
         (same image) to 1.0 (completely different images).
     """
     try:
-        image1 = Image.open(io.BytesIO(image_bytes1)).convert("RGB")
-        image2 = Image.open(io.BytesIO(image_bytes2)).convert("RGB")
 
-        array1 = np.array(image1)
-        array2 = np.array(image2)
+        image1 = cv2.imdecode(np.frombuffer(image_bytes1, np.uint8), cv2.IMREAD_COLOR)
+        image2 = cv2.imdecode(np.frombuffer(image_bytes2, np.uint8), cv2.IMREAD_COLOR)
 
-        mse = np.mean((array1 - array2) ** 2)
+        gray1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
 
-        max_pixel_value = 255.0
-        normalized_mse = mse / (max_pixel_value**2)
+        diff = cv2.absdiff(gray1, gray2)
 
-        frame_difference = normalized_mse
+        mean_diff = diff.mean()
 
-        return frame_difference
+        normalized_diff = mean_diff / 255.0
+
+        return normalized_diff
 
     except Exception as error:
         print("Error:", error)
@@ -180,7 +180,7 @@ def extract_text_embedding(chunk: str) -> list:
         raise
 
 
-@celery_instance.task(soft_time_limit=60, time_limit=120)
+@celery_instance.task()
 def process_image_files(image_files: List[bytes], room_id: str) -> None:
     """
     Process a list of image files to identify and store different frames as recording embeddings.
@@ -228,6 +228,7 @@ def process_image_files(image_files: List[bytes], room_id: str) -> None:
             frame_difference = calculate_frame_difference(
                 image_files[i], image_files[i + 1]
             )
+
             if frame_difference > 0.3:
                 different_image_files.append(image_files[i])
 
@@ -255,7 +256,7 @@ def process_image_files(image_files: List[bytes], room_id: str) -> None:
 
         RecordingEmbedding.objects.insert(recording_embedding_docs, load_bulk=False)
 
-        redis_client = current_app.redis_client
+        redis_client = Config.REDIS_CLIENT
 
         recording_number_of_embeddings_key = (
             f"room_id_{room_id}_number_of_recording_embeddings"
