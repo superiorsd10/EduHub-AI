@@ -564,7 +564,7 @@ def process_assignment_generation(
         raise
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_assignment_changes(
     generate_assignment_id: str,
     changes_prompt: str,
@@ -730,7 +730,7 @@ def process_create_assignment_using_ai(
         raise
 
 
-@celery_instance.task(soft_time_limit=120, time_limit=180)
+@celery_instance.task()
 def process_create_assignment_manually(
     hub_id: str,
     title: str,
