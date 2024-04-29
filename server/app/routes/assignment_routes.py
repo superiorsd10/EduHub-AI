@@ -64,7 +64,7 @@ class GenerateAssignmentSchema(Schema):
     """
 
     title = fields.String(required=True)
-    topics = fields.List(fields.String())
+    topics = fields.String(required=True)
     specific_topics = fields.String()
     instructions_for_ai = fields.String()
     types_of_questions = fields.Dict(
