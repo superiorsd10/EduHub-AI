@@ -98,25 +98,22 @@ def sign_in():
     :return: JSON response with success or error message.
     """
     try:
-        data = request.get_json()
+        email = request.args.get("email")
 
-        if "email" not in data:
+        if not email:
             return (
-                jsonify({"error": "Invalid data provided", "success": False}),
+                jsonify({"error": "Provide email", "success": False}),
                 StatusCode.BAD_REQUEST.value,
             )
 
         redis_client = current_app.redis_client
+        user_object_id_key = f"user_object_id_{email}"
 
-        user_cache_key = f"user:{data['email']}"
-
-        if not redis_client.exists(user_cache_key):
+        if not redis_client.exists(user_object_id_key):
             return (
                 jsonify({"message": "User doesn't exist", "success": False}),
                 StatusCode.BAD_REQUEST.value,
             )
-
-        session["email"] = data["email"]
 
         return (
             jsonify({"error": "User already exists", "success": True}),
