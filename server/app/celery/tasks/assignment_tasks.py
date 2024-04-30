@@ -860,15 +860,23 @@ def process_create_assignment_using_ai(
                 Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
             )
 
+            maximum_marks_list = None
+
             if students_assignment_marks:
                 students_assignment_marks = (
                     students_assignment_marks.to_mongo().to_dict()
                 )
+                maximum_marks_list = students_assignment_marks["maximum_marks"]
                 students_assignment_marks = list(students_assignment_marks.values())
+
+            request_data = {
+                "marks": students_assignment_marks,
+                "max_marks": maximum_marks_list,
+            }
 
             response = requests.post(
                 "https://eduhub-ai-predict-assignment-difficulty.onrender.com/predict",
-                json={"data": students_assignment_marks},
+                json=request_data,
             )
 
             predicted_difficulty_level = []
@@ -1014,13 +1022,21 @@ def process_create_assignment_manually(
             Hub.objects(id=hub_object_id).only("students_assignment_marks").first()
         )
 
+        maximum_marks_list = None
+
         if students_assignment_marks:
             students_assignment_marks = students_assignment_marks.to_mongo().to_dict()
+            maximum_marks_list = students_assignment_marks["maximum_marks"]
             students_assignment_marks = list(students_assignment_marks.values())
+
+        request_data = {
+            "marks": students_assignment_marks,
+            "max_marks": maximum_marks_list,
+        }
 
         response = requests.post(
             "https://eduhub-ai-predict-assignment-difficulty.onrender.com/predict",
-            json={"data": students_assignment_marks},
+            json=request_data,
         )
 
         predicted_difficulty_level = []
