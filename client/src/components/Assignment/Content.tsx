@@ -250,17 +250,17 @@ const Content = () => {
               w="fit-content"
               bg="black"
               onClick={() => {
-                const data = {
-                  title: title,
-                  topics: topics,
-                  specific_topics: specificTopics,
-                  instructions_for_ai: instructionsForAI,
-                  types_of_questions: typesOfQuestions,
-                };
-                console.log(data);
-                generateAssignment(data);
+                // const data = {
+                //   title: title,
+                //   topics: topics,
+                //   specific_topics: specificTopics,
+                //   instructions_for_ai: instructionsForAI,
+                //   types_of_questions: typesOfQuestions,
+                // };
 
-                // setIsPreviewAssignmentVisible(true);
+                // generateAssignment(data);
+
+                setIsPreviewAssignmentVisible(true);
               }}
             >
               Preview

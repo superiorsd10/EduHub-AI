@@ -1,6 +1,5 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { NextPageWithLayout } from "@/pages/_app";
 import EmptyLayout from "@/components/EmptyLayout";
 import { Flex } from "@mantine/core";
 import { Worker } from "@react-pdf-viewer/core";

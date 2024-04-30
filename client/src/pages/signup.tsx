@@ -23,8 +23,10 @@ const SignUp: NextPageWithLayout = () => {
   const [createUserWithEmailAndPassword, user, loading, error] =
     useCreateUserWithEmailAndPassword(auth);
   const router = useRouter();
+  const [isLoading,setIsLoading] = useState<boolean>(false);
 
   const handleSignInWithGoogle = async () => {
+    setIsLoading(true);
     try {
       const user = await signInWithGoogle();
       const token = await user!.user.getIdToken();
@@ -58,6 +60,7 @@ const SignUp: NextPageWithLayout = () => {
     } catch (error) {
       console.error("Error during OAuth sign-in:", error);
     }
+    setIsLoading(false);
   };
 
   const form = useForm({
@@ -194,6 +197,7 @@ const SignUp: NextPageWithLayout = () => {
                 radius="md"
                 w={{ base: "80vw", sm: "60vw", md: "30vw", lg: "30vw" }}
                 name="Sign Up"
+                loading={isLoading}
               >
                 Sign Up
               </Button>

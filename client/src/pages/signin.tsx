@@ -1,5 +1,5 @@
 import { Avatar, Button, Flex, Stack, Text, Title } from "@mantine/core";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "@mantine/form";
 import { PasswordInput, TextInput } from "@mantine/core";
 import Link from "next/link";
@@ -22,6 +22,7 @@ const SignIn: NextPageWithLayout = () => {
   const [signInWithGoogle, guser, gloading, gerror] = useSignInWithGoogle(auth);
   const [signInWithEmailAndPassword, user, loading, error] =
     useSignInWithEmailAndPassword(auth);
+  const [isLoading,setIsLoading] = useState<boolean>(false);
 
   const form = useForm({
     initialValues: { email: "", password: "" },
@@ -32,6 +33,7 @@ const SignIn: NextPageWithLayout = () => {
 
   const handleSignInWithGoogle = async () => {
     try {
+      setIsLoading(true);
       const user = await signInWithGoogle();
       const token = await user!.user.getIdToken();
       if(user?.user.metadata.creationTime===user?.user.metadata.lastSignInTime) {
@@ -64,6 +66,7 @@ const SignIn: NextPageWithLayout = () => {
     } catch (error) {
       console.error("Error during OAuth sign-in:", error);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -170,6 +173,7 @@ const SignIn: NextPageWithLayout = () => {
                 size="md"
                 radius="md"
                 w={{base:'80vw',sm:'60vw',md:"30vw",lg:'30vw'}}
+                loading={isLoading}
               >
                 Sign In
               </Button>
