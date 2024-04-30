@@ -25,6 +25,7 @@ const UserDrawer = () => {
     setIsDrawerOpen,
     isDrawerTemporarilyOpen,
     setIsDrawerTemporarilyOpen,
+    hubList
   } = useContext(AppContext);
   const { hovered, ref } = useHover();
 
@@ -33,6 +34,7 @@ const UserDrawer = () => {
       setIsDrawerTemporarilyOpen(hovered);
     }
   }, [hovered]);
+
 
   const dropdownElementsEnrolled: DropDownElement[] = [
     { text: "Cryptography", href: "#" },
@@ -59,10 +61,10 @@ const UserDrawer = () => {
         <Stack gap="lg" p="2vw" h="100%">
           <UserDrawerItem iconType={MdOutlineHub} name="Hubs" />
           <UserDrawerItem iconType={LuPencilLine} name="Enrolled">
-            <UserDrawerDropdown DropDownElements={dropdownElementsEnrolled} />
+            <UserDrawerDropdown DropDownElements={hubList.student} />
           </UserDrawerItem>
           <UserDrawerItem iconType={TfiBlackboard} name="Teaching">
-            <UserDrawerDropdown DropDownElements={dropdownElementsTeaching} />
+            <UserDrawerDropdown DropDownElements={hubList.teacher} />
           </UserDrawerItem>
           <UserDrawerItem iconType={IoCalendar} name="Calender" />
           <UserDrawerItem iconType={SlSettings} name="Settings" />

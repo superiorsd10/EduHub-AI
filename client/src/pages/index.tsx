@@ -97,7 +97,6 @@ const index: NextPage = () => {
               p="lg"
               gap="lg"
               wrap="wrap"
-              // justify="center"
             >
               {hubList?.student.map((hub, id) => (
                 <Hub

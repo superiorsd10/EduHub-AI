@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from "react";
-
+import React, { useMemo } from "react";
 import { Avatar, Box, Text, Timeline } from "@mantine/core";
+import { useRouter } from "next/router";
 
-type DropDownElement = {
-  text: string;
-  href: string;
+type Hub = {
+  creator_name: string;
+  hub_id: string;
+  name: string;
+  theme_color: string;
 };
 
 const googleClassroomPalette = [
@@ -21,8 +23,9 @@ const googleClassroomPalette = [
 const UserDrawerDropdown = ({
   DropDownElements,
 }: {
-  DropDownElements: DropDownElement[];
+  DropDownElements: Hub[];
 }) => {
+  const router = useRouter();
   return (
     <Box maw="12vw" mt="-2vh" style={{ zIndex: -1 }} mb="2vh">
       <Timeline pos="relative" active={0} lineWidth={2} bulletSize={24}>
@@ -49,8 +52,8 @@ const UserDrawerDropdown = ({
             <Timeline.Item
               key={index}
               bullet={
-                <Avatar size={24} radius="lg" bg={memoizedColor} color="white">
-                  {element.text[0].toUpperCase()}
+                <Avatar size={24} radius="lg" bg={element.theme_color} color="white">
+                  {element.name.toUpperCase()[0]}
                 </Avatar>
               }
               title={
@@ -59,9 +62,10 @@ const UserDrawerDropdown = ({
                     fontSize: "14px",
                   }}
                 >
-                  {element.text}
+                  {element.name}
                 </Text>
               }
+              onClick={()=>{router.push(`http://localhost:3000/hub/${element.hub_id}`)}}
             ></Timeline.Item>
           );
         })}
