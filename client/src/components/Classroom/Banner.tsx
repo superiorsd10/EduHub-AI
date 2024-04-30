@@ -9,7 +9,7 @@ const Banner = ({title,theme_color}: {title:string,theme_color:string}) => {
       style={{ borderRadius: "24px" }}
       pos="relative"
     >
-      <BackgroundImage src="https://eduhub-ai.s3.ap-south-1.amazonaws.com/banners/banner-example-header.png" radius='lg'>
+      <BackgroundImage src="" radius='lg'>
         <Title
           size="h3"
           style={{ color: "white" }}
