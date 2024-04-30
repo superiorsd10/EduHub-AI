@@ -88,8 +88,8 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
 
   return (
     <Modal
-      opened={true}
-      onClose={() => setIsCreateHubVisible(false)}
+      opened={opened}
+      onClose={close}
       title="Create Hub"
       centered
       radius="md"
@@ -151,7 +151,7 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
 
           <Group mt="sm" justify="flex-end">
             <Button
-              onClick={close}
+              onClick={()=>setIsCreateHubVisible(false)}
               variant="default"
               radius="md"
               color="black"
