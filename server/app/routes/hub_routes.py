@@ -708,10 +708,11 @@ def get_topics(hub_id):
                 StatusCode.SUCCESS.value,
             )
 
-        topics = Hub.objects(id=hub_object_id).only("topics").first()
+        topics = Hub.objects(id=hub_object_id).first()
 
         if topics:
             topics_data = topics.to_mongo().to_dict()
+            topics_data = topics_data.get("topics")
             json_topics_data = json.dumps(topics_data)
             redis_client.set(hub_topics_key, json_topics_data)
             return (
