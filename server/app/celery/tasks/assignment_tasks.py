@@ -1121,6 +1121,7 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
         scored_points_dict = {}
         feedback_dict = {}
         hub_object_id = None
+        total_points = None
 
         for assignment in assignments:
             assignment_dict = assignment.to_mongo().to_dict()
@@ -1131,6 +1132,7 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
             automatic_grading_enabled = assignment_dict["automatic_grading_enabled"]
             automatic_feedback_enabled = assignment_dict["automatic_feedback_enabled"]
             hub_object_id = assignment_dict["hub_id"]
+            total_points = assignment_dict["total_points"]
 
             for email, response in responses:
                 scored_points, feedback = generate_grade_and_feedback(answer, response)
@@ -1159,6 +1161,10 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
                     students_assignment_marks[email].append(marks)
                 else:
                     students_assignment_marks[email] = [marks]
+
+            students_assignment_marks.setdefault("maximum_marks", []).append(
+                total_points
+            )
 
             Hub.objects(id=hub_object_id).update_one(
                 set__students_assignment_marks=students_assignment_marks
