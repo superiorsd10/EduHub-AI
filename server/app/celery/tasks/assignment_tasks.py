@@ -469,6 +469,109 @@ def generate_assignment_answer_llama(assignment: str) -> str:
         raise
 
 
+def generate_grade_and_feedback(answer: str, response: str) -> tuple:
+    """
+    Generates a grade and feedback for a student's response based on a provided answer.
+
+    Args:
+        answer (str): The correct answer to compare the student's response against.
+        response (str): The student's response to be assessed.
+
+    Returns:
+        tuple: A tuple containing the calculated points scored by the student and the feedback
+        provided. The feedback includes both positive and negative aspects of the student's
+        response and suggestions for improvement.
+
+    Raises:
+        Exception: If an error occurs during the assessment process.
+
+    Notes:
+        This function utilizes a natural language processing (NLP) model to generate an assessment
+        based on comparing the student's response with the provided answer. The assessment includes
+        both the points scored by the student and detailed feedback.
+    """
+    try:
+        system_prompt = """
+        This system is designed to calculate points and give feedback by comparing
+        student's response with the correct answer provided.
+
+        You have to compare student's response with answer fairly and assess based on their
+        knowledge. Also give honest feedback on positives, negatives, and improvements
+        that can be done.
+
+        The format of the answer and student's response is follows:
+
+        {
+            "title": "{title}",
+            "single-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}",
+                    "correct-option": "{correct-option}"
+                }
+            ],
+            "multiple-correct-questions": [
+                {
+                    "question": "{question}",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "points": "{points}",
+                    "correct-options": ["option1", "option3", "option4"]
+                }
+            ],
+            "numerical-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}",
+                    "answer": "{answer}"
+                }
+            ],
+            "descriptive-questions": [
+                {
+                    "question": "{question}",
+                    "points": "{points}",
+                    "answer": "{answer}"
+                }
+            ]
+        }
+
+        The {question}, {options}, {answer}, {correct-option} and {correct-options} is in the Markdown format and any mathematical equations in them is in LaTeX format using Markdown.
+
+        If the {question} or {answer} contains any diagram then it's in Mermaid code in Markdown format and if it included any code block then it's using Markdown formatting.
+
+        Note that you have to assess points out of {points} for each question and you can assign decimal points as well (e.g.: 1.5)
+
+        Your response format should be as follows:
+
+        {
+            "scored_points": {calculated-points},
+            "feedback": {feedback}
+        }
+
+        Note that you have to append "JSON START" before beginning of JSON code block and "JSON END" after the end of JSON code block.
+        """
+
+        user_prompt = f"""
+        Please assess the following student's response by comparing it with given answer:
+
+        STUDENT'S RESPONSE
+
+        {response}
+
+        ANSWER
+
+        {answer}
+        """
+
+        assessment = generate_response_llama(system_prompt, user_prompt)
+        assessment = json.loads(assessment)
+        return (assessment["scored_points"], assessment["feedback"])
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     """
     Decodes a base64 encoded string and converts it to an ObjectId.
@@ -908,6 +1011,98 @@ def process_create_assignment_manually(
 
         create_assignment_uuid_key = f"create_assignment_uuid_{create_assignment_uuid}"
         redis_client.set(create_assignment_uuid_key, serialized_saved_assignments_ids)
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
+
+
+@celery_instance.task()
+def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
+    """
+    Processes automatic grading and feedback for assignments.
+
+    Args:
+        create_assignment_uuid (str): The UUID of the assignment creation process.
+
+    Returns:
+        None: This function does not return any value.
+
+    Raises:
+        Exception: If an error occurs during the automatic grading and feedback process.
+
+    Notes:
+        This task retrieves assignment data from Redis using the provided UUID,
+        performs automatic grading and feedback generation for each assignment,
+        and updates the corresponding assignments and hub documents in the database
+        with the scored points and feedback. If automatic grading and feedback are
+        enabled for an assignment, the task calculates the points scored by each student
+        based on their response and updates the 'students_assignment_marks' field in
+        the Hub document accordingly. Additionally, if automatic feedback is enabled,
+        the task generates feedback for each student's response and updates the 'feedbacks'
+        field in the Assignment document.
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+
+        create_assignment_uuid_key = f"create_assignment_uuid_{create_assignment_uuid}"
+        assignment_ids = redis_client.get(create_assignment_uuid_key)
+
+        assignment_ids = json.loads(assignment_ids)
+        assignment_object_ids = [
+            ObjectId(assignment_id) for assignment_id in assignment_ids
+        ]
+
+        assignments = Assignment.objects(id__in=assignment_object_ids)
+
+        scored_points_dict = {}
+        feedback_dict = {}
+        hub_object_id = None
+
+        for assignment in assignments:
+            assignment_dict = assignment.to_mongo().to_dict()
+
+            assignment_object_id = assignment_dict["_id"]
+            responses = assignment_dict["responses"]
+            answer = assignment_dict["answer"]
+            automatic_grading_enabled = assignment_dict["automatic_grading_enabled"]
+            automatic_feedback_enabled = assignment_dict["automatic_feedback_enabled"]
+            hub_object_id = assignment_dict["hub_id"]
+
+            for email, response in responses:
+                scored_points, feedback = generate_grade_and_feedback(answer, response)
+                scored_points_dict[email] = scored_points
+                feedback_dict[email] = feedback
+
+            if automatic_feedback_enabled:
+                Assignment.objects(id=assignment_object_id).update_one(
+                    set__feedbacks=feedback_dict,
+                    upsert=True,
+                )
+
+            feedback_dict = {}
+
+        if hub_object_id and automatic_grading_enabled:
+            hub = Hub.objects(id=hub_object_id).first()
+
+            if not hub:
+                print("Hub doesn't exist!")
+
+            hub_dict = hub.to_mongo().to_dict()
+            students_assignment_marks = hub_dict["students_assignment_marks"]
+
+            for email, marks in scored_points_dict.items():
+                if email in students_assignment_marks:
+                    students_assignment_marks[email].append(marks)
+                else:
+                    students_assignment_marks[email] = [marks]
+
+            Hub.objects(id=hub_object_id).update_one(
+                set__students_assignment_marks=students_assignment_marks
+            )
+
+        else:
+            print("Hub doesn't exist!")
 
     except Exception as error:
         print(f"error: {error}")
