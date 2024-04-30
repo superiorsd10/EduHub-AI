@@ -24,6 +24,7 @@ from collections import defaultdict
 from app.celery.celery import celery_instance
 from app.models.assignment import Assignment
 from app.models.hub import Hub, Assignment as EmbeddedAssignment
+from app.models.user import User, Assignment as UserEmbeddedAssignment
 from bson import ObjectId
 from config.config import Config
 from dotenv import load_dotenv
@@ -1121,6 +1122,7 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
         scored_points_dict = {}
         feedback_dict = {}
         assignment_marks_dict = {}
+        user_assignments_dict = {}
         hub_object_id = None
         total_points = None
 
@@ -1140,6 +1142,14 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
                 scored_points_dict[email] = scored_points
                 assignment_marks_dict[email] = scored_points
                 feedback_dict[email] = feedback
+
+                user_assignment = UserEmbeddedAssignment(
+                    assignment_id=assignment_object_id,
+                    marks=scored_points,
+                    maximum_marks=total_points,
+                )
+
+                user_assignments_dict[email] = user_assignment
 
             if automatic_feedback_enabled:
                 Assignment.objects(id=assignment_object_id).update_one(
@@ -1178,6 +1188,11 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
             Hub.objects(id=hub_object_id).update_one(
                 set__students_assignment_marks=students_assignment_marks
             )
+
+            for email, user_assignment in user_assignments_dict.items():
+                User.objects(email=email).update_one(
+                    push__assignments=user_assignment,
+                )
 
         else:
             print("Hub doesn't exist!")
