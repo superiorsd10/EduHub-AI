@@ -17,8 +17,10 @@ from datetime import datetime
 import os
 import json
 import re
+import difflib
 from typing import List
 import uuid
+from collections import defaultdict
 from app.celery.celery import celery_instance
 from app.models.assignment import Assignment
 from app.models.hub import Hub, Assignment as EmbeddedAssignment
@@ -570,6 +572,51 @@ def generate_grade_and_feedback(answer: str, response: str) -> tuple:
     except Exception as error:
         print(f"error: {error}")
         raise
+
+
+def find_plagiarism(responses: dict) -> list:
+    """
+    Find plagiarism among a collection of student responses.
+
+    Args:
+        responses (dict): A dictionary where keys are student email addresses and values
+        are their responses.
+
+    Returns:
+        list: A list of email addresses grouped together based on detected plagiarism.
+
+    Note:
+        This function uses the difflib library to compare the similarity between responses.
+        Plagiarism is detected if the similarity ratio between two responses is above 0.8.
+        The returned list contains groups of email addresses that are suspected of plagiarism.
+    """
+
+    plagiarism_groups = defaultdict(list)
+    processed_emails = set()
+
+    for email, response in responses.items():
+        if email in processed_emails:
+            continue
+
+        processed_emails.add(email)
+
+        for other_email, other_response in responses.items():
+            if other_email in processed_emails:
+                continue
+
+            similarity_ratio = difflib.SequenceMatcher(
+                None, response, other_response
+            ).ratio()
+
+            if similarity_ratio > 0.8:
+                plagiarism_groups[frozenset([email, other_email])].extend(
+                    [email, other_email]
+                )
+                processed_emails.add(other_email)
+
+    plagiarism_list = [list(group) for group in plagiarism_groups.values()]
+
+    return plagiarism_list[0]
 
 
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
