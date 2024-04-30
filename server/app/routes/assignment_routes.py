@@ -3,6 +3,7 @@ Assignment routes for the Flask application.
 """
 
 import base64
+from datetime import datetime
 import uuid
 from bson import ObjectId
 from flask import Blueprint, request, jsonify
@@ -189,6 +190,22 @@ def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     hex_string = decoded_bytes.decode("utf-8")
     object_id = ObjectId(hex_string)
     return object_id
+
+
+def calculate_seconds_difference(due_datetime: datetime) -> float:
+    """
+    Calculate the number of seconds difference between due datetime and current time.
+
+    Args:
+        due_datetime (datetime): The due datetime for the task.
+
+    Returns:
+        int: The number of seconds difference between due datetime and current time.
+    """
+    current_time = datetime.now()
+    time_difference = due_datetime - current_time
+    seconds_difference = time_difference.total_seconds()
+    return float(seconds_difference)
 
 
 @assignment_blueprint.route("/api/<hub_id>/generate-assignment", methods=["POST"])
@@ -536,20 +553,15 @@ def get_assignment(hub_id, assignment_uuid):
         hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
 
         pipeline = [
-            # Match the hub document
             {"$match": {"_id": hub_object_id}},
-            # Project members_email to key-value pairs
             {
                 "$project": {
                     "members_email": {"$objectToArray": "$members_email"},
                     "assignments": 1,
                 }
             },
-            # Unwind members_email array
             {"$unwind": "$members_email"},
-            # Match document where key (role) matches email
             {"$match": {"members_email.v": email}},
-            # Project member_role and member_index
             {
                 "$project": {
                     "member_role": "$members_email.k",
@@ -557,11 +569,8 @@ def get_assignment(hub_id, assignment_uuid):
                     "assignments": 1,
                 }
             },
-            # Unwind assignments array
             {"$unwind": "$assignments"},
-            # Match assignment with provided assignment_uuid
             {"$match": {"assignments.uuid": assignment_uuid}},
-            # Return required fields
             {
                 "$project": {
                     "_id": 0,
