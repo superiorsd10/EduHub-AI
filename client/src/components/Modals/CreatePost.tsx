@@ -13,12 +13,15 @@ import { FileButton } from "@mantine/core";
 import { FaFile } from "react-icons/fa";
 import { AppContext } from "@/providers/AppProvider";
 import { HubContext } from "@/providers/HubProvider";
+import { useRouter } from "next/router";
 
 const CreatePostModal: React.FC<{
   opened: boolean;
   close: () => void;
   id: string;
 }> = ({ opened, close, id }) => {
+  const router = useRouter();
+  const hub_id = router.query.hub_id as string;
   const { token } = useContext(AppContext);
   const { setIsCreatePostVisible,appendPost } = useContext(HubContext);
   const [activeTab, setActiveTab] = useState<string | null>("first");
@@ -29,6 +32,7 @@ const CreatePostModal: React.FC<{
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [files, setFiles] = useState<File[]>([]);
+
 
   const handleCreateHub = async () => {
     setIsLoading(true);
@@ -88,6 +92,10 @@ const CreatePostModal: React.FC<{
         <Tabs.List>
           <Tabs.Tab value="first">Announcement</Tabs.Tab>
           <Tabs.Tab value="second">Material</Tabs.Tab>
+          <Tabs.Tab value="third" onClick={()=>{
+            setIsCreatePostVisible(false);
+            router.push(`http://localhost:3000/hub/${hub_id}/assignment`);
+          }}>Assignment</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="first" pt="xs">

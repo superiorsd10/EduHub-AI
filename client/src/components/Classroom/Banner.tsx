@@ -1,10 +1,10 @@
 import { BackgroundImage, Flex, Text, Title } from "@mantine/core";
 import React from "react";
 
-const Banner = ({title}: {title:string}) => {
+const Banner = ({title,theme_color}: {title:string,theme_color:string}) => {
   return (
     <Flex
-      bg="pink"
+      bg={theme_color}
       h="30vh"
       style={{ borderRadius: "24px" }}
       pos="relative"

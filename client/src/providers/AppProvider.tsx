@@ -7,7 +7,7 @@ type Hub = {
   creator_name: string;
   hub_id: string;
   name: string;
-  photo_url: string;
+  theme_color: string;
 };
 
 type Hubs = {

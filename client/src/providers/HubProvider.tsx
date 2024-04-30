@@ -14,6 +14,7 @@ type HubIntroductoryData = {
   recordings: any[];
   section: string;
   streaming_url: string;
+  theme_color: string;
   _id: string;
 };
 

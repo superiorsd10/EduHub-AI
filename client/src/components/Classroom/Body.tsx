@@ -16,6 +16,7 @@ type HubIntroductoryData = {
   recordings: any[];
   section: string;
   streaming_url: string;
+  theme_color: string;
   _id: string;
 };
 
@@ -52,7 +53,7 @@ const Body = (props: HubsData) => {
 
   return (
     <Group pos="relative" w="100%" gap="xl" align="flex-start">
-      <LeftBar invite_code={introductory.invite_code} role={role} />
+      <LeftBar invite_code={introductory.invite_code} role={role} theme_color={introductory.theme_color}/>
       <Stack style={{ flex: 1 }}>
         {paginatedData.map((data, index) => (
           <React.Fragment key={index}>

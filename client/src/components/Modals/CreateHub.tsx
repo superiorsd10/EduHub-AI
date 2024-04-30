@@ -1,5 +1,5 @@
 import NextLink from "@/utils/NextLink";
-import { Button, Group, Input, Modal, Textarea } from "@mantine/core";
+import { Button, ColorPicker, Group, Input, Modal, Text, Textarea } from "@mantine/core";
 import { AppContext } from "../../providers/AppProvider";
 import { useContext, useState } from "react";
 
@@ -11,13 +11,14 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
   const [section, setSection] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [value, onChange] = useState('#e64980');
   const { setIsCreateHubVisible, displayPhoto, userName, appendHub, token,email } =
     useContext(AppContext);
   
   const handleCreateHub = async () => {
     setLoading(true);
     try {
-      const resp = await fetch("http://127.0.0.1:5000/api/create-hub", {
+      const resp = await fetch(`http://127.0.0.1:5000/api/create-hub?email=${email}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,10 +28,12 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
           hub_name: hubName,
           section: section,
           description: description,
-          email: email,
+          theme_color: value,
         }),
       });
-      const { hub_id } = await resp.json();
+      const rr=await resp.json();
+      console.log(rr)
+      const { hub_id } = rr;
       const newHub = {
         creator_name: userName!,
         name: hubName!,
@@ -78,6 +81,11 @@ const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
         minRows={4}
         maxRows={4}
       />
+
+
+      <ColorPicker value={value} onChange={onChange} style={{marginLeft:'auto'}}  fullWidth swatchesPerRow={10} format="hex" swatches={['#e64980', '#be4bdb', '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886']} />
+      
+  
       <Group mt="sm" justify="flex-end">
         <Button
           onClick={close}

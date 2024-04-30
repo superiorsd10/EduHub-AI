@@ -104,7 +104,7 @@ const index: NextPage = () => {
                   creator_name={hub.creator_name}
                   hub_id={hub.hub_id}
                   name={hub.name}
-                  photo_url={hub.photo_url}
+                  theme_color={hub.theme_color}
                   key={id}
                 />
               ))}
@@ -113,7 +113,7 @@ const index: NextPage = () => {
                   creator_name={hub.creator_name}
                   hub_id={hub.hub_id}
                   name={hub.name}
-                  photo_url={hub.photo_url}
+                  theme_color={hub.theme_color}
                   key={hubList.student.length + id}
                 />
               ))}

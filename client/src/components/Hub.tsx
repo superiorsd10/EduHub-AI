@@ -8,7 +8,7 @@ type Props = {
   creator_name: string;
   hub_id: string;
   name: string;
-  photo_url: string;
+  theme_color: string;
 };
 
 const googleClassroomPalette = [
@@ -22,7 +22,7 @@ const googleClassroomPalette = [
   "#6D4C41", // Brown
 ];
 
-const Hub = ({ creator_name, hub_id, name, photo_url }: Props) => {
+const Hub = ({ creator_name, hub_id, name, theme_color }: Props) => {
   const router = useRouter();
   return (
     <Card
@@ -39,11 +39,8 @@ const Hub = ({ creator_name, hub_id, name, photo_url }: Props) => {
     >
       <Card.Section
         h="15vh"
-        bg={
-          googleClassroomPalette[
-            Math.floor(Math.random() * googleClassroomPalette.length)
-          ]
-        }
+        bg={theme_color}
+        
         w='100%'
         withBorder
         pos="relative"
@@ -80,7 +77,7 @@ const Hub = ({ creator_name, hub_id, name, photo_url }: Props) => {
             <Avatar
               size="lg"
               style={{ marginRight: "-70%" }}
-              src={photo_url===undefined?'https://cdn4.iconfinder.com/data/icons/avatars-xmas-giveaway/128/batman_hero_avatar_comics-512.png':photo_url}
+              src='https://cdn4.iconfinder.com/data/icons/avatars-xmas-giveaway/128/batman_hero_avatar_comics-512.png'
             ></Avatar>
           }
         />

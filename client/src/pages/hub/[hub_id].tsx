@@ -33,7 +33,7 @@ const HubWithoutContext = () => {
       <Stack pl="2%" pr="2%" gap="xl">
         <Header />
         {currentHubData != null && (
-          <Banner title={currentHubData!.introductory.name} />
+          <Banner title={currentHubData!.introductory.name} theme_color={currentHubData!.introductory.theme_color}/>
         )}
         {currentHubData != null && (
           <Body

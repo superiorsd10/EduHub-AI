@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text, CopyButton, Box } from "@mantine/core";
+import { Button, Group, Stack, Text, CopyButton, Box, Select } from "@mantine/core";
 import React, { useContext, useEffect, useState } from "react";
 import { PiChatCircleDotsLight } from "react-icons/pi";
 import { FaPlus } from "react-icons/fa6";
@@ -13,9 +13,11 @@ import CreateRecordingModal from "../Modals/CreateRecording";
 const LeftBar = ({
   invite_code,
   role,
+  theme_color,
 }: {
   invite_code: string;
   role: string;
+  theme_color:string
 }) => {
   const router = useRouter();
   const {
@@ -130,14 +132,14 @@ const LeftBar = ({
           <BsThreeDotsVertical />
         </Group>
         <Group w="100%" justify="space-between">
-          <Text c="pink" size="lg" fw="bold">
+          <Text c={theme_color} size="lg" fw="bold">
             {invite_code}
           </Text>
           <CopyButton value={invite_code}>
             {({ copied, copy }) => (
               <Box p="0" style={{ cursor: "pointer" }}>
                 {!copied ? (
-                  <IoCopySharp color="#D6336C" onClick={copy} />
+                  <IoCopySharp color={theme_color} onClick={copy} />
                 ) : (
                   <Text onClick={copy}>Copied</Text>
                 )}
@@ -147,7 +149,7 @@ const LeftBar = ({
         </Group>
       </Stack>
       <Button
-        color="#C2255C"
+        color={theme_color}
         leftSection={<FaPlus />}
         justify="flex-start"
         onClick={() => setIsCreatePostVisible(true)}
@@ -155,7 +157,7 @@ const LeftBar = ({
         Create
       </Button>
       <Button
-        color="#C2255C"
+        color={theme_color}
         leftSection={<PiChatCircleDotsLight />}
         justify="flex-start"
       >
@@ -163,7 +165,7 @@ const LeftBar = ({
       </Button>
       {role === "teacher" && (
         <Button
-          color="#C92A2A"
+          color={theme_color}
           variant="outline"
           leftSection={<MdLiveTv />}
           justify="flex-start"
