@@ -124,23 +124,6 @@ class Post(EmbeddedDocument):
     }
 
 
-class Message(EmbeddedDocument):
-    """
-    Represents a message in the Hub.
-
-    Attributes:
-    - sender_id: ObjectIdField, required
-    - content: StringField, required
-    - timestamp: DateTimeField, required
-    - emoji_reactions: DictField(field=StringField())
-    """
-
-    sender_id = ObjectIdField(required=True)
-    content = StringField(required=True)
-    timestamp = DateTimeField(required=True)
-    emoji_reactions = DictField(field=IntField())
-
-
 class Hub(Document):
     """
     Represents a Hub in the application.
@@ -184,7 +167,6 @@ class Hub(Document):
     assignments = ListField(EmbeddedDocumentField(Assignment))
     students_assignment_marks = DictField(ListField(FloatField()))
     posts = ListField(EmbeddedDocumentField(Post))
-    messages = ListField(EmbeddedDocumentField(Message))
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
     meta = {
