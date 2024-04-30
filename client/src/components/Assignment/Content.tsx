@@ -13,7 +13,6 @@ import { AssignmentContext } from "@/providers/AssignmentProvider";
 import Question from "./Question";
 import { useRouter } from "next/router";
 import { AppContext } from "@/providers/AppProvider";
-import { subscribeToChannel, unsubscribeFromChannel } from "../../api/util/Redis";
 
 const Content = () => {
   const router = useRouter();
@@ -42,21 +41,6 @@ const Content = () => {
     "descriptive-type": [0, 0],
     "numerical-type": [0, 0],
   });
-
-  useEffect(() => {
-    const channelId = '9d3e093b-ae99-4e4b-b9e7-7c9d18396eb8';
-
-    const handleMessage = (channel:string, message:string) => {
-      console.log(`Received message on channel ${channel}: ${message}`);
-      // Handle the message here
-    };
-
-    subscribeToChannel(channelId, handleMessage);
-
-    return () => {
-      unsubscribeFromChannel(channelId);
-    };
-  }, []);
 
   const addQuestion = () => {
     setQuestions([...questions, ""]);
@@ -106,19 +90,30 @@ const Content = () => {
   };
 
   const generateAssignment = async (data: any) => {
-    const request = await fetch(
-      `http://127.0.0.1:5000/api/${btoa(hub_id as string)}/generate-assignment`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-    const response = await request.json();
-    console.log(response);
+    try {
+      const request = await fetch(
+        `http://127.0.0.1:5000/api/${btoa(
+          hub_id as string
+        )}/generate-assignment`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+      const response = await request.json();
+      const respt=response.message;
+      const id=respt.split("Generate Assignment ID: ")[1];
+      const new_req = await fetch(`/api/subscribe?id=${id}`);
+      const new_resp = await new_req.json();
+      console.log(id);
+      console.log("s", new_resp);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
