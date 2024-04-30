@@ -3,6 +3,7 @@ Recording routes for the Flask application.
 """
 
 import base64
+from datetime import datetime
 import math
 import uuid
 from bson import ObjectId
@@ -110,6 +111,23 @@ def extract_text_embedding(chunk: str) -> list:
     except Exception as error:
         print(f"Error: {error}")
         raise
+
+
+def convert_to_yyyymmdd(date_string: str) -> str:
+    """
+    Convert a date string in the format "Day, DD Month YYYY HH:MM:SS GMT"
+    to the format "YYYYMMDD".
+
+    Args:
+        date_string (str): The input date string in the format
+            "Day, DD Month YYYY HH:MM:SS GMT".
+
+    Returns:
+        str: The formatted date string in the format "YYYYMMDD".
+    """
+    date_object = datetime.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z")
+    formatted_date = date_object.strftime("%Y%m%d")
+    return formatted_date
 
 
 @recording_blueprint.route("/api/<hub_id>/create-recording", methods=["POST"])
@@ -234,6 +252,14 @@ def get_recording(hub_id, recording_id):
 
         if recording:
             recording_data = recording.recordings[0].to_mongo().to_dict()
+            created_at = recording_data["created_at"]
+            room_id = recording_data["room_id"]
+            formatted_created_at = convert_to_yyyymmdd(date_string=created_at)
+
+            recording_data["playlist_file_url"] = (
+                f"https://d1h1k26a3spk7x.cloudfront.net/recordings/beam/{room_id}/{formatted_created_at}/playlist.m3u8"
+            )
+
             return (
                 jsonify({"message": recording_data, "success": True}),
                 StatusCode.SUCCESS.value,
