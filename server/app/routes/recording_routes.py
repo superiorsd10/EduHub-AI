@@ -125,7 +125,7 @@ def convert_to_yyyymmdd(date_string: str) -> str:
     Returns:
         str: The formatted date string in the format "YYYYMMDD".
     """
-    date_object = datetime.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z")
+    date_object = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
     formatted_date = date_object.strftime("%Y%m%d")
     return formatted_date
 
@@ -254,7 +254,7 @@ def get_recording(hub_id, recording_id):
             recording_data = recording.recordings[0].to_mongo().to_dict()
             created_at = recording_data["created_at"]
             room_id = recording_data["room_id"]
-            formatted_created_at = convert_to_yyyymmdd(date_string=created_at)
+            formatted_created_at = convert_to_yyyymmdd(date_string=str(created_at))
 
             recording_data["playlist_file_url"] = (
                 f"https://d1h1k26a3spk7x.cloudfront.net/recordings/beam/{room_id}/{formatted_created_at}/playlist.m3u8"
