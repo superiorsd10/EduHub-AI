@@ -1154,3 +1154,60 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
     except Exception as error:
         print(f"error: {error}")
         raise
+
+
+@celery_instance.task()
+def process_plagiarism_checker(create_assignment_uuid: str) -> None:
+    """
+    Process plagiarism detection for assignments.
+
+    Args:
+        create_assignment_uuid (str): UUID of the assignment creation.
+
+    Note:
+        This task retrieves assignment data from Redis using the provided UUID.
+        It then analyzes the responses of each assignment to detect plagiarism.
+        Detected plagiarised emails are stored in the 'plagiarised_emails' field of
+        the corresponding assignment document.
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+
+        create_assignment_uuid_key = f"create_assignment_uuid_{create_assignment_uuid}"
+        assignment_ids = redis_client.get(create_assignment_uuid_key)
+
+        assignment_ids = json.loads(assignment_ids)
+        assignment_object_ids = [
+            ObjectId(assignment_id) for assignment_id in assignment_ids
+        ]
+
+        assignments = Assignment.objects(id__in=assignment_object_ids)
+
+        plagiarism_checker_dict = {}
+
+        for assignment in assignments:
+            assignment_dict = assignment.to_mongo().to_dict()
+
+            assignment_object_id = assignment_dict["_id"]
+            responses = assignment_dict["responses"]
+
+            for email, response in responses:
+                json_response = json.loads(response)
+                descriptive_type_list = json_response["descriptive-type"]
+                answer = ""
+
+                for question_dict in descriptive_type_list:
+                    answer += question_dict["answer"]
+
+                plagiarism_checker_dict[email] = answer
+
+            plagiarised_emails = find_plagiarism(responses=plagiarism_checker_dict)
+
+            Assignment.objects(id=assignment_object_id).update_one(
+                set__plagiarised_emails=plagiarised_emails,
+                upsert=True,
+            )
+
+    except Exception as error:
+        print(f"error: {error}")
+        raise
