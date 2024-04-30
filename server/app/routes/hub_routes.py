@@ -300,19 +300,20 @@ def get_hubs():
     """
     try:
         email = request.args.get("email")
-        print(email)
 
         redis_client = current_app.redis_client
-        user_cache_key = f"user:{email}"
-        cached_hubs_data = redis_client.hget(user_cache_key, "hubs")
+        user_hubs_key = f"user_hubs_{email}"
+        cached_hubs_data = redis_client.get(user_hubs_key)
 
-        if cached_hubs_data and cached_hubs_data != b'["empty"]':
+        if cached_hubs_data:
             return (
                 jsonify({"data": json.loads(cached_hubs_data), "success": True}),
                 StatusCode.SUCCESS.value,
             )
 
-        user_object_id = redis_client.hget(user_cache_key, "user_object_id")
+        user_object_id_key = f"user_object_id_{email}"
+        user_object_id = redis_client.get(user_object_id_key)
+
         if not user_object_id:
             return (
                 jsonify({"error": "User not found in cache", "success": False}),
@@ -330,7 +331,6 @@ def get_hubs():
             )
 
         user = User.objects(id=user_object_id).first()
-        print(user)
 
         if not user:
             return (
@@ -418,10 +418,10 @@ def get_hubs():
                 StatusCode.INTERNAL_SERVER_ERROR.value,
             )
 
-        redis_client.hset(user_cache_key, "hubs", json.dumps(results, default=str))
+        redis_client.set(user_hubs_key, json.dumps(results, default=str))
 
         return (
-            jsonify({"data": results, "success": True}),
+            jsonify({"data": json.loads(results), "success": True}),
             StatusCode.SUCCESS.value,
         )
 
