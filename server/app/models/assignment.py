@@ -55,6 +55,7 @@ class Assignment(Document):
     automatic_grading_enabled = BooleanField()
     automatic_feedback_enabled = BooleanField()
     plagiarism_checker_enabled = BooleanField()
+    plagiarised_emails = ListField(StringField())
     created_at = DateTimeField(default=datetime.now().replace(microsecond=0))
 
     meta = {
