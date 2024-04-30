@@ -5,7 +5,6 @@ import { Space } from "@mantine/core";
 import { AppContext } from "@/providers/AppProvider";
 import CreateHubModal from "@/components/Modals/CreateHub";
 import CreatePostModal from "@/components/Modals/CreatePost";
-import JoinhubModal from "@/components/Modals/JoinHub";
 
 const Layout = ({ children }: React.PropsWithChildren) => {
   const {
@@ -27,7 +26,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           }}
         />
       )}
-      {isLoggedIn && <JoinhubModal opened={false} close={() => {}} />}
       {children}
     </>
   );
