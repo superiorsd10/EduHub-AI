@@ -41,8 +41,8 @@ def create_user():
             name=data["name"],
             email=data["email"],
             hubs={},
-            assignments=[],
-            quizzes=[],
+            assignments={},
+            quizzes={},
         )
 
         redis_client = current_app.redis_client
