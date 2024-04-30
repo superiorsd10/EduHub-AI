@@ -499,14 +499,14 @@ def get_hub(hub_id):
     try:
         email = request.args.get("email")
         redis_client = current_app.redis_client
-        user_cache_key = f"user:{email}"
-        cached_hubs_data = redis_client.hget(user_cache_key, "hubs").decode("utf-8")
+        user_hubs_key = f"user_hubs_{email}"
+        cached_hubs_data = redis_client.get(user_hubs_key)
         hubs_data = json.loads(cached_hubs_data)
         hub_id = decode_base64_to_objectid(str(hub_id))
 
         found = False
 
-        if hubs_data != ["empty"]:
+        if hubs_data:
             found = any(
                 teacher["hub_id"] == str(hub_id) for teacher in hubs_data[0]["teacher"]
             )
@@ -597,26 +597,23 @@ def get_hub(hub_id):
             if cached_introductory_data:
                 introductory_data = cached_introductory_data
             else:
-                introductory_data = (
-                    Hub.objects(id=hub_id)
-                    .only(
-                        "name",
-                        "section",
-                        "description",
-                        "topics",
-                        "theme_color",
-                        "photo_url",
-                        "invite_code",
-                    )
-                    .first()
-                    .to_mongo()
-                    .to_dict()
-                )
-
+                introductory_data = Hub.objects(id=hub_id).first()
+                introductory_data = introductory_data.to_mongo().to_dict()
                 introductory_data["_id"] = str(introductory_data.get("_id"))
 
+                introductory_final_data = {
+                    "_id": str(introductory_data.get("_id")),
+                    "name": introductory_data.get("name"),
+                    "section": introductory_data.get("section"),
+                    "description": introductory_data.get("description"),
+                    "topics": introductory_data.get("topics"),
+                    "theme_color": introductory_data.get("theme_color"),
+                    "photo_url": introductory_data.get("photo_url"),
+                    "invite_code": introductory_data.get("invite_code"),
+                }
+
                 introductory_data = json.dumps(
-                    introductory_data,
+                    introductory_final_data,
                     cls=DateTimeEncoder,
                 )
 
