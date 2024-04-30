@@ -15,6 +15,11 @@ from app.sockets.hub_sockets import (
     handle_reject_request,
     handle_invite_sent,
 )
+from app.sockets.group_chat_sockets import (
+    handle_join_hub,
+    handle_leave_hub,
+    handle_send_message,
+)
 from app.celery.tasks.post_tasks import process_uploaded_file
 from app.celery.tasks.recording_tasks import (
     process_image_files,
@@ -44,6 +49,9 @@ app.register_blueprint(assignment_blueprint)
 socketio.on_event("invite-sent", handle_invite_sent)
 socketio.on_event("accept-request", handle_accept_request)
 socketio.on_event("reject-request", handle_reject_request)
+socketio.on_event("join-hub", handle_join_hub)
+socketio.on_event("leave-hub", handle_leave_hub)
+socketio.on_event("send-message", handle_send_message)
 
 celery_instance.register_task(process_uploaded_file)
 celery_instance.register_task(process_image_files)
@@ -55,5 +63,44 @@ celery_instance.register_task(process_create_assignment_manually)
 celery_instance.register_task(process_automatic_grading_and_feedback)
 celery_instance.register_task(process_plagiarism_checker)
 
+
+def redis_subscription_worker():
+    """
+    Worker function for subscribing to Redis pub/sub messages and emitting them via Socket.IO.
+
+    This function subscribes to messages on channels matching the pattern "chat:*" using the provided Redis client.
+    When a new message is received, it decodes the channel and data, extracts the hub ID, and emits the message
+    to the appropriate Socket.IO room ("new-message") associated with the hub.
+
+    Note:
+        This function should be executed in a separate thread or process to enable concurrent subscription
+        and message emission without blocking the main application.
+
+    Raises:
+        Exception: If an error occurs during the subscription process or when emitting messages via Socket.IO.
+
+    Returns:
+        None
+    """
+    try:
+        redis_client = Config.REDIS_CLIENT
+        pubsub = redis_client.pubsub()
+        pubsub.psubscribe("chat:*")
+
+        for message in pubsub.listen():
+            if message["type"] == "pmessage":
+                channel = message["channel"].decode("utf-8")
+                data = message["data"].decode("utf-8")
+                hub_id = channel.split(":")[1]
+                socketio.emit("new-message", data, room=hub_id)
+
+    except Exception as error:
+        print(f"An error occurred in redis_subscription_worker: {error}")
+
+
 if __name__ == "__main__":
+    from threading import Thread
+
+    worker_thread = Thread(target=redis_subscription_worker)
+    worker_thread.start()
     socketio.run(app, debug=True)
