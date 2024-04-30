@@ -3,6 +3,7 @@ Module for initializing Celery with a Flask application.
 """
 
 import os
+import ssl
 from celery import Celery
 from flask import Flask
 from dotenv import load_dotenv
@@ -18,6 +19,8 @@ celery_instance = Celery(
         "app.celery.tasks.recording_tasks",
         "app.celery.tasks.assignment_tasks",
     ],
+    broker_use_ssl={"ssl_cert_reqs": ssl.CERT_NONE},
+    redis_backend_use_ssl={"ssl_cert_reqs": ssl.CERT_NONE},
 )
 
 

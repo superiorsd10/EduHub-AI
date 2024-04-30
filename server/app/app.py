@@ -67,11 +67,7 @@ def create_app(config=None):
         aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
     )
 
-    app.redis_client = redis.StrictRedis(
-        host="localhost",
-        port=6379,
-        db=0,
-    )
+    app.redis_client = redis.from_url(Config.REDIS_URL)
 
     init_celery(app)
 

@@ -30,7 +30,8 @@ class Config:
         "password": os.environ.get("MONGO_PASSWORD"),
         "alias": "default",
     }
-    REDIS_CLIENT = redis.from_url("redis://localhost:6379/0")
+    REDIS_URL = os.environ.get("REDIS_URL")
+    REDIS_CLIENT = redis.from_url(REDIS_URL)
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
     SECRET_KEY = os.getenv("CRYPTO_SECRET_KEY")
