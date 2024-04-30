@@ -25,6 +25,7 @@ from app.celery.tasks.assignment_tasks import (
     process_assignment_changes,
     process_create_assignment_using_ai,
     process_create_assignment_manually,
+    process_automatic_grading_and_feedback,
 )
 
 
@@ -50,6 +51,7 @@ celery_instance.register_task(process_assignment_generation)
 celery_instance.register_task(process_assignment_changes)
 celery_instance.register_task(process_create_assignment_using_ai)
 celery_instance.register_task(process_create_assignment_manually)
+celery_instance.register_task(process_automatic_grading_and_feedback)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
