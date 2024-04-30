@@ -74,7 +74,7 @@ class CreateHubSchema(Schema):
     hub_name = fields.String(required=True)
     section = fields.String()
     description = fields.String()
-    email = fields.Email(required=True)
+    theme_color = fields.String(required=True)
 
 
 class JoinHubSchema(Schema):
@@ -178,14 +178,15 @@ def create_hub():
     try:
         schema = CreateHubSchema()
         data = schema.load(request.get_json())
-        hub_name = data["hub_name"]
-        section = data["section"]
-        description = data["description"]
-        email = data["email"]
+        hub_name = data.get("hub_name")
+        section = data.get("section")
+        description = data.get("description")
+        theme_color = data.get("theme_color")
+        email = request.args.get("email")
 
-        user_cache_key = f"user:{email}"
+        user_object_id_key = f"user_object_id_{email}"
         redis_client = current_app.redis_client
-        user_object_id = redis_client.hget(user_cache_key, "user_object_id")
+        user_object_id = redis_client.get(user_object_id_key)
         user_object_id = ObjectId(user_object_id.decode("utf-8"))
 
         user = User.objects(id=user_object_id).first()
@@ -207,6 +208,7 @@ def create_hub():
             section=section,
             description=description,
             creator_id=user_object_id,
+            theme_color=theme_color,
             members_email=default_member_email,
             invite_code=generate_invite_code(),
             created_at=datetime.now().replace(microsecond=0),
@@ -216,14 +218,15 @@ def create_hub():
 
         new_hub_id = new_hub.id
 
+        if len(user.hubs) != 0:
+            user_hubs_key = f"user_hubs_{email}"
+            redis_client.delete(user_hubs_key)
+
         if "teacher" not in user.hubs:
             user.hubs["teacher"] = []
 
         user.hubs["teacher"].append(new_hub_id)
         user.save()
-        print(new_hub_id)
-
-        redis_client.hset(user_cache_key, "hubs", json.dumps(["empty"], default=str))
 
         return (
             jsonify({"hub_id": str(new_hub_id)}),
