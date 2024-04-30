@@ -567,7 +567,7 @@ def generate_grade_and_feedback(answer: str, response: str) -> tuple:
 
         assessment = generate_response_llama(system_prompt, user_prompt)
         assessment = json.loads(assessment)
-        return (assessment["scored_points"], assessment["feedback"])
+        return (float(assessment["scored_points"]), assessment["feedback"])
 
     except Exception as error:
         print(f"error: {error}")
@@ -1120,6 +1120,7 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
 
         scored_points_dict = {}
         feedback_dict = {}
+        assignment_marks_dict = {}
         hub_object_id = None
         total_points = None
 
@@ -1137,6 +1138,7 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
             for email, response in responses:
                 scored_points, feedback = generate_grade_and_feedback(answer, response)
                 scored_points_dict[email] = scored_points
+                assignment_marks_dict[email] = scored_points
                 feedback_dict[email] = feedback
 
             if automatic_feedback_enabled:
@@ -1145,7 +1147,14 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
                     upsert=True,
                 )
 
+            if automatic_grading_enabled:
+                Assignment.objects(id=assignment_object_id).update_one(
+                    set__marks=assignment_marks_dict,
+                    upsert=True,
+                )
+
             feedback_dict = {}
+            assignment_marks_dict = {}
 
         if hub_object_id and automatic_grading_enabled:
             hub = Hub.objects(id=hub_object_id).first()
