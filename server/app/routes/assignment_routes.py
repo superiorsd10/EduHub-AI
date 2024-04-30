@@ -18,6 +18,7 @@ from app.celery.tasks.assignment_tasks import (
     process_create_assignment_using_ai,
     process_create_assignment_manually,
     process_automatic_grading_and_feedback,
+    process_plagiarism_checker,
 )
 from marshmallow import Schema, fields
 
@@ -437,6 +438,20 @@ def create_assignment_using_ai(hub_id, generate_assignment_id):
                 countdown=total_seconds,
             )
 
+        if plagiarism_checker_enabled:
+            process_plagiarism_checker.apply_async(
+                args=[
+                    create_assignment_uuid,
+                ],
+                retry_policy={
+                    "max_retries": 3,
+                    "interval_start": 2,
+                    "interval_step": 2,
+                    "interval_max": 10,
+                },
+                countdown=total_seconds,
+            )
+
         return (
             jsonify(
                 {
@@ -525,6 +540,20 @@ def create_assignment_manually(hub_id):
 
         if automatic_grading_enabled or automatic_feedback_enabled:
             process_automatic_grading_and_feedback.apply_async(
+                args=[
+                    create_assignment_uuid,
+                ],
+                retry_policy={
+                    "max_retries": 3,
+                    "interval_start": 2,
+                    "interval_step": 2,
+                    "interval_max": 10,
+                },
+                countdown=total_seconds,
+            )
+
+        if plagiarism_checker_enabled:
+            process_plagiarism_checker.apply_async(
                 args=[
                     create_assignment_uuid,
                 ],
