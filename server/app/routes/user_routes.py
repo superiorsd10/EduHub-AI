@@ -9,8 +9,22 @@ from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.user import User
 from app.core import limiter
+from marshmallow import Schema, fields
 
 user_blueprint = Blueprint("user", __name__)
+
+
+class SignUpSchema(Schema):
+    """
+    Schema for signing up a new user.
+
+    Attributes:
+        name (str): The name of the user. Required field.
+        email (str): The email address of the user. Required field.
+    """
+
+    name = fields.String(required=True)
+    email = fields.String(required=True)
 
 
 @user_blueprint.route("/api/sign-up", methods=["POST"])
