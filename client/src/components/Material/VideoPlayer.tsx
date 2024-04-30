@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import Hls from "hls.js";
 
 const VideoPlayer = ({videoUrl}:{videoUrl:string}) => {
+  console.log(videoUrl);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -9,8 +10,9 @@ const VideoPlayer = ({videoUrl}:{videoUrl:string}) => {
     if (!video) return;
 
     const hls = new Hls();
-    hls.loadSource(`https://cors-anywhere.herokuapp.com/${videoUrl}`);
+    hls.loadSource(videoUrl);
     hls.attachMedia(video);
+    
 
     return () => {
       hls.destroy();
