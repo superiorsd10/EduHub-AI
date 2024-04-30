@@ -43,39 +43,27 @@ def create_user():
     :return: JSON response with success or error message.
     """
     try:
-        data = request.get_json()
+        schema = SignUpSchema()
+        data = schema.load(request.get_json())
 
-        if "name" not in data or "email" not in data:
-            return (
-                jsonify({"error": "Invalid data provided", "success": False}),
-                StatusCode.BAD_REQUEST.value,
-            )
+        name = data.get("name")
+        email = data.get("email")
 
         new_user = User(
-            name=data["name"],
-            email=data["email"],
+            name=name,
+            email=email,
             hubs={},
             assignments={},
             quizzes={},
         )
 
         redis_client = current_app.redis_client
+        user_object_id_key = f"user_object_id_{email}"
 
-        user_cache_key = f"user:{data['email']}"
-        print(user_cache_key)
-
-        if not redis_client.exists(user_cache_key):
+        if not redis_client.exists(user_object_id_key):
             new_user.save()
-
-            session["email"] = new_user.email
-
             user_object_id = new_user.id
-
-            cache_data = {
-                "user_object_id": str(user_object_id),
-            }
-
-            redis_client.hmset(user_cache_key, cache_data)
+            redis_client.set(user_object_id_key, str(user_object_id))
 
             return (
                 jsonify({"message": "User created successfully", "success": True}),
