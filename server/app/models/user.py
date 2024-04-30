@@ -11,7 +11,8 @@ from mongoengine import (
     DictField,
     EmbeddedDocumentField,
     EmbeddedDocument,
-    Decimal128Field,
+    FloatField,
+    IntField,
     DateTimeField,
 )
 
@@ -26,7 +27,8 @@ class Assignment(EmbeddedDocument):
     """
 
     assignment_id = ObjectIdField(required=True)
-    marks = Decimal128Field()
+    marks = FloatField()
+    maximum_marks = IntField()
 
 
 class Quiz(EmbeddedDocument):
@@ -40,7 +42,8 @@ class Quiz(EmbeddedDocument):
     """
 
     quiz_id = ObjectIdField(required=True)
-    marks = Decimal128Field()
+    marks = FloatField()
+    maximum_marks = IntField()
     time_spent = DateTimeField()
 
 
@@ -65,8 +68,8 @@ class User(Document):
     name = StringField(required=True)
     email = EmailField(required=True)
     hubs = DictField(field=ListField(ObjectIdField()))
-    assignments = ListField(EmbeddedDocumentField(Assignment))
-    quizzes = ListField(EmbeddedDocumentField(Quiz))
+    assignments = DictField(ListField(EmbeddedDocumentField(Assignment)))
+    quizzes = DictField(ListField(EmbeddedDocumentField(Quiz)))
 
     meta = {
         "collection": "users",
