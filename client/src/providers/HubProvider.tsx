@@ -30,9 +30,18 @@ type Post = {
   uuid: string;
 };
 
+type RecordingPost = {
+  created_at: string;
+  description: string;
+  room_id: string;
+  title: string;
+  topic: string;
+  uuid: string;
+};
+
 type HubsData = {
   introductory: HubIntroductoryData;
-  paginated: { items: Post }[];
+  paginated: { items: Post|RecordingPost }[];
   role: "teacher" | "student";
 };
 
@@ -53,14 +62,14 @@ interface HubContextProps {
     title: string;
     topic: string;
     description: string;
-    room_id:string;
+    room_id: string;
   } | null;
   setRecordingData: (
     recordingData: {
       title: string;
       topic: string;
       description: string;
-      room_id:string;
+      room_id: string;
     } | null
   ) => void;
 }
@@ -93,7 +102,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
     title: string;
     topic: string;
     description: string;
-    room_id:string;
+    room_id: string;
   } | null>(null);
 
   const fetchHubData = async (hubId: string, token: string | null) => {
@@ -137,7 +146,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
         roomId,
         setRoomId,
         recordingData,
-        setRecordingData
+        setRecordingData,
       }}
     >
       {children}

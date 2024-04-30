@@ -1,34 +1,53 @@
 import NextLink from "@/utils/NextLink";
 import { Button, Group, Input, Modal, Textarea } from "@mantine/core";
-import { AppContext } from "../../providers/AppProvider";
 import { useContext, useState } from "react";
-import { useRouter } from "next/router";
 import { HubContext } from "@/providers/HubProvider";
+import { AppContext } from "@/providers/AppProvider";
+import { useRouter } from "next/router";
 
 const CreateRecordingModal: React.FC<{
   isCreateRecordingVisible: boolean;
   setIsCreateRecordingVisible: (isCreateRecordingVisible: boolean) => void;
   roomId: string;
-}> = ({ isCreateRecordingVisible, setIsCreateRecordingVisible, roomId }) => {
+  teacherCode: string;
+}> = ({
+  isCreateRecordingVisible,
+  setIsCreateRecordingVisible,
+  roomId,
+  teacherCode,
+}) => {
+  console.log("hello there",roomId,teacherCode)
+  const router = useRouter();
   const [title, setTitle] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const { setRecordingData } = useContext(HubContext);
+  const { token } = useContext(AppContext);
+  const hub_id = router.query.hub_id as string;
 
   const handleCreateHub = async () => {
     setLoading(true);
     try {
-      setRecordingData({
-        title: title,
-        topic: topic,
-        description: description,
-        room_id: roomId,
+      await fetch(`http://127.0.0.1:5000/api/${btoa(hub_id)}/create-recording`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          title: title,
+          topic: topic,
+          description: description,
+          room_id: roomId,
+        }),
       });
+      setLoading(false);
+      router.push(`http://localhost:3000/hub/${hub_id}/live/${teacherCode}`);
+      setIsCreateRecordingVisible(false);
     } catch (error) {
       console.log(error);
     }
-    setLoading(false);
   };
 
   return (
@@ -66,7 +85,8 @@ const CreateRecordingModal: React.FC<{
       />
       <Group mt="sm" justify="flex-end">
         <Button
-          onClick={close}
+          loading={loading}
+          onClick={() => setIsCreateRecordingVisible(false)}
           variant="default"
           radius="md"
           color="black"

@@ -29,7 +29,7 @@ const LeftBar = ({
   } = useContext(HubContext);
   const [isCreateRecordingVisible, setIsCreateRecordingVisible] =
     useState<boolean>(false);
-  const [teacherCode,setTeacherCode] = useState<string|null>(null);
+  const [teacherCode, setTeacherCode] = useState<string | null>(null);
   const { token } = useContext(AppContext);
   const { introductory } = currentHubData!;
   const { _id } = introductory!;
@@ -117,12 +117,6 @@ const LeftBar = ({
     }
   };
 
-  useEffect(() => {
-    if (recordingData != null && !isCreateRecordingVisible) {
-      router.push(`http://localhost:3000/hub/${_id}/live/${teacherCode}`);
-    }
-  }, [isCreateRecordingVisible]);
-
   return (
     <Stack w="15%">
       <Stack
@@ -183,6 +177,7 @@ const LeftBar = ({
           isCreateRecordingVisible={isCreateRecordingVisible}
           setIsCreateRecordingVisible={setIsCreateRecordingVisible}
           roomId={roomId as string}
+          teacherCode={teacherCode as string}
         ></CreateRecordingModal>
       )}
     </Stack>
