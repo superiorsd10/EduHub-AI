@@ -240,7 +240,7 @@ def calculate_seconds_difference(due_datetime: datetime) -> float:
 
 @assignment_blueprint.route("/api/<hub_id>/generate-assignment", methods=["POST"])
 @limiter.limit("5 per minute")
-@firebase_token_required
+# @firebase_token_required
 def generate_assignment(hub_id):
     """
     Generate an assignment for a given hub.

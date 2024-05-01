@@ -2,11 +2,29 @@
 Hub sockets for the Flask application.
 """
 
+import base64
 import time
+from bson import ObjectId
 from flask import current_app
 from flask_socketio import emit
 from app.app import socketio
 from app.models.hub import Hub
+
+
+def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
+    """
+    Decodes a base64 encoded string and converts it to an ObjectId.
+
+    Args:
+        base64_encoded (str): The base64 encoded string to decode.
+
+    Returns:
+        ObjectId: The decoded ObjectId.
+    """
+    decoded_bytes = base64.b64decode(base64_encoded)
+    hex_string = decoded_bytes.decode("utf-8")
+    object_id = ObjectId(hex_string)
+    return object_id
 
 
 @socketio.on("invite-sent")
@@ -78,12 +96,16 @@ def handle_accept_request(data):
     try:
         email = data.get("email")
         hub_id = data.get("hub_id")
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
 
-        Hub.objects(id=hub_id).update_one(push__members_email__student=email)
+        Hub.objects(id=hub_object_id).update_one(push__members_email__student=email)
 
         redis_client = current_app.redis_client
         hub_invitation_list_key = f"hub_{hub_id}_invitation_list"
         redis_client.zrem(hub_invitation_list_key, email)
+
+        user_hub_object_id_role_key = f"user_{email}_hub_object_id_{hub_object_id}_role"
+        redis_client.set(user_hub_object_id_role_key, "student")
 
         emit(
             "join-request-accepted",

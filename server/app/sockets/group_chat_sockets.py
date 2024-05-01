@@ -58,7 +58,7 @@ def handle_join_hub(data):
 
         if not last_read_timestamp:
             initial_messages = (
-                Message.objects(hub_id=hub_object_id).order_by("created_at").limit(50)
+                Message.objects(hub_id=hub_object_id).order_by("-created_at").limit(50)
             )
             client_sid = request.sid
 

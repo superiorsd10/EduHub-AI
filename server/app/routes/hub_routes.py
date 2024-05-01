@@ -229,6 +229,9 @@ def create_hub():
         user.hubs["teacher"].append(new_hub_id)
         user.save()
 
+        user_hub_object_id_role_key = f"user_{email}_hub_object_id_{new_hub_id}_role"
+        redis_client.set(user_hub_object_id_role_key, "teacher")
+
         return (
             jsonify({"hub_id": str(new_hub_id)}),
             StatusCode.CREATED.value,
@@ -500,17 +503,8 @@ def get_hub(hub_id):
     try:
         email = request.args.get("email")
         redis_client = current_app.redis_client
-        user_hubs_key = f"user_hubs_{email}"
-        cached_hubs_data = redis_client.get(user_hubs_key)
-        hubs_data = json.loads(cached_hubs_data)
+
         hub_id = decode_base64_to_objectid(str(hub_id))
-
-        found = False
-
-        if hubs_data:
-            found = any(
-                teacher["hub_id"] == str(hub_id) for teacher in hubs_data[0]["teacher"]
-            )
 
         if not ObjectId.is_valid(hub_id):
             return (
@@ -518,10 +512,9 @@ def get_hub(hub_id):
                 StatusCode.BAD_REQUEST,
             )
 
-        role = "student"
-        if found:
-            role = "teacher"
-
+        user_hub_object_id_role_key = f"user_{email}_hub_object_id_{hub_id}_role"
+        role = redis_client.get(user_hub_object_id_role_key)
+        role = role.decode("utf-8")
         page = request.args.get("page", 1, type=int)
 
         cache_paginated_key = f"hub_{hub_id}_paginated_page_{page}"
