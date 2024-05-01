@@ -178,6 +178,30 @@ class SubmitAssignmentSchema(Schema):
     response = fields.String(required=True)
 
 
+class AssessAssignmentManually(Schema):
+    """
+    Schema for manually assessing an assignment, including marks and feedback.
+
+    Attributes:
+        marks (dict): A dictionary representing the marks assigned to different criteria or sections of the assignment.
+            The keys are strings representing the criteria or sections, and the values are floating-point numbers
+            representing the marks awarded.
+        feedback (dict): A dictionary representing the feedback provided for different
+        criteria or sections of the assignment.
+            The keys are strings representing the criteria or sections, and the values
+            are strings containing the feedback comments.
+    """
+
+    marks = fields.Dict(
+        keys=fields.String(),
+        values=fields.Float(),
+    )
+    feedback = fields.Dict(
+        keys=fields.String(),
+        values=fields.String(),
+    )
+
+
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     """
     Decodes a base64 encoded string and converts it to an ObjectId.
@@ -424,7 +448,7 @@ def create_assignment_using_ai(hub_id, generate_assignment_id):
 
         total_seconds = calculate_seconds_difference(due_datetime)
 
-        if automatic_grading_enabled or automatic_feedback_enabled:
+        if automatic_grading_enabled and automatic_feedback_enabled:
             process_automatic_grading_and_feedback.apply_async(
                 args=[
                     create_assignment_uuid,
@@ -538,7 +562,7 @@ def create_assignment_manually(hub_id):
 
         total_seconds = calculate_seconds_difference(due_datetime)
 
-        if automatic_grading_enabled or automatic_feedback_enabled:
+        if automatic_grading_enabled and automatic_feedback_enabled:
             process_automatic_grading_and_feedback.apply_async(
                 args=[
                     create_assignment_uuid,
