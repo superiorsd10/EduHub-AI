@@ -756,7 +756,7 @@ def get_assignment(hub_id, assignment_uuid):
         )
 
 
-@assignment_blueprint.route("/api/submit-assignment/<assignment_id>", methods=["GET"])
+@assignment_blueprint.route("/api/submit-assignment/<assignment_id>", methods=["POST"])
 # @limiter.limit("5 per minute")
 # firebase_token_required
 def submit_assignment(assignment_id):
@@ -775,12 +775,15 @@ def submit_assignment(assignment_id):
         Exception: If an error occurs during the submission process.
     """
     try:
+        schema = SubmitAssignmentSchema()
+        data = schema.load(request.get_json())
         email = request.args.get("email")
+        response = data.get("response")
 
         assignment_object_id = decode_base64_to_objectid(base64_encoded=assignment_id)
 
         Assignment.objects(id=assignment_object_id).update_one(
-            push__responses={email: email}
+            push__responses={email: response}
         )
 
         return (
