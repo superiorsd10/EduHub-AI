@@ -16,7 +16,7 @@ const Navbar = () => {
   const handleAssignAssignment = async () => {
     console.log(email,id);
     const request = await fetch(
-      `http://127.0.0.1:5000/api/${hub_id}/create-assignment-using-ai/${id}`,{
+      `http://127.0.0.1:5000/api/${btoa(hub_id)}/create-assignment-using-ai/${btoa(id as string)}`,{
         method: "POST",
         headers: {
           "Content-Type": "application/json",

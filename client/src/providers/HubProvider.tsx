@@ -119,6 +119,7 @@ const HubProvider: React.FC<HubProviderProps> = ({
       }
     );
     const data = await response.json();
+    console.log(data)
     const hubsData: HubsData = data.data;
     setCurrentHubData(hubsData);
   };

@@ -26,11 +26,12 @@ const Content = () => {
     setTitle,
     setInstructions,
     typesOfQuestions,
-    setTypesOfQuestions
+    setTypesOfQuestions,
   } = useContext(AssignmentContext);
 
   const [assignmentType, setAssignmentType] = useState<"AI" | "Manual">("AI");
   const [questions, setQuestions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [topics, setTopics] = useState<string>("");
   const [specificTopics, setSpecificTopics] = useState<string>("");
@@ -103,6 +104,22 @@ const Content = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handlePreviewAssignment = async () => {
+    setIsLoading(true);
+    const data = {
+      title: title,
+      topics: topics,
+      specific_topics: specificTopics,
+      instructions_for_ai: instructionsForAI,
+      types_of_questions: typesOfQuestions,
+    };
+    generateAssignment(data);
+    setTimeout(() => {
+      setIsPreviewAssignmentVisible(true);
+    }, 3000);
+    setIsLoading(false);
   };
 
   return (
@@ -389,16 +406,8 @@ const Content = () => {
               size="sm"
               w="fit-content"
               bg="black"
-              onClick={() => {
-                const data = {
-                  title: title,
-                  topics: topics,
-                  specific_topics: specificTopics,
-                  instructions_for_ai: instructionsForAI,
-                  types_of_questions: typesOfQuestions,
-                };
-                generateAssignment(data);
-              }}
+              loading={isLoading}
+              onClick={() => {handlePreviewAssignment()}}
             >
               Preview
             </Button>
@@ -419,6 +428,172 @@ const Content = () => {
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
             />
+            <Group gap="0">
+              <Button
+                variant="outline"
+                color={hasBeenSelected["SCQ"] ? "white" : "gray.7"}
+                bg={hasBeenSelected["SCQ"] ? "gray.7" : "white"}
+                style={{
+                  border: "2px solid #ADB5BD",
+                  borderRadius: 0,
+                  borderTopLeftRadius: "10%",
+                  borderBottomLeftRadius: "10%",
+                }}
+                pl="md"
+                pr="md"
+                onClick={() => {
+                  toggleQuestionType("SCQ");
+                  modifyTypesOfQuestions("single-correct-type", 0, 0);
+                  modifyTypesOfQuestions("single-correct-type", 1, 0);
+                }}
+              >
+                SCQ
+              </Button>
+              <Button
+                variant="outline"
+                color={hasBeenSelected["MCQ"] ? "white" : "gray.7"}
+                bg={hasBeenSelected["MCQ"] ? "gray.7" : "white"}
+                style={{
+                  border: "2px solid #ADB5BD",
+                  borderLeft: "0px",
+                  borderRadius: 0,
+                }}
+                pl="md"
+                pr="md"
+                onClick={() => {
+                  toggleQuestionType("MCQ");
+                  modifyTypesOfQuestions("multiple-correct-type", 0, 0);
+                  modifyTypesOfQuestions("multiple-correct-type", 1, 0);
+                }}
+              >
+                MCQ
+              </Button>
+              <Button
+                variant="outline"
+                color={hasBeenSelected["Numerical"] ? "white" : "gray.7"}
+                bg={hasBeenSelected["Numerical"] ? "gray.7" : "white"}
+                style={{
+                  border: "2px solid #ADB5BD",
+                  borderLeft: "0px",
+                  borderRadius: 0,
+                }}
+                pl="md"
+                pr="md"
+                onClick={() => {
+                  toggleQuestionType("Numerical");
+                  modifyTypesOfQuestions("numerical-type", 0, 0);
+                  modifyTypesOfQuestions("numerical-type", 1, 0);
+                }}
+              >
+                Numerical
+              </Button>
+              <Button
+                variant="outline"
+                color={hasBeenSelected["Descriptive"] ? "white" : "gray.7"}
+                bg={hasBeenSelected["Descriptive"] ? "gray.7" : "white"}
+                style={{
+                  border: "2px solid #ADB5BD",
+                  borderRadius: "0px",
+                  borderLeft: "0px",
+                  borderTopRightRadius: "10%",
+                  borderBottomRightRadius: "10%",
+                }}
+                pl="md"
+                pr="md"
+                onClick={() => {
+                  toggleQuestionType("Descriptive");
+                  modifyTypesOfQuestions("descriptive-type", 0, 0);
+                  modifyTypesOfQuestions("descriptive-type", 1, 0);
+                }}
+              >
+                Descriptive
+              </Button>
+            </Group>
+            {hasBeenSelected["SCQ"] && (
+              <Group>
+                <Text size="sm"> SCQs of</Text>
+                <Input
+                  type="number"
+                  placeholder="x"
+                  w="fit-content"
+                  size="xs"
+                  p="0"
+                  value={typesOfQuestions["single-correct-type"][1]}
+                  onChange={(event) =>
+                    modifyTypesOfQuestions(
+                      "single-correct-type",
+                      1,
+                      parseInt(event.target.value)
+                    )
+                  }
+                />
+                <Text size="sm">marks each</Text>
+              </Group>
+            )}
+            {hasBeenSelected["MCQ"] && (
+              <Group>
+                <Text size="sm"> MCQs questions of</Text>
+                <Input
+                  type="number"
+                  placeholder="x"
+                  w="fit-content"
+                  size="xs"
+                  p="0"
+                  value={typesOfQuestions["multiple-correct-type"][1]}
+                  onChange={(event) =>
+                    modifyTypesOfQuestions(
+                      "multiple-correct-type",
+                      1,
+                      parseInt(event.target.value)
+                    )
+                  }
+                />
+                <Text size="sm">marks each</Text>
+              </Group>
+            )}
+            {hasBeenSelected["Descriptive"] && (
+              <Group>
+                <Text size="sm"> Descriptive questions of</Text>
+                <Input
+                  type="number"
+                  placeholder="x"
+                  w="fit-content"
+                  size="xs"
+                  p="0"
+                  value={typesOfQuestions["descriptive-type"][1]}
+                  onChange={(event) =>
+                    modifyTypesOfQuestions(
+                      "descriptive-type",
+                      1,
+                      parseInt(event.target.value)
+                    )
+                  }
+                />
+                <Text size="sm">marks each</Text>
+              </Group>
+            )}
+            {hasBeenSelected["Numerical"] && (
+              <Group>
+                <Text size="sm"> Numerical questions of</Text>
+                <Input
+                  type="number"
+                  placeholder="x"
+                  w="fit-content"
+                  size="xs"
+                  p="0"
+                  value={typesOfQuestions["numerical-type"][1]}
+                  onChange={(event) =>
+                    modifyTypesOfQuestions(
+                      "numerical-type",
+                      1,
+                      parseInt(event.target.value)
+                    )
+                  }
+                />
+                <Text size="sm">marks each</Text>
+              </Group>
+            )}
+
             {questions.map((_, index) => (
               <Question key={index} />
             ))}
@@ -438,10 +613,34 @@ const Content = () => {
               setAssignmentType("Manual");
               setTitle(undefined);
               setInstructions(undefined);
+              setTypesOfQuestions({
+                "descriptive-type": [0, 0],
+                "multiple-correct-type": [0, 0],
+                "numerical-type": [0, 0],
+                "single-correct-type": [0, 0],
+              });
+              setHasBeenSelected({
+                Descriptive: false,
+                MCQ: false,
+                Numerical: false,
+                SCQ: false,
+              });
             } else {
               setAssignmentType("AI");
               setTitle(undefined);
               setInstructions(undefined);
+              setTypesOfQuestions({
+                "descriptive-type": [0, 0],
+                "multiple-correct-type": [0, 0],
+                "numerical-type": [0, 0],
+                "single-correct-type": [0, 0],
+              });
+              setHasBeenSelected({
+                Descriptive: false,
+                MCQ: false,
+                Numerical: false,
+                SCQ: false,
+              });
             }
           }}
         />
