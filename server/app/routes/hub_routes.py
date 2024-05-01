@@ -13,6 +13,7 @@ from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.models.hub import Hub
 from app.models.user import User
+from app.models.message import Message
 from app.core import limiter
 from marshmallow import Schema, fields, ValidationError
 from bson.objectid import ObjectId
@@ -764,6 +765,69 @@ def get_invitation_list(hub_id):
             StatusCode.SUCCESS.value,
         )
 
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@hub_blueprint.route("/api/messages/<hub_id>", methods=["GET"])
+@limiter.limit("5 per minute")
+@firebase_token_required
+def get_messages(hub_id):
+    """
+    Retrieve messages from a hub.
+
+    Args:
+        hub_id (str): The base64-encoded ObjectId of the hub.
+
+    Query Parameters:
+        limit (int): Limit the number of messages to retrieve. Default is 50.
+        skip (int): Number of messages to skip. Default is 0.
+        created_at (str, optional): Retrieve messages created before this timestamp.
+
+    Returns:
+        tuple: A tuple containing a JSON response with retrieved messages and a success flag.
+
+    Raises:
+        Exception: If an error occurs during message retrieval.
+
+    Note:
+        This endpoint requires Firebase authentication token.
+    """
+
+    try:
+        limit = int(request.args.get("limit", 50))
+        skip = int(request.args.get("skip", 0))
+        created_at = request.args.get("created_at")
+
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+        if created_at:
+            messages = (
+                Message.objects(hub_id=hub_object_id, created_at__lt=created_at)
+                .order_by("-created_at")
+                .limit(limit)
+                .skip(skip)
+            )
+        else:
+            messages = (
+                Message.objects(hub_id=hub_object_id)
+                .order_by("-created_at")
+                .limit(limit)
+                .skip(skip)
+            )
+
+        return (
+            jsonify(
+                {
+                    "message": [message.to_mongo() for message in messages],
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
     except Exception as error:
         return (
             jsonify({"error": str(error), "success": False}),
