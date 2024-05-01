@@ -12,6 +12,7 @@ from app.enums import StatusCode
 from app.core import limiter
 from app.models.hub import Hub
 from app.models.assignment import Assignment
+from app.models.user import User, Assignment as UserEmbeddedAssignment
 from app.celery.tasks.assignment_tasks import (
     process_assignment_generation,
     process_assignment_changes,
@@ -178,6 +179,33 @@ class SubmitAssignmentSchema(Schema):
     response = fields.String(required=True)
 
 
+class AssessAssignmentManuallySchema(Schema):
+    """
+    Schema for manually assessing an assignment, including marks and feedback.
+
+    Attributes:
+        marks (dict): A dictionary representing the marks assigned to different criteria or sections of the assignment.
+            The keys are strings representing the criteria or sections, and the values are floating-point numbers
+            representing the marks awarded.
+        feedbacks (dict): A dictionary representing the feedback provided for different
+        criteria or sections of the assignment.
+            The keys are strings representing the criteria or sections, and the values
+            are strings containing the feedback comments.
+        difficulty_level (str): A string representing the difficulty level of the assignment that
+        is assessed.
+    """
+
+    marks = fields.Dict(
+        keys=fields.String(),
+        values=fields.Float(),
+    )
+    feedbacks = fields.Dict(
+        keys=fields.String(),
+        values=fields.String(),
+    )
+    difficulty_level = fields.String(required=True)
+
+
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
     """
     Decodes a base64 encoded string and converts it to an ObjectId.
@@ -211,6 +239,8 @@ def calculate_seconds_difference(due_datetime: datetime) -> float:
 
 
 @assignment_blueprint.route("/api/<hub_id>/generate-assignment", methods=["POST"])
+@limiter.limit("5 per minute")
+# @firebase_token_required
 # @limiter.limit("5 per minute")
 # firebase_token_required
 def generate_assignment(hub_id):
@@ -424,7 +454,7 @@ def create_assignment_using_ai(hub_id, generate_assignment_id):
 
         total_seconds = calculate_seconds_difference(due_datetime)
 
-        if automatic_grading_enabled or automatic_feedback_enabled:
+        if automatic_grading_enabled and automatic_feedback_enabled:
             process_automatic_grading_and_feedback.apply_async(
                 args=[
                     create_assignment_uuid,
@@ -538,7 +568,7 @@ def create_assignment_manually(hub_id):
 
         total_seconds = calculate_seconds_difference(due_datetime)
 
-        if automatic_grading_enabled or automatic_feedback_enabled:
+        if automatic_grading_enabled and automatic_feedback_enabled:
             process_automatic_grading_and_feedback.apply_async(
                 args=[
                     create_assignment_uuid,
@@ -755,6 +785,125 @@ def submit_assignment(assignment_id):
             jsonify(
                 {
                     "message": "Response submitted successfully",
+                    "success": True,
+                }
+            ),
+            StatusCode.SUCCESS.value,
+        )
+
+    except Exception as error:
+        return (
+            jsonify({"error": str(error), "success": False}),
+            StatusCode.INTERNAL_SERVER_ERROR.value,
+        )
+
+
+@assignment_blueprint.route(
+    "/api/<hub_id>/assess-assignment-manually/<assignment_uuid>", methods=["POST"]
+)
+@limiter.limit("5 per minute")
+@firebase_token_required
+def assess_assignment_manually(hub_id, assignment_uuid):
+    """
+    Endpoint for manually assessing an assignment and updating the database.
+
+    This endpoint handles the assessment of an assignment by updating the marks and feedback provided
+    by the assessor. It also updates the assignment details in the database and assigns marks to the
+    corresponding users' assignments.
+
+    Args:
+        hub_id (str): The ID of the hub associated with the assignment.
+        assignment_uuid (str): The UUID of the assignment to be assessed.
+
+    Returns:
+        tuple: A tuple containing the JSON response and the HTTP status code.
+            - If the assessment is successful, returns a JSON response indicating success along with
+              the HTTP status code 200 (OK).
+            - If there is an error during the assessment process, returns a JSON response containing
+              the error message along with an appropriate HTTP status code indicating the error (e.g., 404
+              for "Not Found" error or 500 for "Internal Server Error").
+    """
+    try:
+        schema = AssessAssignmentManuallySchema()
+        data = schema.load(request.get_json())
+
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+        marks = data.get("marks")
+        feedbacks = data.get("feedbacks")
+        difficulty_level = data.get("difficulty_level")
+
+        embedded_assignment = Hub.objects(
+            id=hub_object_id, assignments__uuid=assignment_uuid
+        ).first()
+
+        if not embedded_assignment:
+            return (
+                jsonify({"error": "Assignment not found", "success": False}),
+                StatusCode.NOT_FOUND.value,
+            )
+
+        embedded_assignment_dict = embedded_assignment.to_mongo().to_dict()
+        assignment_ids = embedded_assignment_dict.get("assignment_ids")
+        total_points = embedded_assignment_dict.get("total_points")
+
+        if not assignment_ids:
+            return (
+                jsonify({"error": "Assignment not found", "success": False}),
+                StatusCode.NOT_FOUND.value,
+            )
+
+        difficulty_mapping = {
+            "easy": 0,
+            "medium": 1,
+            "hard": 2,
+        }
+
+        assignment_id = assignment_ids[difficulty_mapping[difficulty_level]]
+
+        Assignment.objects(id=assignment_id).update_one(
+            set__marks=marks,
+            set__feedbacks=feedbacks,
+            upsert=True,
+        )
+
+        for email, mark in marks.items():
+            user_assignment = UserEmbeddedAssignment(
+                assignment_id=assignment_id,
+                marks=mark,
+                maximum_marks=total_points,
+            )
+
+            User.objects(email=email).update_one(
+                push__assignments=user_assignment,
+            )
+
+        hub = Hub.objects(id=hub_object_id).first()
+
+        if not hub:
+            return (
+                jsonify({"error": "Hub not found", "success": False}),
+                StatusCode.NOT_FOUND.value,
+            )
+
+        hub_dict = hub.to_mongo().to_dict()
+        students_assignment_marks = hub_dict["students_assignment_marks"]
+
+        for email, mark in marks.items():
+            if email in students_assignment_marks:
+                students_assignment_marks[email].append(marks)
+            else:
+                students_assignment_marks[email] = [marks]
+
+        students_assignment_marks.setdefault("maximum_marks", []).append(total_points)
+
+        Hub.objects(id=hub_object_id).update_one(
+            set__students_assignment_marks=students_assignment_marks
+        )
+
+        return (
+            jsonify(
+                {
+                    "message": "Assignment assessed successfully",
                     "success": True,
                 }
             ),
