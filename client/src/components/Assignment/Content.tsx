@@ -7,7 +7,6 @@ import {
   Group,
   Button,
   Text,
-  TextInput,
 } from "@mantine/core";
 import { AssignmentContext } from "@/providers/AssignmentProvider";
 import Question from "./Question";
@@ -18,75 +17,66 @@ const Content = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id;
   const { token } = useContext(AppContext);
-  const { setIsPreviewAssignmentVisible,setId } = useContext(AssignmentContext);
+  const {
+    setIsPreviewAssignmentVisible,
+    setId,
+    setPoints,
+    title,
+    instructions,
+    setTitle,
+    setInstructions,
+    typesOfQuestions,
+    setTypesOfQuestions
+  } = useContext(AssignmentContext);
+
   const [assignmentType, setAssignmentType] = useState<"AI" | "Manual">("AI");
   const [questions, setQuestions] = useState<string[]>([]);
 
-  const [title, setTitle] = useState<string>("");
-  const [instructions, setInstructions] = useState<string>("");
   const [topics, setTopics] = useState<string>("");
   const [specificTopics, setSpecificTopics] = useState<string>("");
   const [instructionsForAI, setInstructionsForAI] = useState<string>("");
-  const [selectedQuestionType, setSelectedQuestionType] = useState<
-    "" | "MCQ" | "SCQ" | "Descriptive" | "Numerical"
-  >("");
-  const [typesOfQuestions, setTypesOfQuestions] = useState<{
-    "single-correct-type": number[];
-    "multiple-correct-type": number[];
-    "descriptive-type": number[];
-    "numerical-type": number[];
+
+  const [hasBeenSelected, setHasBeenSelected] = useState<{
+    SCQ: boolean;
+    MCQ: boolean;
+    Descriptive: boolean;
+    Numerical: boolean;
   }>({
-    "single-correct-type": [0, 0],
-    "multiple-correct-type": [0, 0],
-    "descriptive-type": [0, 0],
-    "numerical-type": [0, 0],
+    SCQ: false,
+    MCQ: false,
+    Descriptive: false,
+    Numerical: false,
   });
+
+  const toggleQuestionType = (type: keyof typeof hasBeenSelected) => {
+    setHasBeenSelected((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  const modifyTypesOfQuestions = (
+    type: keyof typeof typesOfQuestions,
+    index: number,
+    value: number
+  ) => {
+    setTypesOfQuestions((prev) => ({
+      ...prev,
+      [type]: prev[type].map((item, i) => (i === index ? value : item)),
+    }));
+  };
+
+  useEffect(() => {
+    setPoints(
+      Object.values(typesOfQuestions).reduce(
+        (acc, curr) => acc + (curr[0] || 0) * (curr[1] || 0),
+        0
+      )
+    );
+  }, [typesOfQuestions, setPoints]);
 
   const addQuestion = () => {
     setQuestions([...questions, ""]);
-  };
-
-  const updateTypesOfQuestions = (index: number, value: number) => {
-    switch (selectedQuestionType) {
-      case "MCQ":
-        setTypesOfQuestions({
-          ...typesOfQuestions,
-          "multiple-correct-type": [
-            index === 0 ? value : typesOfQuestions["multiple-correct-type"][0],
-            index === 1 ? value : typesOfQuestions["multiple-correct-type"][1],
-          ],
-        });
-        break;
-      case "SCQ":
-        setTypesOfQuestions({
-          ...typesOfQuestions,
-          "single-correct-type": [
-            index === 0 ? value : typesOfQuestions["single-correct-type"][0],
-            index === 1 ? value : typesOfQuestions["single-correct-type"][1],
-          ],
-        });
-        break;
-      case "Descriptive":
-        setTypesOfQuestions({
-          ...typesOfQuestions,
-          "descriptive-type": [
-            index === 0 ? value : typesOfQuestions["descriptive-type"][0],
-            index === 1 ? value : typesOfQuestions["descriptive-type"][1],
-          ],
-        });
-        break;
-      case "Numerical":
-        setTypesOfQuestions({
-          ...typesOfQuestions,
-          "numerical-type": [
-            index === 0 ? value : typesOfQuestions["numerical-type"][0],
-            index === 1 ? value : typesOfQuestions["numerical-type"][1],
-          ],
-        });
-        break;
-      default:
-        break;
-    }
   };
 
   const generateAssignment = async (data: any) => {
@@ -105,7 +95,7 @@ const Content = () => {
         }
       );
       const response = await request.json();
-      const id=response.message.split("Generate Assignment ID: ")[1];
+      const id = response.message.split("Generate Assignment ID: ")[1];
       setId(id);
       const req = await fetch(`/api/subscribe?id=${id}`);
       const resp = await req.json();
@@ -136,7 +126,7 @@ const Content = () => {
           />
           <Textarea
             placeholder="Instructions (optional)"
-            minRows={4}
+            minRows={1}
             autosize
             value={instructions}
             onChange={(event) => setInstructions(event.target.value)}
@@ -155,7 +145,7 @@ const Content = () => {
               />
               <Textarea
                 placeholder="Any specific syllabus/topic you wanna mention (optional)"
-                minRows={4}
+                minRows={1}
                 autosize
                 value={specificTopics}
                 onChange={(event) => setSpecificTopics(event.target.value)}
@@ -168,47 +158,66 @@ const Content = () => {
               <Group gap="0">
                 <Button
                   variant="outline"
-                  color="gray.7"
+                  color={hasBeenSelected["SCQ"] ? "white" : "gray.7"}
+                  bg={hasBeenSelected["SCQ"] ? "gray.7" : "white"}
                   style={{
                     border: "2px solid #ADB5BD",
+                    borderRadius: 0,
                     borderTopLeftRadius: "10%",
                     borderBottomLeftRadius: "10%",
                   }}
                   pl="md"
                   pr="md"
-                  onClick={() => setSelectedQuestionType("SCQ")}
+                  onClick={() => {
+                    toggleQuestionType("SCQ");
+                    modifyTypesOfQuestions("single-correct-type", 0, 0);
+                    modifyTypesOfQuestions("single-correct-type", 1, 0);
+                  }}
                 >
                   SCQ
                 </Button>
                 <Button
                   variant="outline"
-                  color="gray.7"
+                  color={hasBeenSelected["MCQ"] ? "white" : "gray.7"}
+                  bg={hasBeenSelected["MCQ"] ? "gray.7" : "white"}
                   style={{
                     border: "2px solid #ADB5BD",
                     borderLeft: "0px",
+                    borderRadius: 0,
                   }}
                   pl="md"
                   pr="md"
-                  onClick={() => setSelectedQuestionType("MCQ")}
+                  onClick={() => {
+                    toggleQuestionType("MCQ");
+                    modifyTypesOfQuestions("multiple-correct-type", 0, 0);
+                    modifyTypesOfQuestions("multiple-correct-type", 1, 0);
+                  }}
                 >
                   MCQ
                 </Button>
                 <Button
                   variant="outline"
-                  color="gray.7"
+                  color={hasBeenSelected["Numerical"] ? "white" : "gray.7"}
+                  bg={hasBeenSelected["Numerical"] ? "gray.7" : "white"}
                   style={{
                     border: "2px solid #ADB5BD",
                     borderLeft: "0px",
+                    borderRadius: 0,
                   }}
                   pl="md"
                   pr="md"
-                  onClick={() => setSelectedQuestionType("Numerical")}
+                  onClick={() => {
+                    toggleQuestionType("Numerical");
+                    modifyTypesOfQuestions("numerical-type", 0, 0);
+                    modifyTypesOfQuestions("numerical-type", 1, 0);
+                  }}
                 >
                   Numerical
                 </Button>
                 <Button
                   variant="outline"
-                  color="gray.7"
+                  color={hasBeenSelected["Descriptive"] ? "white" : "gray.7"}
+                  bg={hasBeenSelected["Descriptive"] ? "gray.7" : "white"}
                   style={{
                     border: "2px solid #ADB5BD",
                     borderRadius: "0px",
@@ -218,30 +227,162 @@ const Content = () => {
                   }}
                   pl="md"
                   pr="md"
-                  onClick={() => setSelectedQuestionType("Descriptive")}
+                  onClick={() => {
+                    toggleQuestionType("Descriptive");
+                    modifyTypesOfQuestions("descriptive-type", 0, 0);
+                    modifyTypesOfQuestions("descriptive-type", 1, 0);
+                  }}
                 >
                   Descriptive
                 </Button>
               </Group>
-              <Group>
-                <TextInput
-                  placeholder="x"
-                  w="fit-content"
-                  size="sm"
-                  p="0"
-                  onChange={(event) =>
-                    updateTypesOfQuestions(0, parseInt(event.target.value))
-                  }
-                />
-                <Text>{selectedQuestionType} questions of marks</Text>
-                <TextInput
-                  placeholder="y"
-                  onChange={(event) =>
-                    updateTypesOfQuestions(1, parseInt(event.target.value))
-                  }
-                />
-                <Text>marks each</Text>
-              </Group>
+              {hasBeenSelected["SCQ"] && (
+                <Group>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["single-correct-type"][0]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "single-correct-type",
+                        0,
+                        parseInt(event.target.value)
+                      )
+                    }
+                    style={{
+                      border: "0px solid black",
+                    }}
+                  />
+                  <Text size="sm"> SCQs of</Text>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["single-correct-type"][1]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "single-correct-type",
+                        1,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm">marks each</Text>
+                </Group>
+              )}
+              {hasBeenSelected["MCQ"] && (
+                <Group>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["multiple-correct-type"][0]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "multiple-correct-type",
+                        0,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm"> MCQs questions of</Text>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["multiple-correct-type"][1]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "multiple-correct-type",
+                        1,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm">marks each</Text>
+                </Group>
+              )}
+              {hasBeenSelected["Descriptive"] && (
+                <Group>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["descriptive-type"][0]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "descriptive-type",
+                        0,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm"> Descriptive questions of</Text>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["descriptive-type"][1]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "descriptive-type",
+                        1,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm">marks each</Text>
+                </Group>
+              )}
+              {hasBeenSelected["Numerical"] && (
+                <Group>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["numerical-type"][0]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "numerical-type",
+                        0,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm"> Numerical questions of</Text>
+                  <Input
+                    type="number"
+                    placeholder="x"
+                    w="fit-content"
+                    size="xs"
+                    p="0"
+                    value={typesOfQuestions["numerical-type"][1]}
+                    onChange={(event) =>
+                      modifyTypesOfQuestions(
+                        "numerical-type",
+                        1,
+                        parseInt(event.target.value)
+                      )
+                    }
+                  />
+                  <Text size="sm">marks each</Text>
+                </Group>
+              )}
             </Stack>
             <Button
               ml="auto"
@@ -256,7 +397,6 @@ const Content = () => {
                   instructions_for_ai: instructionsForAI,
                   types_of_questions: typesOfQuestions,
                 };
-
                 generateAssignment(data);
               }}
             >
@@ -267,8 +407,18 @@ const Content = () => {
       ) : (
         <Stack>
           <Stack>
-            <Input placeholder="Title" style={{ border: "none" }} />
-            <Input placeholder="Description" style={{ border: "black" }} />
+            <Input
+              placeholder="Title"
+              style={{ border: "none" }}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <Input
+              placeholder="Description"
+              style={{ border: "black" }}
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+            />
             {questions.map((_, index) => (
               <Question key={index} />
             ))}
@@ -276,7 +426,7 @@ const Content = () => {
         </Stack>
       )}
 
-      <Group h="4.5vh" justify="space-between">
+      <Group h="5vh" justify="space-between">
         <Radio
           checked={false}
           color="black"
@@ -284,8 +434,15 @@ const Content = () => {
             assignmentType === "AI" ? "Manually" : "by AI"
           }`}
           onClick={() => {
-            if (assignmentType === "AI") setAssignmentType("Manual");
-            else setAssignmentType("AI");
+            if (assignmentType === "AI") {
+              setAssignmentType("Manual");
+              setTitle(undefined);
+              setInstructions(undefined);
+            } else {
+              setAssignmentType("AI");
+              setTitle(undefined);
+              setInstructions(undefined);
+            }
           }}
         />
         {assignmentType === "Manual" && (

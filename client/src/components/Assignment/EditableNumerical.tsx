@@ -1,11 +1,8 @@
-import React from 'react'
+import { TextInput } from "@mantine/core";
+import React from "react";
 
-type Props = {}
+const EditableNumerical = () => {
+  return <TextInput placeholder="Write your Question here"></TextInput>;
+};
 
-const EditableNumerical = (props: Props) => {
-  return (
-    <div>EditableNumerical</div>
-  )
-}
-
-export default EditableNumerical
+export default EditableNumerical;

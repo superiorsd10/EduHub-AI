@@ -1,11 +1,8 @@
-import React from 'react'
+import { TextInput, Textarea } from "@mantine/core";
+import React from "react";
 
-type Props = {}
+const EditableDescriptive = () => {
+  return <TextInput placeholder="Write your Question here"></TextInput>;
+};
 
-const EditableDescriptive = (props: Props) => {
-  return (
-    <div></div>
-  )
-}
-
-export default EditableDescriptive
+export default EditableDescriptive;
