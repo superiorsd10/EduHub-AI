@@ -3,11 +3,13 @@ Group Chat sockets for the Flask application.
 """
 
 import base64
+from datetime import datetime
 from bson import ObjectId
-from flask import current_app
+from flask import current_app, request
 from flask_socketio import emit, join_room, leave_room
 from app.app import socketio
 from app.models.message import Message
+from app.models.user_hub_status import UserHubStatus
 
 
 def decode_base64_to_objectid(base64_encoded: str) -> ObjectId:
@@ -44,7 +46,39 @@ def handle_join_hub(data):
     """
     try:
         hub_id = data.get("hub_id")
+        email = data.get("email")
         join_room(hub_id)
+
+        user_hub_status = UserHubStatus.objects(email=email, hub_id=hub_id).first()
+        last_read_timestamp = (
+            user_hub_status.last_read_timestamp if user_hub_status else None
+        )
+
+        hub_object_id = decode_base64_to_objectid(base64_encoded=hub_id)
+
+        if not last_read_timestamp:
+            initial_messages = (
+                Message.objects(hub_id=hub_object_id).order_by("created_at").limit(50)
+            )
+            client_sid = request.sid
+
+            for message in initial_messages:
+                socketio.emit("previous-message", message.to_mongo(), to=client_sid)
+
+        else:
+            unread_messages = Message.objects(
+                hub_id=hub_object_id,
+                created_at__gt=last_read_timestamp,
+            ).order_by("created_at")
+
+            client_sid = request.sid
+
+            for message in unread_messages:
+                socketio.emit("unread-message", message.to_mongo(), to=client_sid)
+
+        UserHubStatus.objects(email=email, hub_id=hub_id).update_one(
+            upsert=True, set__last_read_timestamp=datetime.now()
+        )
 
     except Exception as error:
         emit(
@@ -71,7 +105,12 @@ def handle_leave_hub(data):
     """
     try:
         hub_id = data.get("hub_id")
+        email = data.get("email")
         leave_room(hub_id)
+
+        UserHubStatus.objects(email=email, hub_id=hub_id).update_one(
+            upsert=True, set__last_read_timestamp=datetime.now()
+        )
 
     except Exception as error:
         emit(
