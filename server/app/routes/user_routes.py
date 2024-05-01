@@ -59,11 +59,13 @@ def create_user():
 
         redis_client = current_app.redis_client
         user_object_id_key = f"user_object_id_{email}"
+        user_name_key = f"user_name_{email}"
 
         if not redis_client.exists(user_object_id_key):
             new_user.save()
             user_object_id = new_user.id
             redis_client.set(user_object_id_key, str(user_object_id))
+            redis_client.set(user_name_key, name)
 
             return (
                 jsonify({"message": "User created successfully", "success": True}),
