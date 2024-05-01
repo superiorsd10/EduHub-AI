@@ -5,6 +5,7 @@ export default async function handler(req:any, res:any) {
     const { id } = req.query;
     console.log(id);
     const key=`generate_assignment_id_${id}`
+    console.log(key)
     
     const redis = new Redis(process.env.NEXT_PUBLIC_REDIS_URL as string);
 
@@ -22,7 +23,9 @@ export default async function handler(req:any, res:any) {
       const parsedMessage = JSON.parse(message);
       if (parsedMessage.id === id) {
         console.log('Received message with desired ID:', parsedMessage);
-        res.status(200).json(parsedMessage);
+        res.status(200).json(parsedMessage); // Send response here
+        redis.unsubscribe();
+        redis.quit();
       }
     });
 

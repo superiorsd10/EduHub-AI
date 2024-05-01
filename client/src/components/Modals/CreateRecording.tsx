@@ -16,17 +16,15 @@ const CreateRecordingModal: React.FC<{
   roomId,
   teacherCode,
 }) => {
-  console.log("hello there",roomId,teacherCode)
   const router = useRouter();
   const [title, setTitle] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { setRecordingData } = useContext(HubContext);
   const { token } = useContext(AppContext);
   const hub_id = router.query.hub_id as string;
 
-  const handleCreateHub = async () => {
+  const handleCreateRecording = async () => {
     setLoading(true);
     try {
       await fetch(`http://127.0.0.1:5000/api/${btoa(hub_id)}/create-recording`, {
@@ -43,7 +41,9 @@ const CreateRecordingModal: React.FC<{
         }),
       });
       setLoading(false);
-      router.push(`http://localhost:3000/hub/${hub_id}/live/${teacherCode}`);
+      console.log("successful")
+      await router.push(`http://localhost:3000/hub/${hub_id}/live/${teacherCode}`);
+      console.log("redirecting")
       setIsCreateRecordingVisible(false);
     } catch (error) {
       console.log(error);
@@ -102,7 +102,7 @@ const CreateRecordingModal: React.FC<{
           loading={loading}
           color="black"
           radius="md"
-          onClick={handleCreateHub}
+          onClick={handleCreateRecording}
         >
           Create
         </Button>

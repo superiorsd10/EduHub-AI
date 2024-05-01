@@ -18,7 +18,7 @@ const Content = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id;
   const { token } = useContext(AppContext);
-  const { setIsPreviewAssignmentVisible } = useContext(AssignmentContext);
+  const { setIsPreviewAssignmentVisible,setId } = useContext(AssignmentContext);
   const [assignmentType, setAssignmentType] = useState<"AI" | "Manual">("AI");
   const [questions, setQuestions] = useState<string[]>([]);
 
@@ -105,12 +105,11 @@ const Content = () => {
         }
       );
       const response = await request.json();
-      const respt=response.message;
-      const id=respt.split("Generate Assignment ID: ")[1];
-      const new_req = await fetch(`/api/subscribe?id=${id}`);
-      const new_resp = await new_req.json();
-      console.log(id);
-      console.log("s", new_resp);
+      const id=response.message.split("Generate Assignment ID: ")[1];
+      setId(id);
+      const req = await fetch(`/api/subscribe?id=${id}`);
+      const resp = await req.json();
+      setIsPreviewAssignmentVisible(true);
     } catch (error) {
       console.log(error);
     }
@@ -250,17 +249,15 @@ const Content = () => {
               w="fit-content"
               bg="black"
               onClick={() => {
-                // const data = {
-                //   title: title,
-                //   topics: topics,
-                //   specific_topics: specificTopics,
-                //   instructions_for_ai: instructionsForAI,
-                //   types_of_questions: typesOfQuestions,
-                // };
+                const data = {
+                  title: title,
+                  topics: topics,
+                  specific_topics: specificTopics,
+                  instructions_for_ai: instructionsForAI,
+                  types_of_questions: typesOfQuestions,
+                };
 
-                // generateAssignment(data);
-
-                setIsPreviewAssignmentVisible(true);
+                generateAssignment(data);
               }}
             >
               Preview

@@ -6,11 +6,15 @@ interface AssignmentProviderProps {
 interface AssignmentContextProps {
   isPreviewAssignmentVisible: boolean;
   setIsPreviewAssignmentVisible: (isPreviewAssignmentVisible:boolean)=>void;
+  id: string | null;
+  setId: (id:string)=>void;
 }
 
 const AssignmentContext = createContext<AssignmentContextProps>({
   isPreviewAssignmentVisible: false,
-  setIsPreviewAssignmentVisible: ()=>{}
+  setIsPreviewAssignmentVisible: ()=>{},
+  id:null,
+  setId:()=>{}
 });
 
 const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
@@ -18,12 +22,15 @@ const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
 }: AssignmentProviderProps) => {
   const [isPreviewAssignmentVisible, setIsPreviewAssignmentVisible] =
     useState<boolean>(false);
+  const [id,setId] = useState<string|null>(null);
 
   return (
     <AssignmentContext.Provider
       value={{
         isPreviewAssignmentVisible,
-        setIsPreviewAssignmentVisible
+        setIsPreviewAssignmentVisible,
+        id,
+        setId
       }}
     >
       {children}

@@ -50,8 +50,8 @@ const UpgradePlan = ({
               Your current plan
             </Button>
             <List>
-              {free.map((feature: string) => (
-                <Group align="flex-start">
+              {free.map((feature: string,id) => (
+                <Group align="flex-start" key={id}>
                   <Text>
                     <FaCheck />
                   </Text>
@@ -79,8 +79,8 @@ const UpgradePlan = ({
             </Button>
             <List>
               <Text fw="bold">All of the benefits of free, and:</Text>
-              {pro.map((feature: string) => (
-                <Group align="flex-start">
+              {pro.map((feature: string,id) => (
+                <Group align="flex-start" key={id}>
                   <Text>
                     <FaCheck />
                   </Text>
