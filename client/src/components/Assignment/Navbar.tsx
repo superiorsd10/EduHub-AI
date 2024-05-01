@@ -11,7 +11,10 @@ const Navbar = () => {
   const hub_id = router.query.hub_id as string;
   const { id } = useContext(AssignmentContext);
   const {email,token} = useContext(AppContext);
-  const {title,topic,instructions,points,isAutomaticFeedbackEnabled,setIsAutomaticFeedbackEnabled,isAutomaticGradingEnabled,isEnabledPlagriasmChecker} = useContext(AssignmentContext);
+  const {title,topic,instructions,points,isAutomaticFeedbackEnabled,setIsAutomaticFeedbackEnabled,isAutomaticGradingEnabled,isEnabledPlagriasmChecker,typesOfQuestions} = useContext(AssignmentContext);
+
+  let question_points=[]
+  
   
   const handleAssignAssignment = async () => {
     console.log(email,id);
@@ -21,17 +24,18 @@ const Navbar = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `${token}`,
-          body:JSON.stringify({
-            "title":title,
-            "topic":topic,
-            "instructions":instructions,
-            "due_datetime":Date.now(),
-            "total_points":points,
-            "automatic_grading_enabled":isAutomaticGradingEnabled,
-            "automatic_feedback_enabled":isAutomaticFeedbackEnabled,
-            "plagiarism_checker_enabled":isEnabledPlagriasmChecker
-          })
         },
+        body:JSON.stringify({
+          "title":title,
+          "instructions":instructions,
+          "total_points":points,
+          "topic":topic,
+          "due_datetime":Date.now(),
+          "question_points":[],
+          "automatic_grading_enabled":isAutomaticGradingEnabled,
+          "automatic_feedback_enabled":isAutomaticFeedbackEnabled,
+          "plagiarism_checker_enabled":isEnabledPlagriasmChecker
+        })
       }
     );
     const req = await request.json();
