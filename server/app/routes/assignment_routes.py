@@ -120,7 +120,7 @@ class CreateAssignmentUsingAISchema(Schema):
     instructions = fields.String()
     total_points = fields.Integer()
     question_points = fields.List(fields.Integer())
-    due_datetime = fields.DateTime()
+    due_datetime = fields.Integer()
     topic = fields.String()
     automatic_grading_enabled = fields.Boolean()
     automatic_feedback_enabled = fields.Boolean()
@@ -153,7 +153,7 @@ class CreateAssignmentManuallySchema(Schema):
     instructions = fields.String()
     total_points = fields.Integer()
     question_points = fields.List(fields.Integer())
-    due_datetime = fields.DateTime()
+    due_datetime = fields.Integer()
     topic = fields.String()
     questions = fields.Dict(
         keys=fields.String(),
@@ -233,7 +233,7 @@ def calculate_seconds_difference(due_datetime: datetime) -> float:
         int: The number of seconds difference between due datetime and current time.
     """
     current_time = datetime.now()
-    time_difference = due_datetime - current_time
+    time_difference = current_time - due_datetime
     seconds_difference = time_difference.total_seconds()
     return float(seconds_difference)
 
@@ -452,6 +452,7 @@ def create_assignment_using_ai(hub_id, generate_assignment_id):
             },
         )
 
+        due_datetime = datetime.fromtimestamp(due_datetime / 1000)
         total_seconds = calculate_seconds_difference(due_datetime)
 
         if automatic_grading_enabled and automatic_feedback_enabled:
@@ -566,6 +567,7 @@ def create_assignment_manually(hub_id):
             },
         )
 
+        due_datetime = datetime.fromtimestamp(due_datetime / 1000)
         total_seconds = calculate_seconds_difference(due_datetime)
 
         if automatic_grading_enabled and automatic_feedback_enabled:
