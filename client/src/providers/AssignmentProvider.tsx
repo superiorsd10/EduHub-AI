@@ -37,6 +37,8 @@ interface AssignmentContextProps {
     "descriptive-type": number[];
     "numerical-type": number[];
   }>>;
+  markdown: string|null;
+  setMarkdown:(markdown:string)=>void;
 }
 
 const AssignmentContext = createContext<AssignmentContextProps>({
@@ -67,6 +69,8 @@ const AssignmentContext = createContext<AssignmentContextProps>({
     "numerical-type": [0, 0],
   },
   setTypesOfQuestions: () => {},
+  markdown:null,
+  setMarkdown:()=>{},
 });
 
 const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
@@ -99,6 +103,7 @@ const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
     "descriptive-type": [0, 0],
     "numerical-type": [0, 0],
   });
+  const [markdown,setMarkdown] = useState<string|null>(null);
 
   const modifyTypesOfQuestions = (
     type: keyof typeof typesOfQuestions,
@@ -136,6 +141,8 @@ const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
         setIsEnabledPlagriasmChecker,
         typesOfQuestions,
         setTypesOfQuestions,
+        markdown,
+        setMarkdown
       }}
     >
       {children}
