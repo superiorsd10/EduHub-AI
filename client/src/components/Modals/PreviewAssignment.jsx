@@ -66,7 +66,10 @@ const PreviewAssignment = () => {
     >
       {!makeChanges ? (
         <Stack>
+          <Markdown>
           {markdown}
+          </Markdown>
+          
           <Group>
             <Button
               color="black"

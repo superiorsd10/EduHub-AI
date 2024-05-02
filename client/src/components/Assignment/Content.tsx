@@ -84,6 +84,7 @@ const Content = () => {
 
   const generateAssignment = async (data: any) => {
     try {
+      console.log(data);
       socket.emit("generate-assignment", data);
     } catch (error) {
       console.log(error);
@@ -92,9 +93,10 @@ const Content = () => {
 
   useEffect(() => {
     socket.on("generated-assignment", (data: any) => {
-      console.log("markdown",markdown);
-      setMarkdown(data);
-      if(markdown) setIsPreviewAssignmentVisible(true);
+      console.log("markdown",data, typeof(data));
+      console.log(JSON.parse(data).medium)
+      setMarkdown(JSON.parse(data).medium);
+      setIsPreviewAssignmentVisible(true);
       setIsLoading(false);
     });
 
@@ -103,10 +105,17 @@ const Content = () => {
     };
   }, [socket]);
 
+  useEffect(() => {
+    if(markdown!=null && markdown!=undefined) {
+      setIsPreviewAssignmentVisible(true)
+    }
+  }, [markdown])
+  
+
   const handlePreviewAssignment = async () => {
     setIsLoading(true);
     const data = {
-      hub_id: hub_id,
+      hub_id: btoa(hub_id as string),
       title: title,
       topics: topics,
       specific_topics: specificTopics,
