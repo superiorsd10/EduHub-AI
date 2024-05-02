@@ -16,7 +16,9 @@ const LiveWithoutContext: NextPageWithLayout = () => {
   const room_code = router.query.room_code as string;
 
   const { token, email } = useContext(AppContext);
-  const { currentHubData, fetchHubData, roomId, recordingData } = useContext(HubContext);
+  const { currentHubData, fetchHubData, recordingData } = useContext(HubContext);
+  const roomId = localStorage.getItem(`room_id_${hub_id}`)
+  console.log(roomId)
 
   useEffect(() => {
     if (hub_id && email) fetchHubData(hub_id, token);

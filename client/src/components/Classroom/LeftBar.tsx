@@ -24,10 +24,12 @@ const LeftBar = ({
     setRoomId,
     roomId,
   } = useContext(HubContext);
+  const router = useRouter();
   const [isCreateRecordingVisible, setIsCreateRecordingVisible] =
     useState<boolean>(false);
   const [teacherCode, setTeacherCode] = useState<string | null>(null);
   const [studentCode, setStudentCode] = useState<string | null>(null);
+  const hub_id = router.query.hub_id as string;
 
   const managementToken =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTQzODc0MzIsImV4cCI6MTcxNTUxMDYzMiwianRpIjoiMDBjMTMyNDItZjAwMS00NzM0LTlhYjgtMmEwNjk3MDI3ZTQ3IiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTQzODc0MzIsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.J3CU5ks1zdZ4hX0bm2UB4LwAmXMUjqEFMBlRkWLXYn0";
@@ -55,9 +57,10 @@ const LeftBar = ({
 
   const handleGetRoomCode = async () => {
     try {
-      const roomId = await handleCreateRoom();
-      setRoomId(roomId);
-      const URL = `https://api.100ms.live/v2/room-codes/room/${roomId}`;
+      const roomI = await handleCreateRoom();
+      localStorage.setItem(`room_id_${hub_id}`,roomI);
+      setRoomId(roomI);
+      const URL = `https://api.100ms.live/v2/room-codes/room/${roomI}`;
 
       const response = await fetch(URL, {
         method: "POST",
