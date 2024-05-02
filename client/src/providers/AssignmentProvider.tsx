@@ -39,17 +39,9 @@ interface AssignmentContextProps {
       "numerical-type": number[];
     }>
   >;
-  markdown: {
-    easy?: string | null;
-    medium?: string | null;
-    hard?: string | null;
-  } | null;
+  markdown: any;
   setMarkdown: (
-    markdown: {
-      easy?: string | null;
-      medium?: string | null;
-      hard?: string | null;
-    } | null
+    markdown: any
   ) => void;
 }
 
@@ -115,11 +107,7 @@ const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
     "descriptive-type": [0, 0],
     "numerical-type": [0, 0],
   });
-  const [markdown, setMarkdown] = useState<{
-    easy?: string | null;
-    medium?: string | null;
-    hard?: string | null;
-  } | null | null>(null);
+  const [markdown, setMarkdown] = useState<any>(null);
 
   const modifyTypesOfQuestions = (
     type: keyof typeof typesOfQuestions,

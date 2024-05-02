@@ -25,14 +25,10 @@ const PreviewAssignment = () => {
     useContext(AssignmentContext);
   const { token } = useContext(AppContext);
 
-  const [activeTab, setActiveTab] = useState<string | null>(
-    markdown!.easy ? "easy" : markdown!.medium ? "medium" : "hard"
-  );
-  const [makeChanges, setMakeChanges] = useState<boolean>(false);
-  const [selectedDifficultyLevel, setSelectedDifficultyLevel] = useState<
-    "easy" | "medium" | "hard"
-  >("medium");
-  const [instructions, setInstructions] = useState<string>("");
+  const [activeTab, setActiveTab] = useState(null);
+  const [makeChanges, setMakeChanges] = useState(false);
+  const [selectedDifficultyLevel, setSelectedDifficultyLevel] = useState("medium")
+  const [instructions, setInstructions] = useState("");
 
   const handleMakeChanges = async () => {
     try {
@@ -70,36 +66,7 @@ const PreviewAssignment = () => {
     >
       {!makeChanges ? (
         <Stack>
-          <Tabs
-            color="black"
-            defaultValue="first"
-            value={activeTab}
-            onChange={setActiveTab}
-          >
-            <Tabs.List>
-              {markdown!.easy && <Tabs.Tab value="easy">Easy</Tabs.Tab>}
-              {markdown!.medium && (
-                <Tabs.Tab value="medium">Medium</Tabs.Tab>
-              )}
-              {markdown!.hard && <Tabs.Tab value="hard">Hard</Tabs.Tab>}
-            </Tabs.List>
-
-            {markdown!.easy && (
-              <Tabs.Panel value="easy">
-                <Markdown>{markdown!.easy}</Markdown>
-              </Tabs.Panel>
-            )}
-            {markdown!.medium && (
-              <Tabs.Panel value="medium">
-                <Markdown>{markdown!.medium}</Markdown>
-              </Tabs.Panel>
-            )}
-            {markdown!.hard && (
-              <Tabs.Panel value="hard">
-                <Markdown>{markdown!.hard}</Markdown>
-              </Tabs.Panel>
-            )}
-          </Tabs>
+          {markdown}
           <Group>
             <Button
               color="black"

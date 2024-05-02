@@ -17,6 +17,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/Material/PDF.tsx", "src/pages/live.jsx", "src/pages/hub/live/[room_code].tsx", "src/components/Material/VideoPlayer.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/Material/PDF.tsx", "src/pages/live.jsx", "src/pages/hub/live/[room_code].tsx", "src/components/Material/VideoPlayer.tsx", "src/components/Modals/PreviewAssignment.jsx"],
   "exclude": ["node_modules"]
 }

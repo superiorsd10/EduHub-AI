@@ -28,6 +28,7 @@ const Content = () => {
     typesOfQuestions,
     setTypesOfQuestions,
     setMarkdown,
+    markdown
   } = useContext(AssignmentContext);
 
   const [assignmentType, setAssignmentType] = useState<"AI" | "Manual">("AI");
@@ -84,7 +85,6 @@ const Content = () => {
   const generateAssignment = async (data: any) => {
     try {
       socket.emit("generate-assignment", data);
-      // setIsPreviewAssignmentVisible(true);
     } catch (error) {
       console.log(error);
     }
@@ -92,8 +92,9 @@ const Content = () => {
 
   useEffect(() => {
     socket.on("generated-assignment", (data: any) => {
+      console.log("markdown",markdown);
       setMarkdown(data);
-      setIsPreviewAssignmentVisible(true);
+      if(markdown) setIsPreviewAssignmentVisible(true);
       setIsLoading(false);
     });
 
