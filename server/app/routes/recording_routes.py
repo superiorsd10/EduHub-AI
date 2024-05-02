@@ -3,7 +3,7 @@ Recording routes for the Flask application.
 """
 
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 import uuid
 from bson import ObjectId
@@ -192,9 +192,8 @@ def create_recording(hub_id):
 
         redis_client = current_app.redis_client
         cache_paginated_key = f"hub_{hub_object_id}_paginated_page_1"
-        cache_introductory_key = f"hub_{hub_object_id}_introductory"
 
-        redis_client.delete(cache_paginated_key, cache_introductory_key)
+        redis_client.delete(cache_paginated_key)
 
         return (
             jsonify(
@@ -254,7 +253,10 @@ def get_recording(hub_id, recording_id):
             recording_data = recording.recordings[0].to_mongo().to_dict()
             created_at = recording_data["created_at"]
             room_id = recording_data["room_id"]
-            formatted_created_at = convert_to_yyyymmdd(date_string=str(created_at))
+            adjusted_datetime = created_at - timedelta(hours=5, minutes=30)
+            formatted_created_at = convert_to_yyyymmdd(
+                date_string=str(adjusted_datetime)
+            )
 
             recording_data["playlist_file_url"] = (
                 f"https://d1h1k26a3spk7x.cloudfront.net/recordings/beam/{room_id}/{formatted_created_at}/playlist.m3u8"
