@@ -100,6 +100,7 @@ const Content = () => {
       setId(id);
       const req = await fetch(`/api/subscribe?id=${id}`);
       const resp = await req.json();
+      console.log(resp);
       setIsPreviewAssignmentVisible(true);
     } catch (error) {
       console.log(error);

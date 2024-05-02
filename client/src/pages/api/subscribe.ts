@@ -3,9 +3,7 @@ import Redis from 'ioredis';
 export default async function handler(req:any, res:any) {
   if (req.method === 'GET') {
     const { id } = req.query;
-    console.log(id);
     const key=`generate_assignment_id_${id}`
-    console.log(key)
     
     const redis = new Redis(process.env.NEXT_PUBLIC_REDIS_URL as string);
 
