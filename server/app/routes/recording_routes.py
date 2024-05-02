@@ -220,7 +220,7 @@ def create_recording(hub_id):
     "/api/<hub_id>/get-recording/<recording_id>", methods=["GET"]
 )
 @limiter.limit("5 per minute")
-@firebase_token_required
+# @firebase_token_required
 def get_recording(hub_id, recording_id):
     """
     Retrieve a recording for a given hub.

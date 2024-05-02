@@ -12,15 +12,16 @@ import {
 import { AppContext } from "../../providers/AppProvider";
 import { useContext, useState } from "react";
 
-const CreateHubModal: React.FC<{ opened: boolean; close: () => void }> = ({
+const CreateHubModal: React.FC<{ opened: boolean; close: () => void; view: string }> = ({
   opened,
   close,
+  view="first"
 }) => {
   const [hubName, setHubName] = useState<string>("");
   const [section, setSection] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string | null>("first");
+  const [activeTab, setActiveTab] = useState<string | null>(view);
   const [roomCode, setRoomCode] = useState<string>("");
   const [value, onChange] = useState("#e64980");
   const {

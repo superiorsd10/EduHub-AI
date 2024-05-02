@@ -52,7 +52,7 @@ const Recording = () => {
   }, []);
   return (
     <ResizableFlex>
-      <Stack pl="5%" pr="5%" h="95%">
+      <Stack pl="5%" pr="5%" w='100%' h="95%">
         <Center>
           <Stack w="100%" gap="xs">
             <Group w="100%" gap="0" pt="md" align="flex-start">
@@ -83,7 +83,7 @@ const Recording = () => {
         </Center>
         {recordingData && (
           <Group w="100%" h="100%" gap="0">
-            <Box w="70%" h="100%">
+            <Box w="70%">
               <VideoPlayer videoUrl={recordingData.playlist_file_url} />
             </Box>
             <Stack w="30%" h="100%">
