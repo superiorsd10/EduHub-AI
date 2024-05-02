@@ -128,8 +128,21 @@ def get_image_context(image_base64: str) -> str:
 
     """
     try:
+        prompt = """
+        Analyze the image and extract the context related to the educational
+        content being presented by the educator.
+
+        Ignore the screen recording components, such as buttons, menus, or
+        other UI elements.
+
+        Instead, focus on the visual aids, diagrams, charts, graphs, or other
+        visual elements that support the educator's presentation.
+
+        Identify the key concepts, objects, or information being displayed
+        and describe them in a concise sentence or phrase.
+        """
         data = {
-            "query": "Provide a detailed description of the image",
+            "query": prompt,
             "image": image_base64,
             "stream": False,
             "max_tokens": 512,
@@ -222,20 +235,23 @@ def process_image_files(image_files: List[bytes], room_id: str) -> None:
 
         different_image_files = []
         image_files_length = len(image_files)
+        print(image_files_length)
 
         for i in range(image_files_length - 1):
             frame_difference = calculate_frame_difference(
                 image_files[i], image_files[i + 1]
             )
+            print(frame_difference)
 
-            if frame_difference > 0.3:
+            if frame_difference > 0.0:
                 different_image_files.append(image_files[i])
 
         last_image_frame_difference = calculate_frame_difference(
             image_files[image_files_length - 2], image_files[image_files_length - 1]
         )
+        print(last_image_frame_difference)
 
-        if last_image_frame_difference > 0.3:
+        if last_image_frame_difference > 0.0:
             different_image_files.append(image_files[image_files_length - 1])
 
         recording_embedding_docs = []
