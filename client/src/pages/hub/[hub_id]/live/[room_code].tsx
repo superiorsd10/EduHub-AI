@@ -78,7 +78,7 @@ const LiveWithoutContext: NextPageWithLayout = () => {
   const handleJoin = async () => {
     if (role === "teacher" && !hasJoined) {
       console.log("User joined as a teacher, start capturing screenshots");
-      const id = setInterval(captureScreenshot, 10000);
+      const id = setInterval(captureScreenshot, 20000);
       setIntervalId(id);
       setHasJoined(true);
     }

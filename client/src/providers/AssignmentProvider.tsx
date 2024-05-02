@@ -31,14 +31,26 @@ interface AssignmentContextProps {
     "descriptive-type": number[];
     "numerical-type": number[];
   };
-  setTypesOfQuestions: React.Dispatch<React.SetStateAction<{
-    "single-correct-type": number[];
-    "multiple-correct-type": number[];
-    "descriptive-type": number[];
-    "numerical-type": number[];
-  }>>;
-  markdown: string|null;
-  setMarkdown:(markdown:string)=>void;
+  setTypesOfQuestions: React.Dispatch<
+    React.SetStateAction<{
+      "single-correct-type": number[];
+      "multiple-correct-type": number[];
+      "descriptive-type": number[];
+      "numerical-type": number[];
+    }>
+  >;
+  markdown: {
+    easy?: string | null;
+    medium?: string | null;
+    hard?: string | null;
+  } | null;
+  setMarkdown: (
+    markdown: {
+      easy?: string | null;
+      medium?: string | null;
+      hard?: string | null;
+    } | null
+  ) => void;
 }
 
 const AssignmentContext = createContext<AssignmentContextProps>({
@@ -69,8 +81,8 @@ const AssignmentContext = createContext<AssignmentContextProps>({
     "numerical-type": [0, 0],
   },
   setTypesOfQuestions: () => {},
-  markdown:null,
-  setMarkdown:()=>{},
+  markdown: null,
+  setMarkdown: () => {},
 });
 
 const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
@@ -103,7 +115,11 @@ const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
     "descriptive-type": [0, 0],
     "numerical-type": [0, 0],
   });
-  const [markdown,setMarkdown] = useState<string|null>(null);
+  const [markdown, setMarkdown] = useState<{
+    easy?: string | null;
+    medium?: string | null;
+    hard?: string | null;
+  } | null | null>(null);
 
   const modifyTypesOfQuestions = (
     type: keyof typeof typesOfQuestions,
@@ -142,7 +158,7 @@ const AssignmentProvider: React.FC<AssignmentProviderProps> = ({
         typesOfQuestions,
         setTypesOfQuestions,
         markdown,
-        setMarkdown
+        setMarkdown,
       }}
     >
       {children}

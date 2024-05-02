@@ -13,24 +13,20 @@ import { AssignmentContext } from "@/providers/AssignmentProvider";
 import Markdown from "markdown-to-jsx";
 import { AppContext } from "@/providers/AppProvider";
 
-type markdownTextType = {
-  easy?: string | null;
-  medium?: string | null;
-  hard?: string | null;
-};
 
-let markdownText: markdownTextType = {
-  medium:
-    "*Object Oriented Programming\n=====================================\n\nConceptual Questions\n\n### Single-Correct-Type Questions (3 points each)\n\n1. What is the main purpose of abstraction in object-oriented programming?\n\t a) To hide implementation details\n\t* b) To expose implementation details\n\t* c) To reduce code duplication\n\t* d) To increase code complexity\n\n(3 points)\n\n2. Which of the following is an example of encapsulation?\n\t* a) A public method accessing a private variable\n\t* b) A private method accessing a public variable\n\t* c) A class having multiple inheritance\n\t* d) A class having a single constructor\n\n(3 points)\n\n3. What is the benefit of using abstraction in object-oriented programming?\n\t* a) It makes the code more complex\n\t* b) It makes the code more modular and reusable\n\t* c) It makes the code more difficult to maintain\n\t* d) It makes the code more prone to errors\n\n(3 points)\n\n### Multiple-Correct-Type Questions (4 points each)\n\n1. What are the advantages of encapsulation in object-oriented programming? (Select all that apply)\n\t* a) Hides implementation details\n\t* b) Exposes implementation details\n\t* c) Improves code modularity\n\t* d) Reduces code reusability\n\n(4 points)\n\n2. What are the principles of object-oriented programming that abstraction and encapsulation are related to? (Select all that apply)\n\t* a) Inheritance\n\t* b) Polymorphism\n\t* c) Abstraction\n\t* d) Encapsulation\n\n(4 points)\n\n",
-};
+
+// let markdownText: markdownTextType = {
+//   medium:
+//     "*Object Oriented Programming\n=====================================\n\nConceptual Questions\n\n### Single-Correct-Type Questions (3 points each)\n\n1. What is the main purpose of abstraction in object-oriented programming?\n\t a) To hide implementation details\n\t* b) To expose implementation details\n\t* c) To reduce code duplication\n\t* d) To increase code complexity\n\n(3 points)\n\n2. Which of the following is an example of encapsulation?\n\t* a) A public method accessing a private variable\n\t* b) A private method accessing a public variable\n\t* c) A class having multiple inheritance\n\t* d) A class having a single constructor\n\n(3 points)\n\n3. What is the benefit of using abstraction in object-oriented programming?\n\t* a) It makes the code more complex\n\t* b) It makes the code more modular and reusable\n\t* c) It makes the code more difficult to maintain\n\t* d) It makes the code more prone to errors\n\n(3 points)\n\n### Multiple-Correct-Type Questions (4 points each)\n\n1. What are the advantages of encapsulation in object-oriented programming? (Select all that apply)\n\t* a) Hides implementation details\n\t* b) Exposes implementation details\n\t* c) Improves code modularity\n\t* d) Reduces code reusability\n\n(4 points)\n\n2. What are the principles of object-oriented programming that abstraction and encapsulation are related to? (Select all that apply)\n\t* a) Inheritance\n\t* b) Polymorphism\n\t* c) Abstraction\n\t* d) Encapsulation\n\n(4 points)\n\n",
+// };
 
 const PreviewAssignment = () => {
-  const { isPreviewAssignmentVisible, setIsPreviewAssignmentVisible, id } =
+  const { isPreviewAssignmentVisible, setIsPreviewAssignmentVisible, id,markdown } =
     useContext(AssignmentContext);
   const { token } = useContext(AppContext);
 
   const [activeTab, setActiveTab] = useState<string | null>(
-    markdownText.easy ? "easy" : markdownText.medium ? "medium" : "hard"
+    markdown!.easy ? "easy" : markdown!.medium ? "medium" : "hard"
   );
   const [makeChanges, setMakeChanges] = useState<boolean>(false);
   const [selectedDifficultyLevel, setSelectedDifficultyLevel] = useState<
@@ -81,26 +77,26 @@ const PreviewAssignment = () => {
             onChange={setActiveTab}
           >
             <Tabs.List>
-              {markdownText.easy && <Tabs.Tab value="easy">Easy</Tabs.Tab>}
-              {markdownText.medium && (
+              {markdown!.easy && <Tabs.Tab value="easy">Easy</Tabs.Tab>}
+              {markdown!.medium && (
                 <Tabs.Tab value="medium">Medium</Tabs.Tab>
               )}
-              {markdownText.hard && <Tabs.Tab value="hard">Hard</Tabs.Tab>}
+              {markdown!.hard && <Tabs.Tab value="hard">Hard</Tabs.Tab>}
             </Tabs.List>
 
-            {markdownText.easy && (
+            {markdown!.easy && (
               <Tabs.Panel value="easy">
-                <Markdown>{markdownText.easy}</Markdown>
+                <Markdown>{markdown!.easy}</Markdown>
               </Tabs.Panel>
             )}
-            {markdownText.medium && (
+            {markdown!.medium && (
               <Tabs.Panel value="medium">
-                <Markdown>{markdownText.medium}</Markdown>
+                <Markdown>{markdown!.medium}</Markdown>
               </Tabs.Panel>
             )}
-            {markdownText.hard && (
+            {markdown!.hard && (
               <Tabs.Panel value="hard">
-                <Markdown>{markdownText.hard}</Markdown>
+                <Markdown>{markdown!.hard}</Markdown>
               </Tabs.Panel>
             )}
           </Tabs>

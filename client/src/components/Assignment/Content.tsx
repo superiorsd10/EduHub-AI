@@ -16,7 +16,7 @@ import { AppContext } from "@/providers/AppProvider";
 const Content = () => {
   const router = useRouter();
   const hub_id = router.query.hub_id;
-  const { token } = useContext(AppContext);
+  const { socket } = useContext(AppContext);
   const {
     setIsPreviewAssignmentVisible,
     setId,
@@ -27,6 +27,7 @@ const Content = () => {
     setInstructions,
     typesOfQuestions,
     setTypesOfQuestions,
+    setMarkdown
   } = useContext(AssignmentContext);
 
   const [assignmentType, setAssignmentType] = useState<"AI" | "Manual">("AI");
@@ -82,35 +83,29 @@ const Content = () => {
 
   const generateAssignment = async (data: any) => {
     try {
-      const request = await fetch(
-        `http://127.0.0.1:5000/api/${btoa(
-          hub_id as string
-        )}/generate-assignment`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
-      const response = await request.json();
-      const id = response.message.split("Generate Assignment ID: ")[1];
-      setId(id);
-      const req = await fetch(`/api/subscribe?id=${id}`);
-      const resp = await req.json();
-      console.log("getting markdown")
-      console.log(resp);
+      socket.emit("generate-assignment",data);
       setIsPreviewAssignmentVisible(true);
     } catch (error) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    socket.on("generated-assignment", (data:any) => {
+        setMarkdown(data);
+        setIsPreviewAssignmentVisible(true);
+        setIsLoading(false);
+    });
+
+    return () => {
+      socket.off("generated-assignment");
+    };
+  }, [socket]);
+
   const handlePreviewAssignment = async () => {
     setIsLoading(true);
     const data = {
+      hub_id: hub_id,
       title: title,
       topics: topics,
       specific_topics: specificTopics,
@@ -118,10 +113,6 @@ const Content = () => {
       types_of_questions: typesOfQuestions,
     };
     generateAssignment(data);
-    setTimeout(() => {
-      setIsPreviewAssignmentVisible(true);
-    }, 3000);
-    setIsLoading(false);
   };
 
   return (
