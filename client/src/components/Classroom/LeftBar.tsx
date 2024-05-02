@@ -19,54 +19,19 @@ const LeftBar = ({
   role: string;
   theme_color:string
 }) => {
-  const router = useRouter();
   const {
-    isCreatePostVisible,
     setIsCreatePostVisible,
-    currentHubData,
-    appendPost,
     setRoomId,
-    recordingData,
     roomId,
   } = useContext(HubContext);
   const [isCreateRecordingVisible, setIsCreateRecordingVisible] =
     useState<boolean>(false);
   const [teacherCode, setTeacherCode] = useState<string | null>(null);
-  const { token } = useContext(AppContext);
-  const { introductory } = currentHubData!;
-  const { _id } = introductory!;
-  const hub_id = router.query.hub_id as string;
+  const [studentCode, setStudentCode] = useState<string | null>(null);
 
   const managementToken =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTQzODc0MzIsImV4cCI6MTcxNTUxMDYzMiwianRpIjoiMDBjMTMyNDItZjAwMS00NzM0LTlhYjgtMmEwNjk3MDI3ZTQ3IiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MTQzODc0MzIsImFjY2Vzc19rZXkiOiI2NjBmY2I1NWJhYmMzM2YwMGU0YWI5NjcifQ.J3CU5ks1zdZ4hX0bm2UB4LwAmXMUjqEFMBlRkWLXYn0";
 
-  const handleMakeAnnouncement = async (studentRoomCode: string) => {
-    const formData = new FormData();
-    formData.append("type", "announcement");
-    formData.append(
-      "title",
-      `Join Live class here http://localhost:3000/hub/662e9873bc5597d4fda393cc/live/${studentRoomCode}`
-    );
-    formData.append("topic", "Live Class");
-
-    try {
-      const resp = await fetch(
-        `http://127.0.0.1:5000/api/${btoa(hub_id)}/create-post`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `${token}`,
-          },
-          body: formData,
-        }
-      );
-      const data = await resp.json();
-      appendPost(data);
-      setIsCreatePostVisible(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const handleCreateRoom = async () => {
     try {
@@ -111,8 +76,7 @@ const LeftBar = ({
         }
       }
       setTeacherCode(teacherCode);
-
-      await handleMakeAnnouncement(studentCode);
+      setStudentCode(studentCode);
       setIsCreateRecordingVisible(true);
     } catch (error) {
       console.error(error);
@@ -180,6 +144,7 @@ const LeftBar = ({
           setIsCreateRecordingVisible={setIsCreateRecordingVisible}
           roomId={roomId as string}
           teacherCode={teacherCode as string}
+          studentCode={studentCode as string}
         ></CreateRecordingModal>
       )}
     </Stack>

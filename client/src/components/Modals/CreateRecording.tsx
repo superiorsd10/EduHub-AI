@@ -10,11 +10,13 @@ const CreateRecordingModal: React.FC<{
   setIsCreateRecordingVisible: (isCreateRecordingVisible: boolean) => void;
   roomId: string;
   teacherCode: string;
+  studentCode: string;
 }> = ({
   isCreateRecordingVisible,
   setIsCreateRecordingVisible,
   roomId,
   teacherCode,
+  studentCode
 }) => {
   const router = useRouter();
   const [title, setTitle] = useState<string>("");
@@ -22,7 +24,36 @@ const CreateRecordingModal: React.FC<{
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const { token } = useContext(AppContext);
+  const {appendPost} = useContext(HubContext);
   const hub_id = router.query.hub_id as string;
+
+  const handleMakeAnnouncement = async () => {
+    const formData = new FormData();
+    formData.append("type", "announcement");
+    formData.append("title",`Live Class on topic ${topic} has started.`)
+    formData.append(
+      "description",
+      `Join Live class here http://localhost:3000/hub/662e9873bc5597d4fda393cc/live/${studentCode}`
+    );
+    formData.append("topic", "Live Class");
+
+    try {
+      const resp = await fetch(
+        `http://127.0.0.1:5000/api/${btoa(hub_id)}/create-post`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `${token}`,
+          },
+          body: formData,
+        }
+      );
+      const data = await resp.json();
+      appendPost(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleCreateRecording = async () => {
     setLoading(true);
@@ -40,11 +71,10 @@ const CreateRecordingModal: React.FC<{
           room_id: roomId,
         }),
       });
+      await handleMakeAnnouncement();
       setLoading(false);
-      console.log("successful")
-      await router.push(`http://localhost:3000/hub/${hub_id}/live/${teacherCode}`);
-      console.log("redirecting")
       setIsCreateRecordingVisible(false);
+      await router.push(`http://localhost:3000/hub/${hub_id}/live/${teacherCode}`);
     } catch (error) {
       console.log(error);
     }
@@ -85,7 +115,6 @@ const CreateRecordingModal: React.FC<{
       />
       <Group mt="sm" justify="flex-end">
         <Button
-          loading={loading}
           onClick={() => setIsCreateRecordingVisible(false)}
           variant="default"
           radius="md"

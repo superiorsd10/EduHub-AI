@@ -96,7 +96,7 @@ const PostWithMaterialWithoutContext = () => {
               )
             }
           >
-            Chat With PDF
+            Chat With Material
           </Button>
         </Stack>
       </Center>
