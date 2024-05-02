@@ -6,7 +6,7 @@ import base64
 from datetime import datetime
 import uuid
 from bson import ObjectId
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app.auth.firebase_auth import firebase_token_required
 from app.enums import StatusCode
 from app.core import limiter
@@ -780,10 +780,15 @@ def submit_assignment(assignment_id):
         email = request.args.get("email")
         response = data.get("response")
 
+        redis_client = current_app.redis_client
+        user_name_key = f"user_name_{email}"
+        name = redis_client.get(user_name_key)
+        assignment_marks_dict_key = f"{email}:{name}"
+
         assignment_object_id = decode_base64_to_objectid(base64_encoded=assignment_id)
 
         Assignment.objects(id=assignment_object_id).update_one(
-            push__responses={email: response}
+            push__responses={assignment_marks_dict_key: response}
         )
 
         return (

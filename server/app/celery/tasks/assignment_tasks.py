@@ -1140,7 +1140,10 @@ def process_automatic_grading_and_feedback(create_assignment_uuid: str) -> None:
             for email, response in responses:
                 scored_points, feedback = generate_grade_and_feedback(answer, response)
                 scored_points_dict[email] = scored_points
-                assignment_marks_dict[email] = scored_points
+                user_name_key = f"user_name_{email}"
+                name = redis_client.get(user_name_key)
+                assignment_marks_dict_key = f"{email}:{name}"
+                assignment_marks_dict[assignment_marks_dict_key] = scored_points
                 feedback_dict[email] = feedback
 
                 user_assignment = UserEmbeddedAssignment(
