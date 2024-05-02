@@ -20,6 +20,9 @@ from app.sockets.group_chat_sockets import (
     handle_leave_hub,
     handle_send_message,
 )
+from app.sockets.assignment_sockets import (
+    generate_assignment,
+)
 from app.celery.tasks.post_tasks import process_uploaded_file
 from app.celery.tasks.recording_tasks import (
     process_image_files,
@@ -52,6 +55,8 @@ socketio.on_event("reject-request", handle_reject_request)
 socketio.on_event("join-hub", handle_join_hub)
 socketio.on_event("leave-hub", handle_leave_hub)
 socketio.on_event("send-message", handle_send_message)
+socketio.on_event("generate-assignment", generate_assignment)
+
 
 celery_instance.register_task(process_uploaded_file)
 celery_instance.register_task(process_image_files)
@@ -85,14 +90,20 @@ def redis_subscription_worker():
     try:
         redis_client = Config.REDIS_CLIENT
         pubsub = redis_client.pubsub()
-        pubsub.psubscribe("chat:*")
+        pubsub.psubscribe("chat:*", "generate_assignment_hub_id_*")
 
         for message in pubsub.listen():
             if message["type"] == "pmessage":
                 channel = message["channel"].decode("utf-8")
                 data = message["data"].decode("utf-8")
-                hub_id = channel.split(":")[1]
-                socketio.emit("new-message", data, room=hub_id)
+
+                if channel.startswith("chat:"):
+                    hub_id = channel.split(":")[1]
+                    socketio.emit("new-message", data, room=hub_id)
+
+                elif channel.startswith("generate_assignment_hub_id_"):
+                    hub_id = channel.split("_")[4]
+                    socketio.emit("generated-assignment", data, room=hub_id)
 
     except Exception as error:
         print(f"An error occurred in redis_subscription_worker: {error}")
