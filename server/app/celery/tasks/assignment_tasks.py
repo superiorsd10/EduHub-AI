@@ -645,6 +645,7 @@ def process_assignment_generation(
     types_of_questions: dict,
     generate_assignment_id: str,
     assignments_count: int,
+    hub_id: str,
 ) -> None:
     """
     Process assignment generation task asynchronously.
@@ -677,6 +678,8 @@ def process_assignment_generation(
             ]
         )
 
+        print(types_of_questions_string)
+
         if assignments_count == 0:
             generated_assignment = generate_assignment_llama(
                 title=title,
@@ -704,9 +707,10 @@ def process_assignment_generation(
         if assignments_dict:
             redis_client = Config.REDIS_CLIENT
             generate_assignment_key = f"generate_assignment_id_{generate_assignment_id}"
+            generate_assignment_hub_key = f"generate_assignment_hub_id_{hub_id}"
             assignments_dict_data = json.dumps(assignments_dict)
             redis_client.set(generate_assignment_key, assignments_dict_data)
-            redis_client.publish(generate_assignment_key, assignments_dict_data)
+            redis_client.publish(generate_assignment_hub_key, assignments_dict_data)
         else:
             print("assignments_dict is None or empty, skipping Redis operations.")
 

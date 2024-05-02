@@ -13,3 +13,7 @@ from .group_chat_sockets import (
     handle_leave_hub,
     handle_send_message,
 )
+
+from .assignment_sockets import (
+    generate_assignment,
+)
