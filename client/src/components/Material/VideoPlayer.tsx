@@ -11,9 +11,9 @@ const VideoPlayer = ({ videoUrl }: { videoUrl: string }) => {
         console.log(text)
         const lines = text.split("\n");
         // Assuming the URL you want is in the fourth line
-        if (lines.length >= 7 && lines[6].trim().startsWith("http")) {
-          setVideo(lines[6].trim());
-          console.log(lines[6].trim())
+        if (lines.length >= 7 && lines[8].trim().startsWith("http")) {
+          setVideo(lines[8].trim());
+          console.log(lines[8].trim())
         } else {
           console.error("Invalid .m3u8 file");
         }
